@@ -1,6 +1,7 @@
 #include<iostream>
 #include<iomanip>
 #include<cmath>
+#include<random>
 using namespace std;
 
 /*
@@ -37,7 +38,7 @@ int Samples_in_Sphere(double Sample[10], int N)
 	int In = 0;
 	double distance;
 
-	for(int i = 0; i < 10; i += N)
+	for(int i = 0; i+N <= 10; i += N)
 	{
 		distance = 0;
 		for(int j = 0; j < N; j++)
@@ -58,12 +59,13 @@ int main()
 	double pi[9];
 	double Mean, StdDev;
 
-	srand(time(NULL));
+	mt19937 RNG(time(NULL));
+	uniform_real_distribution<double> Uniform(-1.,1.); //Uniform random between -1 and 1
 
 	do
 	{
 		for(int i = 0; i < 10; i++)
-			Sample[i] = 2.*double(rand())/double(RAND_MAX)-1.;	//Uniform random between -1 and 1, not recommended RGN method
+			Sample[i] = Uniform(RNG);
 
 		for(int N = 2; N <= 10; N++)
 		{
