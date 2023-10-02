@@ -39,6 +39,8 @@ int main()
 	int Sub_Samples[9] = {5,3,2,2,1,1,1,1,1};
 	float Sample[10];
 
+	srand(time(NULL));
+
 	do
 	{
 		for(int i = 0; i < 10; i++)
