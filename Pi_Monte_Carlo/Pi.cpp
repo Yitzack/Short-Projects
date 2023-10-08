@@ -38,7 +38,7 @@ int Samples_in_Sphere(double Sample[10], int N)
 	int In = 0;
 	double distance;
 
-	for(int i = 0; i+N <= 10; i += N)
+	for(int i = 0; i+N <= 2520; i += N)
 	{
 		distance = 0;
 		for(int j = 0; j < N; j++)
@@ -54,17 +54,17 @@ int main()
 {
 	unsigned long long int Samples_Used[9] = {0,0,0,0,0,0,0,0,0};
 	unsigned long long int Points_in_Sphere[9] = {0,0,0,0,0,0,0,0,0};
-	int Sub_Samples[9] = {5,3,2,2,1,1,1,1,1};
-	double Sample[10];
+	int Sub_Samples[9] = {1260,840,630,504,420,360,315,280,252};
+	double Sample[2520];
 	double pi[9];
 	double Mean, StdDev;
 
-	mt19937 RNG(time(NULL));
+	mt19937 RNG(time(NULL));	//Mersenne Twister RNG from Random STL library.
 	uniform_real_distribution<double> Uniform(-1.,1.); //Uniform random between -1 and 1
 
 	do
 	{
-		for(int i = 0; i < 10; i++)
+		for(int i = 0; i < 2520; i++)
 			Sample[i] = Uniform(RNG);
 
 		for(int N = 2; N <= 10; N++)
@@ -73,7 +73,7 @@ int main()
 			Samples_Used[N-2] += Sub_Samples[N-2];
 		}
 
-		if(Samples_Used[8]%1000000==999999)
+		if((Samples_Used[8]/252)%1000==999)
 		{
 			pi[0] = 4.*double(Points_in_Sphere[0])/double(Samples_Used[0]);
 			pi[1] = 6.*double(Points_in_Sphere[1])/double(Samples_Used[1]);
@@ -88,14 +88,15 @@ int main()
 			StdDev = stddev(pi, 9);
 
 			cout << Samples_Used[8]+1 << setw(8) << pi[0] << setw(8) << pi[1] << setw(8) << pi[2] << setw(8) << pi[3] << setw(8) << pi[4] << setw(8) << pi[5] << setw(8) << pi[6] << setw(8) << pi[7] << setw(8) << pi[8] << setw(8) << Mean << "+/-" << setw(11) << StdDev << setw(12) << abs(Mean/M_PI-1.) << "+/-" << setw(11) << abs(StdDev/M_PI) << setw(14) << flush;
+			//cout << Samples_Used[8]+1 << " " << Points_in_Sphere[0] << " " << Points_in_Sphere[1] << " " << Points_in_Sphere[2] << " " << Points_in_Sphere[3] << " " << Points_in_Sphere[4] << " " << Points_in_Sphere[5] << " " << Points_in_Sphere[6] << " " << Points_in_Sphere[7] << " " << Points_in_Sphere[8] << setw(8) << Mean << "+/-" << setw(11) << StdDev << setw(12) << abs(Mean/M_PI-1.) << "+/-" << setw(11) << abs(StdDev/M_PI) << setw(14) << flush;
 			if(Mean-StdDev < M_PI && Mean+StdDev > M_PI)
 				cout << "Success" << endl;
 			else if(!isnan(StdDev))
 				cout << "Fail" << endl;
 			else
-				cout << "Indeterminate" << endl;
+				cout << "Indeterminate" << endl;	//Would happen if int or float couldn't hold the proper value for standard deviation.
 		}
-	}while(true);
+	}while(Samples_Used[8] <= 1007750);
 
 	return(0);
 }
