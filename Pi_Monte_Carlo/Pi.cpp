@@ -26,6 +26,14 @@ double mean(double array[], int N)
 	return(answer/double(N));
 }
 
+double meanDev(double array[], int N)
+{
+	double answer = 0;
+	for(int i = 0; i < N; i++)
+		answer += pow(array[i],2);
+	return(sqrt(answer)/double(N));
+}
+
 double stddev(double array[], int N)
 {
 	double answer = 0;
@@ -61,6 +69,8 @@ int main()
 	mt19937* RNG;
 	uniform_real_distribution<double> Archetype(-1.,1.);
 	uniform_real_distribution<double>* Uniform;
+	cout << setprecision(18);
+
 	#pragma omp parallel
 	{
 		#pragma omp master
@@ -99,37 +109,34 @@ int main()
 		#pragma omp master
 		if((Samples_Used[0][8]/252)%1000==999)
 		{
-			unsigned long long int Global_Samples_Used[9] = {0,0,0,0,0,0,0,0,0};
-			unsigned long long int Global_Points_in_Sphere[9] = {0,0,0,0,0,0,0,0,0};
-			double pi[9];
-			double Mean, StdDev;
+			double pi[9][omp_get_num_threads()];
+			double Mean[10], StdDev[10];
 
 			for(int i = 0; i < omp_get_num_threads(); i++)
 			{
-				for(int j = 0; j < 9; j++)
-				{
-					Global_Points_in_Sphere[j] += Points_in_Sphere[i][j];
-					Global_Samples_Used[j] += Samples_Used[i][j];
-				}
+				pi[0][i] = 4.*double(Points_in_Sphere[i][0])/double(Samples_Used[i][0]);
+				pi[1][i] = 6.*double(Points_in_Sphere[i][1])/double(Samples_Used[i][1]);
+				pi[2][i] = 4.*sqrt(2.*double(Points_in_Sphere[i][2])/double(Samples_Used[i][2]));
+				pi[3][i] = 2.*sqrt(15.*double(Points_in_Sphere[i][3])/double(Samples_Used[i][3]));
+				pi[4][i] = 4.*pow(6.*double(Points_in_Sphere[i][4])/double(Samples_Used[i][4]),1./3.);
+				pi[5][i] = 2.*pow(105.*double(Points_in_Sphere[i][5])/double(Samples_Used[i][5]),1./3.);
+				pi[6][i] = 4.*pow(24.*double(Points_in_Sphere[i][6])/double(Samples_Used[i][6]),.25);
+				pi[7][i] = 2.*pow(945.*double(Points_in_Sphere[i][7])/double(Samples_Used[i][7]),.25);
+				pi[8][i] = 4.*pow(120.*double(Points_in_Sphere[i][8])/double(Samples_Used[i][8]),.2);
 			}
 
-			pi[0] = 4.*double(Global_Points_in_Sphere[0])/double(Global_Samples_Used[0]);
-			pi[1] = 6.*double(Global_Points_in_Sphere[1])/double(Global_Samples_Used[1]);
-			pi[2] = 4.*sqrt(2.*double(Global_Points_in_Sphere[2])/double(Global_Samples_Used[2]));
-			pi[3] = 2.*sqrt(15.*double(Global_Points_in_Sphere[3])/double(Global_Samples_Used[3]));
-			pi[4] = 4.*pow(6.*double(Global_Points_in_Sphere[4])/double(Global_Samples_Used[4]),1./3.);
-			pi[5] = 2.*pow(105.*double(Global_Points_in_Sphere[5])/double(Global_Samples_Used[5]),1./3.);
-			pi[6] = 4.*pow(24.*double(Global_Points_in_Sphere[6])/double(Global_Samples_Used[6]),.25);
-			pi[7] = 2.*pow(945.*double(Global_Points_in_Sphere[7])/double(Global_Samples_Used[7]),.25);
-			pi[8] = 4.*pow(120.*double(Global_Points_in_Sphere[8])/double(Global_Samples_Used[8]),.2);
-			Mean = mean(pi, 9);
-			StdDev = stddev(pi, 9);
+			for(int i = 0; i < 9; i++)
+			{
+				Mean[i] = mean(pi[i], omp_get_num_threads());
+				StdDev[i] = stddev(pi[i], omp_get_num_threads());
+			}
+			Mean[9] = mean(Mean, 9);
+			StdDev[9] = meanDev(StdDev, 9);
 
-			cout << Global_Samples_Used[8]+1 << setw(8) << pi[0] << setw(8) << pi[1] << setw(8) << pi[2] << setw(8) << pi[3] << setw(8) << pi[4] << setw(8) << pi[5] << setw(8) << pi[6] << setw(8) << pi[7] << setw(8) << pi[8] << setw(8) << Mean << "+/-" << setw(11) << StdDev << setw(12) << abs(Mean/M_PI-1.) << "+/-" << setw(11) << abs(StdDev/M_PI) << setw(14) << flush;
-			//cout << Global_Samples_Used[8]+1 << " " << Global_Points_in_Sphere[0] << " " << Global_Points_in_Sphere[1] << " " << Global_Points_in_Sphere[2] << " " << Global_Points_in_Sphere[3] << " " << Global_Points_in_Sphere[4] << " " << Global_Points_in_Sphere[5] << " " << Global_Points_in_Sphere[6] << " " << Global_Points_in_Sphere[7] << " " << Global_Points_in_Sphere[8] << setw(8) << Mean << "+/-" << setw(11) << StdDev << setw(12) << abs(Mean/M_PI-1.) << "+/-" << setw(11) << abs(StdDev/M_PI) << setw(14) << flush;
-			if(Mean-StdDev < M_PI && Mean+StdDev > M_PI)
+			cout << Samples_Used[8][0]+1 << ",Around[" << Mean[0] << "," << StdDev[0] << "],Around[" << Mean[1] << "," << StdDev[1] << "],Around[" << Mean[2] << "," << StdDev[2] << "],Around[" << Mean[3] << "," << StdDev[3] << "],Around[" << Mean[4] << "," << StdDev[4] << "],Around[" << Mean[5] << "," << StdDev[5] << "],Around[" << Mean[6] << "," << StdDev[6] << "],Around[" << Mean[7] << "," << StdDev[7] << "],Around[" << Mean[8] << "," << StdDev[8] << "],Around[" << Mean[9] << "," << StdDev[9] << "],Around[" << abs(Mean[9]/M_PI-1.) << "," << abs(StdDev[9]/M_PI) << "]" << flush;
+			if(Mean[9]-StdDev[9] < M_PI && Mean[9]+StdDev[9] > M_PI)
 				cout << "Success" << endl;
-			else if(!isnan(StdDev))
+			else if(!isnan(StdDev[9]))
 				cout << "Fail" << endl;
 			else
 				cout << "Indeterminate" << endl;	//Would happen if int or float couldn't hold the proper value for standard deviation.
