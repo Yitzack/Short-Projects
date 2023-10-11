@@ -26,7 +26,7 @@ double mean(double array[], int N)
 	return(answer/double(N));
 }
 
-double meanDev(double array[], int N)	//When taking the mean of uncertain values, it is sqrt(Sigma DeltaX_i^2)/N
+double meanDev(double array[], int N)	//When taking the mean of uncertain values, the uncertainity of the mean is sqrt(Sigma DeltaX_i^2)/N
 {
 	double answer = 0;
 	for(int i = 0; i < N; i++)
