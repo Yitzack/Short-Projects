@@ -12,7 +12,7 @@ g++ Importance_Monte_Carlo.cpp -O3 -fopenmp -p
 
 Simple_Monte_Carlo.cpp uses a uniform random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Correct answers are included to check results.
 
-Importance_Monte_Carlo.cpp uses a Cauchy distributed random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Includes its own Cauchy distribution object as the one in <random> doesn't have PDF function. It should operate in the same way when finished.
+Importance_Monte_Carlo.cpp uses a Cauchy distributed random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Includes its own Cauchy distribution object as the one in <random> doesn't have PDF function. It should operate in the same way.
 
 ## Monte Carlo techniques to consider
 
