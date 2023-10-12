@@ -37,6 +37,7 @@ double Lorentz_Point(double A, vector<double> x, vector<double> x0, double gamma
 	for(vector<double>::iterator it_x = x.begin(); it_x != x.end(); it_x++)
 	{
 		Denominator += pow(*it_x-*it_x0,2);
+		it_x0++;
 	}
 	return(A*gamma/(M_PI*(Denominator+pow(gamma,2))));
 }
@@ -51,7 +52,7 @@ double Lorentz_Surface(double A, vector<double> x, double x0, double gamma)
 	return(A*gamma/(M_PI*(pow(Denominator-x0,2)+pow(gamma,2))));
 }
 
-double f1(vector<double> x)	//int_-1^1 dx int_-1^1 dy f1(x,y) = .966674
+double f1(vector<double> x)	//int_-1^1 dx int_-1^1 dy f1(x,y) = .966673912888639
 {
 	vector<double> x0 = {0,0};
 	double gamma = .1;
@@ -59,7 +60,7 @@ double f1(vector<double> x)	//int_-1^1 dx int_-1^1 dy f1(x,y) = .966674
 	return(Lorentz_Point(A, x, x0, gamma));
 }
 
-double f2(vector<double> x)	//int_-1^1 dx int_-1^1 dy f2(x,y) = .406018
+double f2(vector<double> x)	//int_-1^1 dx int_-1^1 dy f2(x,y) = .1809247246180574
 {
 	vector<double> x0 = {0,0};
 	vector<double> x1 = {.5,.5};
@@ -68,7 +69,7 @@ double f2(vector<double> x)	//int_-1^1 dx int_-1^1 dy f2(x,y) = .406018
 	return(Lorentz_Point(A, x, x0, gamma)*Lorentz_Point(A, x, x1, gamma));
 }
 
-double f3(vector<double> x)	//int_-1^1 dx int_-1^1 dy f3(x,y) = 1.84283
+double f3(vector<double> x)	//int_-1^1 dx int_-1^1 dy f3(x,y) = 1.842829402085427
 {
 	vector<double> x0 = {0,0};
 	vector<double> x1 = {.5,.5};
@@ -77,7 +78,7 @@ double f3(vector<double> x)	//int_-1^1 dx int_-1^1 dy f3(x,y) = 1.84283
 	return(Lorentz_Point(A, x, x0, gamma)+Lorentz_Point(A, x, x1, gamma));
 }
 
-double f4(vector<double> x)	//int_-1^1 dx int_-1^1 dy f4(x,y) = 1.7456
+double f4(vector<double> x)	//int_-1^1 dx int_-1^1 dy f4(x,y) = 3.491194554007413
 {
 	double x0 = 0;
 	double gamma = .1;
@@ -85,22 +86,28 @@ double f4(vector<double> x)	//int_-1^1 dx int_-1^1 dy f4(x,y) = 1.7456
 	return(Lorentz_Surface(A, x, x0, gamma));
 }
 
-double f5(vector<double> x)	//int_-1^1 dx int_-1^1 dy f5(x,y) = .389151
+double f5(vector<double> x)	//int_-1^1 dx int_-1^1 dy f5(x,y) = 1.839868331507421
 {
 	double x0 = 0;
 	double x1 = .5;
 	double gamma = .1;
 	double A = 2;
-	return(Lorentz_Surface(A, x, x0, gamma)*Lorentz_Surface(A, x, x1, gamma));
+	double f1 = Lorentz_Surface(A, x, x0, gamma);
+	x[1] *= -1;
+	double f2 = Lorentz_Surface(A, x, x1, gamma);
+	return(f1*f2);
 }
 
-double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 3.15978
+double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 6.319569491139836
 {
 	double x0 = 0;
 	double x1 = .5;
 	double gamma = .1;
 	double A = 2;
-	return(Lorentz_Surface(A, x, x0, gamma)+Lorentz_Surface(A, x, x1, gamma));
+	double f1 = Lorentz_Surface(A, x, x0, gamma);
+	x[1] *= -1;
+	double f2 = Lorentz_Surface(A, x, x1, gamma);
+	return(f1+f2);
 }
 
 double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(ArcTan((b-x0)/gamma)+ArcTan((x0-a)/gamma)) = (atan(7.5)+atan(12.5))/M_PI = .932397
@@ -111,7 +118,7 @@ double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(ArcTan((b-x0)/gamma)+Arc
 	return(Lorentz_Surface(A, x, x0, gamma));
 }
 
-double f8(vector<double> x)	//int_{unit 10-cube} dV f8(vec x) = 5.6356 (Multi-dimensional), 5.631+/-.026 (Monte Carlo), 5.635+/-.026 (Adaptive Monte Carlo), 5.64459 (Adaptive Quasi Monte Carlo), 5.6686 (Quasi Monte Carlo), 
+double f8(vector<double> x)	//int_{unit 10-cube} dV f8(vec x) = 5.6356 (Multi-dimensional), 5.63568+/-.0254724 (Monte Carlo), 5.6357+/-.0254821 (Adaptive Monte Carlo), 5.64082 (Adaptive Quasi Monte Carlo), 5.63616 (Quasi Monte Carlo)
 {
 	double A = 1;
 	double gamma = .1;
@@ -137,43 +144,43 @@ int main(int argc, char* argv[])
 			case '1':
 				Dims = 2;
 				f = f1;
-				Correct = .966674;
-				break;	//Correct
+				Correct = .966673912888639;
+				break;
 			case '2':
 				Dims = 2;
 				f = f2;
-				Correct = .406018;
-				break;	//Incorrect ~.4457xCorrect
+				Correct = .1809247246180574;
+				break;
 			case '3':
 				Dims = 2;
 				f = f3;
-				Correct = 1.84283;
-				break;	//Correct
+				Correct = 1.842829402085427;
+				break;
 			case '4':
 				Dims = 2;
 				f = f4;
-				Correct = 1.7456;
-				break;	//Incorrect ~2xCorrect
+				Correct = 3.491194554007413;
+				break;
 			case '5':
 				Dims = 2;
 				f = f5;
-				Correct = .389151;
-				break;	//Incorrect ~3.864xCorrect
+				Correct = 1.839868331507421;
+				break;
 			case '6':
 				Dims = 2;
 				f = f6;
-				Correct = 3.15978;
-				break;	//Incorrect ~2xCorrect
+				Correct = 6.319569491139836;
+				break;
 			case '7':
 				Dims = 1;
 				f = f7;
 				Correct = (atan(7.5)+atan(12.5))/M_PI;
-				break;	//Correct
+				break;
 			case '8':
 				Dims = 10;
 				f = f8;
-				Correct = 5.6365475;
-				break;	//Incorrect ~1.885xCorrect
+				Correct = 5.63679;
+				break;
 			default:
 				cout << "Give an integer between 1 and 8 to get non-NULL output." << endl;
 				return(0);
@@ -189,7 +196,7 @@ int main(int argc, char* argv[])
 	mt19937* RNG;
 	uniform_real_distribution<double> Archetype(-1.,1.);
 	uniform_real_distribution<double>* Uniform;
-	//cout << setprecision(18);
+	cout << setprecision(18);
 
 	#pragma omp parallel
 	{
@@ -220,6 +227,7 @@ int main(int argc, char* argv[])
 		for(int i = 0; i < Dims; i++)
 			x[i] = Uniform[omp_get_thread_num()](RNG[omp_get_thread_num()]);
 		double Sample = f(x);
+
 		First_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*First_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*Sample;
 		Second_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*Second_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*pow(Sample,2);
 		Samples_Used[omp_get_thread_num()]++;
