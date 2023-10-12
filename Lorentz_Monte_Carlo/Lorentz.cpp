@@ -119,19 +119,68 @@ double f8(vector<double> x)	//int_{unit 10-cube} dV f8(vec x) = 5.6356 (Multi-di
 	return(Lorentz_Point(A, x, x0, gamma));
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	unsigned long long int* Samples_Used;
 	double* First_Moment;
 	double* Second_Moment;
 	double* Mean;
 	double* StdDev;
-	double Correct = (atan(7.5)+atan(12.5))/M_PI;
+	double Correct;
+	int Dims;
+	double (*f)(vector<double>);
+
+	if(argc == 2)
+	{
+		switch(argv[1][0])
+		{
+			case '1':
+				Dims = 2;
+				f = f1;
+				Correct = .966674;
+				break;	//Correct
+			case '2':
+				Dims = 2;
+				f = f2;
+				Correct = .406018;
+				break;	//Incorrect ~.4457xCorrect
+			case '3':
+				Dims = 2;
+				f = f3;
+				Correct = 1.84283;
+				break;	//Correct
+			case '4':
+				Dims = 2;
+				f = f4;
+				Correct = 1.7456;
+				break;	//Incorrect ~2xCorrect
+			case '5':
+				Dims = 2;
+				f = f5;
+				Correct = .389151;
+				break;	//Incorrect ~3.864xCorrect
+			case '6':
+				Dims = 2;
+				f = f6;
+				Correct = 3.15978;
+				break;	//Incorrect ~2xCorrect
+			case '7':
+				Dims = 1;
+				f = f7;
+				Correct = (atan(7.5)+atan(12.5))/M_PI;
+				break;	//Correct
+			case '8':
+				Dims = 10;
+				f = f8;
+				Correct = 5.6365475;
+				break;	//Incorrect ~1.885xCorrect
+		}
+	}
 
 	mt19937* RNG;
 	uniform_real_distribution<double> Archetype(-1.,1.);
 	uniform_real_distribution<double>* Uniform;
-	cout << setprecision(18);
+	//cout << setprecision(18);
 
 	#pragma omp parallel
 	{
@@ -158,17 +207,18 @@ int main()
 	do
 	{
 		vector<double> x;
-		x.resize(1);
-		x[0] = Uniform[omp_get_thread_num()](RNG[omp_get_thread_num()]);
-		double f = f7(x);
-		First_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*First_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*f;
-		Second_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*Second_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*pow(f,2);
+		x.resize(Dims);
+		for(int i = 0; i < Dims; i++)
+			x[i] = Uniform[omp_get_thread_num()](RNG[omp_get_thread_num()]);
+		double Sample = f(x);
+		First_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*First_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*Sample;
+		Second_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*Second_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*pow(Sample,2);
 		Samples_Used[omp_get_thread_num()]++;
-		Mean[omp_get_thread_num()] = 2.*First_Moment[omp_get_thread_num()];
-		StdDev[omp_get_thread_num()] = 2.*sqrt((Second_Moment[omp_get_thread_num()]-pow(First_Moment[omp_get_thread_num()],2))/Samples_Used[omp_get_thread_num()]);
+		Mean[omp_get_thread_num()] = pow(2.,Dims)*First_Moment[omp_get_thread_num()];
+		StdDev[omp_get_thread_num()] = pow(2.,Dims)*sqrt((Second_Moment[omp_get_thread_num()]-pow(First_Moment[omp_get_thread_num()],2))/Samples_Used[omp_get_thread_num()]);
 
 		#pragma omp master
-		if(Samples_Used[0]%1000==0)
+		if(Samples_Used[0]%100000==0)
 		{
 			double Mean_Mean, Mean_StdDev;
 
