@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 			case '8':
 				Dims = 10;
 				f = f8;
-				Correct = 5.63679;
+				Correct = 5.6356;
 				break;
 			default:
 				cout << "Give an integer between 1 and 8 to get non-NULL output." << endl;
@@ -191,7 +191,6 @@ int main(int argc, char* argv[])
 		cout << "Give an integer between 1 and 8 to get non-NULL output." << endl;
 		return(0);
 	}
-
 
 	mt19937* RNG;
 	uniform_real_distribution<double> Archetype(-1.,1.);
