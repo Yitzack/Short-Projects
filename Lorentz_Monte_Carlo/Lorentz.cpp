@@ -174,8 +174,17 @@ int main(int argc, char* argv[])
 				f = f8;
 				Correct = 5.6365475;
 				break;	//Incorrect ~1.885xCorrect
+			default:
+				cout << "Give an integer between 1 and 8 to get non-NULL output." << endl;
+				return(0);
 		}
 	}
+	else
+	{
+		cout << "Give an integer between 1 and 8 to get non-NULL output." << endl;
+		return(0);
+	}
+
 
 	mt19937* RNG;
 	uniform_real_distribution<double> Archetype(-1.,1.);
