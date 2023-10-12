@@ -4,11 +4,11 @@ Integrate one or more Lorentz peaks over a finite interval using Monte Carlo met
 
 ## Compile directions for g++
 
-g++ Lorentz.cpp -O3 -fopenmp -p
+g++ Simple_Monte_Carlo.cpp -O3 -fopenmp -p
 
 ## Details of operation
 
-It uses a uniform random varible to Monte Carlo integrate a 1D Lorentz peak. Other functions to be integrated are included with the correct answer.
+Simple_Monte_Carlo.cpp uses a uniform random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Correct answers are included to check results.
 
 ## Monte Carlo techniques to consider
 
