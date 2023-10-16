@@ -17,30 +17,23 @@ Performance is worse than Simple_Monte Carlo due to number of points that fall o
 
 ## Monte Carlo techniques to consider
 
-* Stratified Sampling
+* Stratified Sampling  
+Sub-divide the region into sub-regions and add the results
 
-  Sub-divide the region into sub-regions and add the results
+* Importance Sampling  
+Instead of uniformly sampling the region, use a distribution that is more similar to the function so that samples are collected from the important regions
 
-* Importance Sampling
+* Control Variates  
+Use a known result that is correlated to the desired result to reduce the variance of the result. That is calculate X*=X-Cov(X,Y)/Var(Y)(Y-E[Y]). X, Y, and Cov(X,Y) are calulated in the Monte Carlo. Var(Y) and E[Y] are known before the Monte Carlo
 
-  Instead of uniformly sampling the region, use a distribution that is more similar to the function so that samples are collected from the important regions
+* Antithetic Variates  
+Use to RNGs that are anti-correlated to calculate the result independently and then take the average. So sample with Uniform(a,b) and a+b-Uniform(a,b). Then, when finished, take the average of the two results.
 
-* Control Variates
+* Quasi-Random Numbers  
+Use a quasi-random sequence of numbers instead of a pseudo-random sequence. Examine Sobol sequences and Halton sequences.
 
-  Use a known result that is correlated to the desired result to reduce the variance of the result. That is calculate X*=X-Cov(X,Y)/Var(Y)(Y-E[Y]). X, Y, and Cov(X,Y) are calulated in the Monte Carlo. Var(Y) and E[Y] are known before the Monte Carlo
+* Adaptive Sampling  
+ Use adaptive sampling to allocate more points to important regions. Like stratified sampling except the regions are selected automatically.
 
-* Antithetic Variates
-
-  Use to RNGs that are anti-correlated to calculate the result independently and then take the average. So sample with Uniform(a,b) and a+b-Uniform(a,b). Then, when finished, take the average of the two results.
-
-* Quasi-Random Numbers
-
-  Use a quasi-random sequence of numbers instead of a pseudo-random sequence. Examine Sobol sequences and Halton sequences.
-
-* Adaptive Sampling
-
-  Use adaptive sampling to allocate more points to important regions. Like stratified sampling except the regions are selected automatically.
-
-* Markov Chain
-
-  Use Markov Chain methods to do importance sampling. The samples will be correlated so care will be called for when using it.
+* Markov Chain  
+Use Markov Chain methods to do importance sampling. The samples will be correlated so care will be called for when using it.
