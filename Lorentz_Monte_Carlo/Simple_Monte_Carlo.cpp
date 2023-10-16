@@ -118,11 +118,11 @@ double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(ArcTan((b-x0)/gamma)+Arc
 	return(Lorentz_Surface(A, x, x0, gamma));
 }
 
-double f8(vector<double> x)	//int_{unit 10-cube} dV f8(vec x) = 5.6356 (Multi-dimensional), 5.63568+/-.0254724 (Monte Carlo), 5.6357+/-.0254821 (Adaptive Monte Carlo), 5.64082 (Adaptive Quasi Monte Carlo), 5.63616 (Quasi Monte Carlo)
+double f8(vector<double> x)	//int_{unit 10-cube} dV f8(vec x) = 5.9754 (Multi-dimensional), 5.97488+/-.0229747 (Monte Carlo), 5.97472+/-.0229234 (Adaptive Monte Carlo), 5.9767 (Adaptive Quasi Monte Carlo), 5.96647 (Quasi Monte Carlo)
 {
 	double A = 1;
 	double gamma = .1;
-	vector<double> x0 = {.06,.25,.18,.79,-.05,-.08,.86,.52,.83,.97};
+	vector<double> x0 = {.06,.25,.18,.79,-.05,-.08,.86,.52,.83,-.76};
 	return(Lorentz_Point(A, x, x0, gamma));
 }
 
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 			case '8':
 				Dims = 10;
 				f = f8;
-				Correct = 5.6356;
+				Correct = 5.9754;
 				break;
 			default:
 				cout << "Give an integer between 1 and 8 to get non-NULL output." << endl;
@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
 			}
 			cout << "Around[" << Mean_Mean << "," << Mean_StdDev << "],Around[" << abs(Mean_Mean/Correct-1.) << "," << Mean_StdDev/Correct << "]" << endl;
 		}
-	}while(true);
+	}while(Samples_Used[0]<=100020);
 
 	return(0);
 }
