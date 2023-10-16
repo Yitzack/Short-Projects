@@ -125,7 +125,7 @@ double Lorentz_Point_PDF(vector<double> x, vector<double> x0, double gamma)
 	for(vector<double>::iterator it_x = x.begin(); it_x != x.end(); it_x++)
 	{
 		Para.x0 = *it_x0;
-		PDF *= Distro.pdf(*it_x, Para);
+		PDF *= Distro.pdf(*it_x, Para)*M_PI/(atan((1.-*it_x0)/gamma)+atan((1.+*it_x0)/gamma));
 		it_x0++;
 	}
 	return(PDF);
@@ -242,7 +242,7 @@ double f4_f_PDF(vector<double> UR)
 	x[0] = 2.*UR[0]-1.;
 	Para.x0 = -x[0];
 	x[1] = Distro(UR[1], Para);
-	return(2.*f4(x)/Distro.pdf(x[1], Para));
+	return(2.*f4(x)/(Distro.pdf(x[1], Para)*M_PI/(atan((1.-Para.x0)/Para.gamma)+atan((1.+Para.x0)/Para.gamma))));
 }
 
 double f5(vector<double> x)	//int_-1^1 dx int_-1^1 dy f5(x,y) = 1.839868331507421
@@ -273,7 +273,7 @@ double f5_f_PDF(vector<double> UR)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	return(4.*(f5(x)/(Distro.pdf(x[1], Para[0])+Distro.pdf(x[1], Para[1]))));
+	return(4.*(f5(x)/((Distro.pdf(x[1], Para[0])*M_PI/(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)))+(Distro.pdf(x[1], Para[1])*M_PI/(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma))))));
 }
 
 double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 6.319569491139836
@@ -304,7 +304,7 @@ double f6_f_PDF(vector<double> UR)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	return(4.*(f6(x)/(Distro.pdf(x[1], Para[0])+Distro.pdf(x[1], Para[1]))));
+	return(4.*(f6(x)/((Distro.pdf(x[1], Para[0])*M_PI/(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)))+(Distro.pdf(x[1], Para[1])*M_PI/(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma))))));
 }
 
 double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(ArcTan((b-x0)/gamma)+ArcTan((x0-a)/gamma)) = (atan(7.5)+atan(12.5))/M_PI = .932397
@@ -321,7 +321,7 @@ double f7_f_PDF(vector<double> UR)
 	Cauchy<double> Distro(-.25,.1);
 	x.resize(1);
 	x[0] = Distro(UR[0]);
-	return(f7(x)/Distro.pdf(x[0]));
+	return(f7(x)/(Distro.pdf(x[0])*M_PI/(atan(12.5)+atan(7.5))));
 }
 
 double f8(vector<double> x)	//int_{unit 10-cube} dV f8(vec x) = 5.9754 (Multi-dimensional), 5.97488+/-.0229747 (Monte Carlo), 5.97472+/-.0229234 (Adaptive Monte Carlo), 5.9767 (Adaptive Quasi Monte Carlo), 5.96647 (Quasi Monte Carlo)
@@ -446,11 +446,14 @@ int main(int argc, char* argv[])
 			URV[i] = Uniform[omp_get_thread_num()](RNG[omp_get_thread_num()]);
 		double Sample = f(URV);
 
-		First_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*First_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*Sample;
-		Second_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*Second_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*pow(Sample,2);
-		Samples_Used[omp_get_thread_num()]++;
-		Mean[omp_get_thread_num()] = First_Moment[omp_get_thread_num()];
-		StdDev[omp_get_thread_num()] = sqrt((Second_Moment[omp_get_thread_num()]-pow(First_Moment[omp_get_thread_num()],2))/Samples_Used[omp_get_thread_num()]);
+		if(Sample != 0)
+		{
+			First_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*First_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*Sample;
+			Second_Moment[omp_get_thread_num()] = double(Samples_Used[omp_get_thread_num()])/(double(Samples_Used[omp_get_thread_num()]+1))*Second_Moment[omp_get_thread_num()]+1./(double(Samples_Used[omp_get_thread_num()]+1))*pow(Sample,2);
+			Samples_Used[omp_get_thread_num()]++;
+			Mean[omp_get_thread_num()] = First_Moment[omp_get_thread_num()];
+			StdDev[omp_get_thread_num()] = sqrt((Second_Moment[omp_get_thread_num()]-pow(First_Moment[omp_get_thread_num()],2))/Samples_Used[omp_get_thread_num()]);
+		}
 
 		#pragma omp master
 		if(Samples_Used[0]%100000==0)
