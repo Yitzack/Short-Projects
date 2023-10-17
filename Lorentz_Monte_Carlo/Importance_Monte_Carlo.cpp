@@ -242,7 +242,7 @@ double f4_f_PDF(vector<double> UR)
 	x[0] = 2.*UR[0]-1.;
 	Para.x0 = -x[0];
 	x[1] = Distro(UR[1], Para);
-	return(2.*f4(x)/(Distro.pdf(x[1], Para)*M_PI/(atan((1.-Para.x0)/Para.gamma)+atan((1.+Para.x0)/Para.gamma))));
+	return(f4(x)*2.*Para.gamma/Distro.pdf(x[1], Para)*M_PI*(atan((1.-Para.x0)/Para.gamma)+atan((1.+Para.x0)/Para.gamma)));
 }
 
 double f5(vector<double> x)	//int_-1^1 dx int_-1^1 dy f5(x,y) = 1.839868331507421
@@ -273,7 +273,10 @@ double f5_f_PDF(vector<double> UR)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	return(4.*(f5(x)/((Distro.pdf(x[1], Para[0])*M_PI/(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)))+(Distro.pdf(x[1], Para[1])*M_PI/(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma))))));
+	PDF = Distro.pdf(x[1], Para[0])/(Para[0].gamma*M_PI*(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)));
+	PDF += Distro.pdf(x[1], Para[1])/(Para[1].gamma*M_PI*(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma)));
+	PDF /= 2.;
+	return(f5(x)*2./PDF);
 }
 
 double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 6.319569491139836
@@ -304,7 +307,10 @@ double f6_f_PDF(vector<double> UR)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	return(4.*(f6(x)/((Distro.pdf(x[1], Para[0])*M_PI/(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)))+(Distro.pdf(x[1], Para[1])*M_PI/(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma))))));
+	PDF = Distro.pdf(x[1], Para[0])/(Para[0].gamma*M_PI*(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)));
+	PDF += Distro.pdf(x[1], Para[1])/(Para[1].gamma*M_PI*(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma)));
+	PDF /= 2.;
+	return(f6(x)*2./PDF);
 }
 
 double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(ArcTan((b-x0)/gamma)+ArcTan((x0-a)/gamma)) = (atan(7.5)+atan(12.5))/M_PI = .932397
@@ -414,7 +420,7 @@ int main(int argc, char* argv[])
 	uniform_real_distribution<double> Archetype(0.,1.);
 	uniform_real_distribution<double>* Uniform;
 	cout << setprecision(18);
-	//omp_set_num_threads(22);
+	//omp_set_num_threads(24);
 
 	#pragma omp parallel
 	{
@@ -469,7 +475,7 @@ int main(int argc, char* argv[])
 			}
 			cout << "Around[" << Mean_Mean << "," << Mean_StdDev << "],Around[" << abs(Mean_Mean/Correct-1.) << "," << Mean_StdDev/Correct << "]" << endl;
 		}
-	}while(Samples_Used[0]<100020);
+	}while(true);//Samples_Used[0]<100020);
 
 	return(0);
 }
