@@ -242,7 +242,7 @@ double f4_f_PDF(vector<double> UR)
 	x[0] = 2.*UR[0]-1.;
 	Para.x0 = -x[0];
 	x[1] = Distro(UR[1], Para);
-	return(f4(x)*2.*Para.gamma/Distro.pdf(x[1], Para)*M_PI*(atan((1.-Para.x0)/Para.gamma)+atan((1.+Para.x0)/Para.gamma)));
+	return(f4(x)*((pow(x[0]+x[1],2)+pow(Para.gamma,2))*(4.*atan(2./Para.gamma)-Para.gamma*log((4.+pow(Para.gamma,2))/pow(Para.gamma,2)))/Para.gamma));
 }
 
 double f5(vector<double> x)	//int_-1^1 dx int_-1^1 dy f5(x,y) = 1.839868331507421
@@ -273,10 +273,10 @@ double f5_f_PDF(vector<double> UR)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	PDF = Distro.pdf(x[1], Para[0])/(Para[0].gamma*M_PI*(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)));
-	PDF += Distro.pdf(x[1], Para[1])/(Para[1].gamma*M_PI*(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma)));
+	PDF = Para[0].gamma/((pow(x[0]+x[1],2)+pow(Para[0].gamma,2))*(4.*atan(2./Para[0].gamma)-Para[0].gamma*log((4.+pow(Para[0].gamma,2))/pow(Para[0].gamma,2))));
+	PDF += (2.*Para[1].gamma)/((pow(0.5-x[0]+x[1],2)+pow(Para[1].gamma,2))*(-2.*atan(1./(2.*Para[1].gamma))+3.*atan(3./(2.*Para[1].gamma))+5.*atan(5./(2.*Para[1].gamma))+Para[1].gamma*log(pow(1.+4.*pow(Para[1].gamma,2),2)/((9.+4.*pow(Para[1].gamma,2))*(25.+4.*pow(Para[1].gamma,2))))));
 	PDF /= 2.;
-	return(f5(x)*2./PDF);
+	return(f5(x)/PDF);
 }
 
 double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 6.319569491139836
@@ -307,13 +307,13 @@ double f6_f_PDF(vector<double> UR)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	PDF = Distro.pdf(x[1], Para[0])/(Para[0].gamma*M_PI*(atan((1.-Para[0].x0)/Para[0].gamma)+atan((1.+Para[0].x0)/Para[0].gamma)));
-	PDF += Distro.pdf(x[1], Para[1])/(Para[1].gamma*M_PI*(atan((1.-Para[1].x0)/Para[1].gamma)+atan((1.+Para[1].x0)/Para[1].gamma)));
+	PDF = Para[0].gamma/((pow(x[0]+x[1],2)+pow(Para[0].gamma,2))*(4.*atan(2./Para[0].gamma)-Para[0].gamma*log((4.+pow(Para[0].gamma,2))/pow(Para[0].gamma,2))));
+	PDF += (2.*Para[1].gamma)/((pow(0.5-x[0]+x[1],2)+pow(Para[1].gamma,2))*(-2.*atan(1./(2.*Para[1].gamma))+3.*atan(3./(2.*Para[1].gamma))+5.*atan(5./(2.*Para[1].gamma))+Para[1].gamma*log(pow(1.+4.*pow(Para[1].gamma,2),2)/((9.+4.*pow(Para[1].gamma,2))*(25.+4.*pow(Para[1].gamma,2))))));
 	PDF /= 2.;
-	return(f6(x)*2./PDF);
+	return(f6(x)/PDF);
 }
 
-double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(ArcTan((b-x0)/gamma)+ArcTan((x0-a)/gamma)) = (atan(7.5)+atan(12.5))/M_PI = .932397
+double f7(vector<double> x)	//int_-1^1 dx f7(x) = A/pi*(atan((b-x0)/gamma)+atan((x0-a)/gamma)) = (atan(7.5)+atan(12.5))/M_PI = .932397
 {
 	double A = 1;
 	double gamma = .1;
@@ -420,7 +420,7 @@ int main(int argc, char* argv[])
 	uniform_real_distribution<double> Archetype(0.,1.);
 	uniform_real_distribution<double>* Uniform;
 	cout << setprecision(18);
-	//omp_set_num_threads(24);
+	omp_set_num_threads(24);
 
 	#pragma omp parallel
 	{
