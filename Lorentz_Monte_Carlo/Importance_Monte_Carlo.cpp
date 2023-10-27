@@ -279,7 +279,7 @@ double f5_f_PDF(vector<double> UR)
 	return(f5(x)/PDF);
 }
 
-double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 6.319569491139836
+double f6(vector<double> x)	//int_-1^1 dx int_-1^1 dy f6(x,y) = 6.319569491139836 = 3.491194556197567(f1)+2.828374942941947(f2)
 {
 	double x0 = 0;
 	double x1 = .5;
@@ -303,13 +303,13 @@ double f6_f_PDF(vector<double> UR)
 	x[0] = 2.*UR[0]-1.;
 	Para[0].x0 = -x[0];
 	Para[1].x0 = x[0]-.5;
-	if(UR[2] < .5)
+	if(UR[2] < 4./7.)
 		x[1] = Distro(UR[1], Para[0]);
 	else
 		x[1] = Distro(UR[1], Para[1]);
-	PDF = Para[0].gamma/((pow(x[0]+x[1],2)+pow(Para[0].gamma,2))*(4.*atan(2./Para[0].gamma)-Para[0].gamma*log((4.+pow(Para[0].gamma,2))/pow(Para[0].gamma,2))));
-	PDF += (2.*Para[1].gamma)/((pow(0.5-x[0]+x[1],2)+pow(Para[1].gamma,2))*(-2.*atan(1./(2.*Para[1].gamma))+3.*atan(3./(2.*Para[1].gamma))+5.*atan(5./(2.*Para[1].gamma))+Para[1].gamma*log(pow(1.+4.*pow(Para[1].gamma,2),2)/((9.+4.*pow(Para[1].gamma,2))*(25.+4.*pow(Para[1].gamma,2))))));
-	PDF /= 2.;
+	PDF = 4.*Para[0].gamma/((pow(x[0]+x[1],2)+pow(Para[0].gamma,2))*(4.*atan(2./Para[0].gamma)-Para[0].gamma*log((4.+pow(Para[0].gamma,2))/pow(Para[0].gamma,2))));
+	PDF += 3.*(2.*Para[1].gamma)/((pow(0.5-x[0]+x[1],2)+pow(Para[1].gamma,2))*(-2.*atan(1./(2.*Para[1].gamma))+3.*atan(3./(2.*Para[1].gamma))+5.*atan(5./(2.*Para[1].gamma))+Para[1].gamma*log(pow(1.+4.*pow(Para[1].gamma,2),2)/((9.+4.*pow(Para[1].gamma,2))*(25.+4.*pow(Para[1].gamma,2))))));
+	PDF /= 7.;
 	return(f6(x)/PDF);
 }
 
