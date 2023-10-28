@@ -12,8 +12,9 @@ g++ Importance_Monte_Carlo.cpp -O3 -fopenmp -p
 
 Simple_Monte_Carlo.cpp uses a uniform random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Correct answers are included to check results.
 
-Importance_Monte_Carlo.cpp uses a Cauchy distributed random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Includes its own Cauchy distribution object as the one in \<random\> doesn't have PDF function. It should operate in the same way.  
-Performance for importance sampling using all samples is worse than Simple_Monte Carlo due to number of points that fall outside the region of integration. By rejecting points outside the integration region, performance can be improved. However, the PDF needs to be renormalized when this is done. f5-6 appearently don't have correct normalization.
+Importance_Monte_Carlo.cpp uses a Cauchy distributed random varible to Monte Carlo integrate an ND Lorentz peak or Lorentz surface. Includes its own Cauchy distribution object as the one in \<random\> doesn't have a PDF function. It should operate in the same way.  
+Performance for importance sampling using all samples is worse than Simple_Monte Carlo due to number of points that fall outside the region of integration. By rejecting points outside the integration region, performance can be improved. However, the PDF needs to be renormalized when this is done.  
+f6 is the sum of two functions. Both can be done independently better than together. However, together, the importance sampling can do all right by choosing between the two distrubutions with 4 shares to one and 3 shares to the other. This changes the relative error from .7% above to .3% below. I can't do better than that without cheating or without seperating the two functions. All other integrals work well.
 
 ## Monte Carlo techniques to consider
 
