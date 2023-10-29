@@ -1,5 +1,6 @@
 #include<complex>
 #include<iostream>
+#include<omp.h>
 #include<SFML/Graphics.hpp>
 using namespace std;
 using namespace sf;
@@ -25,44 +26,94 @@ int Mandelbrot(complex<double> c)
 
 int main()
 {
-	RenderWindow window(VideoMode(640, 480), "Mandelbrot");
-	vector<Vertex> points;
-	double x = 0;
-	double y = 0;
-	int iterations;
-	int gray_level;
+	vector<Vertex>* points;
+	const int X_MAX = 1600;
+	const int Y_MAX = 900;
+	vector<Vertex> All_Points;
+	double* x_start;
+	double* x_end;
+	double* y_start;
+	double* y_end;
+	double x;
+	double y;
 	int max = 256;
+	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot", Style::Fullscreen);
+	//omp_set_num_threads(24);
 
-	while (window.isOpen())
+	#pragma omp parallel private(x,y)
 	{
-		Event event;
-
-		while (window.pollEvent(event))
+		#pragma omp master
 		{
-			if (event.type == Event::Closed)
+			int threads = omp_get_num_threads();
+			x_start = new double[threads];
+			x_end = new double[threads];
+			y_start = new double[threads];
+			y_end = new double[threads];
+			points = new vector<Vertex>[threads];
+			int y_rect = sqrt(threads);
+			while(threads%y_rect != 0)
+				y_rect--;
+			int x_rect = threads/y_rect;
+			for(int i = 0; i < threads; i++)
 			{
-				cout << max << endl;
-				window.close();
+				x_start[i] = float(X_MAX)/float(x_rect)*(i%x_rect);
+				x_end[i] = float(X_MAX)/float(x_rect)*(i%x_rect+1);
+				y_start[i] = float(Y_MAX)/float(y_rect)*((i/x_rect)%y_rect);
+				y_end[i] = float(Y_MAX)/float(y_rect)*((i/x_rect)%y_rect+1);
 			}
 		}
+		#pragma omp barrier
+		x = x_start[omp_get_thread_num()];
+		y = y_start[omp_get_thread_num()];
 
-		iterations = Mandelbrot(complex<double>(Map(0,640,-2,1,x),Map(0,480,-1.5,1.5,y)));
-		if(iterations > max)
-			max = iterations;
-		gray_level = Map(0,256,0,max,iterations);
-		points.push_back(Vertex(Vector2f(x,y), Color(gray_level,gray_level,gray_level)));
-
-		window.clear();
-		window.draw(&points[0], points.size(), Points);
-		window.display();
-
-		x++;
-		if(x > 640)
+		while(window.isOpen())
 		{
-			x = 0;
-			y++;
-			if(y > 480)
-				y = 0;
+			int iterations;
+			int gray_level;
+			#pragma omp master
+			{
+				Event event;
+
+				while(window.pollEvent(event))
+				{
+					if(event.type == Event::Closed)
+						window.close();
+				}
+			}
+			#pragma omp barrier
+
+			iterations = Mandelbrot(complex<double>(Map(0,X_MAX,-2,1,x),Map(0,Y_MAX,-1.5,1.5,y)));
+			if(iterations > max)
+				max = iterations;
+			gray_level = Map(0,256,0,max,iterations);
+			points[omp_get_thread_num()].push_back(Vertex(Vector2f(x,y), Color(gray_level,gray_level,gray_level)));
+
+			#pragma omp master
+			if(x == x_start[0] && int(y)%20 == 0)
+			{
+				// Reserve space in the concatenated vector to avoid unnecessary reallocations
+				int Total_Points = 0;
+				All_Points.clear();
+				for(int i = 0; i < omp_get_num_threads(); i++)
+					Total_Points += points[i].size();
+				All_Points.reserve(Total_Points);
+
+				// Concatenate the vectors using copy and back_inserter
+				for(int i = 0; i < omp_get_num_threads(); i++)
+					copy(points[i].begin(), points[i].end(), back_inserter(All_Points));
+				window.clear();
+				window.draw(&All_Points[0], All_Points.size(), Points);
+				window.display();
+			}
+
+			x++;
+			if(x > x_end[omp_get_thread_num()])
+			{
+				x = x_start[omp_get_thread_num()];
+				y++;
+				if(y > y_end[omp_get_thread_num()])
+					y = y_start[omp_get_thread_num()];
+			}
 		}
 	}
 
