@@ -91,14 +91,12 @@ int main()
 			#pragma omp master
 			if(x == x_start[0] && int(y)%20 == 0)
 			{
-				// Reserve space in the concatenated vector to avoid unnecessary reallocations
 				int Total_Points = 0;
 				All_Points.clear();
 				for(int i = 0; i < omp_get_num_threads(); i++)
 					Total_Points += points[i].size();
 				All_Points.reserve(Total_Points);
 
-				// Concatenate the vectors using copy and back_inserter
 				for(int i = 0; i < omp_get_num_threads(); i++)
 					copy(points[i].begin(), points[i].end(), back_inserter(All_Points));
 				window.clear();
