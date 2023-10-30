@@ -27,21 +27,22 @@ int Mandelbrot(complex<double> c)
 int main()
 {
 	vector<Vertex>* points;
-	const int X_MAX = 1600;
-	const int Y_MAX = 900;
+	const int X_MAX = 640;
+	const int Y_MAX = 480;
 	vector<Vertex> All_Points;
 	double* x_start;
 	double* x_end;
 	double* y_start;
 	double* y_end;
-	double x;
-	double y;
 	int max = 256;
-	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot", Style::Fullscreen);
-	//omp_set_num_threads(24);
+	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot");//, Style::Fullscreen);
+	Event event;
+	//omp_set_num_threads(2);
 
-	#pragma omp parallel private(x,y)
+	#pragma omp parallel
 	{
+		double x;
+		double y;
 		#pragma omp master
 		{
 			int threads = omp_get_num_threads();
@@ -65,6 +66,7 @@ int main()
 		#pragma omp barrier
 		x = x_start[omp_get_thread_num()];
 		y = y_start[omp_get_thread_num()];
+		points[omp_get_thread_num()].reserve(X_MAX*Y_MAX/omp_get_num_threads()+1);
 
 		while(window.isOpen())
 		{
@@ -72,15 +74,12 @@ int main()
 			int gray_level;
 			#pragma omp master
 			{
-				Event event;
-
 				while(window.pollEvent(event))
 				{
 					if(event.type == Event::Closed)
 						window.close();
 				}
 			}
-			#pragma omp barrier
 
 			iterations = Mandelbrot(complex<double>(Map(0,X_MAX,-2,1,x),Map(0,Y_MAX,-1.5,1.5,y)));
 			if(iterations > max)
@@ -103,6 +102,7 @@ int main()
 				window.draw(&All_Points[0], All_Points.size(), Points);
 				window.display();
 			}
+			#pragma omp barrier
 
 			x++;
 			if(x > x_end[omp_get_thread_num()])
