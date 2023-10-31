@@ -8,7 +8,7 @@ Install SFML first. If you're on an approiate version of Linux, use ```sudo apt-
 g++ main.cpp -lsfml-graphics -lsfml-window -lsfml-system -fopenmp -p
 
 Install tkinter (aka python3-tk) package first.
-```python3 main.py``` will execute the script if the dependency has been met. Python is fast than C++, but that's because there's barrier block that prevents all threads from going at max speed but it also prevents data races that result in segfaults.
+```python3 main.py``` will execute the script if the dependency has been met.
 
 javac Complex.java  
 javac Pixel.java  
