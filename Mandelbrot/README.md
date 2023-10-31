@@ -13,4 +13,4 @@ Install tkinter (aka python3-tk) package first.
 javac Complex.java  
 javac Pixel.java  
 javac Mandelbrot.java  
-Java is stinking fast on a single core. There is a repaint reqeuest for every pass through the loop, but its fast enough that I can't tell. It also throws a bunch of exceptions. But because it produces the expected image, I'm not going to do anything about.
+Java is stinking fast on a single core. There is a repaint reqeuest for every pass through the loop, but its fast enough that I can't tell. It also throws a bunch of exceptions. But because it produces the expected image, I'm not going to do anything about it.

@@ -35,8 +35,7 @@ int main()
 	double* y_start;
 	double* y_end;
 	int max = 256;
-	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot");//, Style::Fullscreen);
-	Event event;
+	int threads;
 	//omp_set_num_threads(2);
 
 	#pragma omp parallel
@@ -45,7 +44,7 @@ int main()
 		double y;
 		#pragma omp master
 		{
-			int threads = omp_get_num_threads();
+			threads = omp_get_num_threads();
 			x_start = new double[threads];
 			x_end = new double[threads];
 			y_start = new double[threads];
@@ -66,52 +65,46 @@ int main()
 		#pragma omp barrier
 		x = x_start[omp_get_thread_num()];
 		y = y_start[omp_get_thread_num()];
-		points[omp_get_thread_num()].reserve(X_MAX*Y_MAX/omp_get_num_threads()+1);
+		points[omp_get_thread_num()].reserve(X_MAX*Y_MAX/threads+1);
 
-		while(window.isOpen())
+		int iterations;
+		int gray_level;
+
+		for(x = x_start[omp_get_thread_num()]; x < x_end[omp_get_thread_num()]; x++)
 		{
-			int iterations;
-			int gray_level;
-			#pragma omp master
+			for(y = y_start[omp_get_thread_num()]; y < y_end[omp_get_thread_num()]; y++)
 			{
-				while(window.pollEvent(event))
-				{
-					if(event.type == Event::Closed)
-						window.close();
-				}
+				iterations = Mandelbrot(complex<double>(Map(0,X_MAX,-2,1,x),Map(0,Y_MAX,-1.5,1.5,y)));
+				if(iterations > max)
+					max = iterations;
+				gray_level = Map(0,256,0,max,iterations);
+				points[omp_get_thread_num()].push_back(Vertex(Vector2f(x,y), Color(gray_level,gray_level,gray_level)));
 			}
+		}
+		#pragma omp barrier
+	}
 
-			iterations = Mandelbrot(complex<double>(Map(0,X_MAX,-2,1,x),Map(0,Y_MAX,-1.5,1.5,y)));
-			if(iterations > max)
-				max = iterations;
-			gray_level = Map(0,256,0,max,iterations);
-			points[omp_get_thread_num()].push_back(Vertex(Vector2f(x,y), Color(gray_level,gray_level,gray_level)));
+	int Total_Points = 0;
+	All_Points.clear();
 
-			#pragma omp master
-			if(x == x_start[0] && int(y)%20 == 0)
-			{
-				int Total_Points = 0;
-				All_Points.clear();
-				for(int i = 0; i < omp_get_num_threads(); i++)
-					Total_Points += points[i].size();
-				All_Points.reserve(Total_Points);
+	for(int i = 0; i < threads; i++)
+		Total_Points += points[i].size();
+	All_Points.reserve(Total_Points);
 
-				for(int i = 0; i < omp_get_num_threads(); i++)
-					copy(points[i].begin(), points[i].end(), back_inserter(All_Points));
-				window.clear();
-				window.draw(&All_Points[0], All_Points.size(), Points);
-				window.display();
-			}
-			#pragma omp barrier
+	for(int i = 0; i < threads; i++)
+		copy(points[i].begin(), points[i].end(), back_inserter(All_Points));
+	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot");//, Style::Fullscreen);
+	window.clear();
+	window.draw(&All_Points[0], All_Points.size(), Points);
+	window.display();
 
-			x++;
-			if(x > x_end[omp_get_thread_num()])
-			{
-				x = x_start[omp_get_thread_num()];
-				y++;
-				if(y > y_end[omp_get_thread_num()])
-					y = y_start[omp_get_thread_num()];
-			}
+	while(window.isOpen())
+	{
+		Event event;
+		while(window.pollEvent(event))
+		{
+			if(event.type == Event::Closed)
+				window.close();
 		}
 	}
 

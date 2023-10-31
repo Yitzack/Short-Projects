@@ -14,6 +14,11 @@ public class Mandelbrot extends JPanel
 	public void addPoint(int x, int y, int grey)
 	{
 		points.add(new Pixel(x, y, new Color(grey, grey, grey)));
+//		repaint(); // Request the canvas to be repainted
+	}
+
+	public void Paint()
+	{
 		repaint(); // Request the canvas to be repainted
 	}
 	
@@ -63,5 +68,7 @@ public class Mandelbrot extends JPanel
 				int iterations = Mandelbrot(new Complex(Map(0,640,-2,1,x),Map(0,480,-1.5,1.5,y)));
 				canvas.addPoint(x, y, iterations%256);
 			}
+		
+		canvas.Paint();
 	}
 }
