@@ -27,9 +27,13 @@ int Mandelbrot(complex<double> c)
 int main()
 {
 	vector<Vertex>* points;
-	int X_MAX = 640;
-	int Y_MAX = 480;
-	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot");//, Style::Fullscreen);
+	int Window_Width = 640;
+	int Window_Height = 480;
+	double X_Min = -2;
+	double X_Max = 1;
+	double Y_Min = -1.5;
+	double Y_Max = 1.5;
+	RenderWindow window(VideoMode(Window_Width, Window_Height), "Mandelbrot");//, Style::Fullscreen);
 	vector<Vertex> All_Points;
 	int max = 256;
 	int threads;
@@ -53,17 +57,17 @@ int main()
 		if(Calc_Pixels)
 		{
 			Vector2u WindowSize = window.getSize();
-			X_MAX = WindowSize.x;
-			Y_MAX = WindowSize.y;
+			Window_Width = WindowSize.x;
+			Window_Height = WindowSize.y;
 
 			#pragma omp for
-			for(int x = 0; x < X_MAX; x++)
+			for(int x = 0; x < Window_Width; x++)
 			{
-				for(int y = 0; y < Y_MAX; y++)
+				for(int y = 0; y < Window_Height; y++)
 				{
 					int iterations;
 					int gray_level;
-					iterations = Mandelbrot(complex<double>(Map(0,X_MAX,-2,1,x),Map(0,Y_MAX,-1.5,1.5,y)));
+					iterations = Mandelbrot(complex<double>(Map(0,Window_Width,X_Min,X_Max,x),Map(0,Window_Height,Y_Min,Y_Max,y)));
 					gray_level = Map(0,256,0,max,iterations);
 					points[omp_get_thread_num()].push_back(Vertex(Vector2f(x,y), Color(gray_level,gray_level,gray_level)));
 				}
@@ -84,7 +88,7 @@ int main()
 			window.draw(&All_Points[0], All_Points.size(), Points);
 			window.display();
 
-			if(X_MAX != WindowSize.x || Y_MAX != WindowSize.y)
+			if(Window_Width != WindowSize.x || Window_Height != WindowSize.y)
 			{
 				FloatRect visibleArea(0, 0, event.size.width, event.size.height);
 			        window.setView(View(visibleArea));
@@ -100,6 +104,30 @@ int main()
 			{
 			case Event::Closed:
 				window.close();
+				break;
+			case Event::MouseButtonPressed:
+				if(event.mouseButton.button == Mouse::Button::Right)	//Zoom Out
+				{
+					double X_Width = X_Max-X_Min;
+					double Y_Width = Y_Max-Y_Min;
+					X_Min -= X_Width;
+					X_Max += X_Width;
+					Y_Min -= Y_Width;
+					Y_Max += Y_Width;
+					Calc_Pixels = true;
+				}
+				else if(event.mouseButton.button == Mouse::Button::Left)	//Zoom In
+				{
+					double X_Width = (X_Max-X_Min)/4.;
+					double Y_Width = (Y_Max-Y_Min)/4.;
+					double Click_X = Map(0,Window_Width,X_Min,X_Max,event.mouseButton.x);
+					double Click_Y = Map(0,Window_Height,Y_Min,Y_Max,event.mouseButton.y);
+					X_Min = Click_X-X_Width;
+					X_Max = Click_X+X_Width;
+					Y_Min = Click_Y-Y_Width;
+					Y_Max = Click_Y+Y_Width;
+					Calc_Pixels = true;
+				}
 				break;
 			case Event::Resized:
 				FloatRect visibleArea(0, 0, event.size.width, event.size.height);
