@@ -27,14 +27,14 @@ int Mandelbrot(complex<double> c)
 int main()
 {
 	vector<Vertex>* points;
-	const int X_MAX = 640;
-	const int Y_MAX = 480;
+	int X_MAX = 640;
+	int Y_MAX = 480;
 	RenderWindow window(VideoMode(X_MAX, Y_MAX), "Mandelbrot");//, Style::Fullscreen);
 	vector<Vertex> All_Points;
 	int max = 256;
 	int threads;
 	bool Calc_Pixels = true;
-	//omp_set_num_threads(2);
+	//omp_set_num_threads(1);
 
 	#pragma omp parallel
 	{
@@ -52,6 +52,10 @@ int main()
 
 		if(Calc_Pixels)
 		{
+			Vector2u WindowSize = window.getSize();
+			X_MAX = WindowSize.x;
+			Y_MAX = WindowSize.y;
+
 			#pragma omp for
 			for(int x = 0; x < X_MAX; x++)
 			{
@@ -71,20 +75,56 @@ int main()
 				Total_Points += points[i].size();
 			All_Points.reserve(Total_Points);
 			for(int i = 0; i < threads; i++)
+			{
 				copy(points[i].begin(), points[i].end(), back_inserter(All_Points));
+				points[i].clear();
+			}
 
 			window.clear();
 			window.draw(&All_Points[0], All_Points.size(), Points);
 			window.display();
-			Calc_Pixels = false;
+
+			if(X_MAX != WindowSize.x || Y_MAX != WindowSize.y)
+			{
+				FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+			        window.setView(View(visibleArea));
+				Calc_Pixels = true;
+			}
+			else
+				Calc_Pixels = false;
 		}
 
-		while(window.pollEvent(event))
+		while(window.pollEvent(event) && !Calc_Pixels)
 		{
-			if(event.type == Event::Closed)
+			switch(event.type)
+			{
+			case Event::Closed:
 				window.close();
+				break;
+			case Event::Resized:
+				FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+			        window.setView(View(visibleArea));
+				Calc_Pixels = true;
+				break;
+			}
 		}
 	}
 
 	return(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
