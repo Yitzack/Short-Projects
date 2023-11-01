@@ -1,6 +1,6 @@
 # Mandelbrot Set
 
-Displays the Mandelbrot set. I'll probably add controls for navigating and zooming later. I'll be happy if I can get the set to materialize at first.
+Displays the Mandelbrot set.
 
 ## Compile directions
 
@@ -14,3 +14,7 @@ javac Complex.java
 javac Pixel.java  
 javac Mandelbrot.java  
 Java is stinking fast on a single core. There is a repaint reqeuest for every pass through the loop, but its fast enough that I can't tell. It also throws a bunch of exceptions. But because it produces the expected image, I'm not going to do anything about it.
+
+## Other notes
+
+The C++ can zoom in and out. Left mouse button zooms in at the click point. Right mouse button zooms out.
