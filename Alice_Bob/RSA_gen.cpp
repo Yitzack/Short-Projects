@@ -6,37 +6,25 @@
 using namespace std;
 
 bool AKS_Prime_Test(unsigned long int);	//AKS primaility test
-bool prime_test(unsigned long int);		//Probablistic prime test, using 12 witness numbers turns it from probable to deterministic
+bool prime_test(unsigned long int);		//Probablistic prime test, using 12 witness numbers turns it from probable to deterministic for all numbers less than 2^65-1
 unsigned long int Carmichael(unsigned long int, unsigned long int);	//Carmichael Totient Function of p*q (lcm(p-1, q-1)=(q-1)(p-1)/(gcd(p-1, q-1)))
-unsigned long int Euclidean(unsigned long int, unsigned int);	//Extended Euclidean algorithm to solve 1=(d*e)%lambda
+unsigned long int Euclidean(unsigned long int, unsigned long int);	//Extended Euclidean algorithm to solve 1=(d*e)%lambda
 unsigned long int GCD(unsigned long int, unsigned long int);
 unsigned long int EulerTotient(unsigned long int);	//Euler Totient Function
-unsigned long int PowMod(unsigned long int b, unsigned long int n, unsigned long int q);	//returns (b^n)%q
+unsigned long long int PowMod(unsigned long long int b, unsigned long long int n, unsigned long long int m);	//returns (b^n)%m
 
 int main()
 {
-	unsigned long int p, q;	//p and q are large primes
+	unsigned long long int p, q;	//p and q are large primes
 	unsigned long long int n;	//n = pq, public key
-	unsigned long int lambda;	//Carmichael Totient of n
-	unsigned int e = 65537;	//Common choice for e as it needs to be coprime with lambda and primes are coprime with everything. It should also be less than lambda. Part of public key
-	unsigned long int d;		//private key, solves 1=(d*e)%lambda
+	unsigned long long int lambda;	//Carmichael Totient of n
+	unsigned long long int e = 65537;	//Common choice for e as it needs to be coprime with lambda and primes are coprime with everything. It should also be less than lambda. Part of public key
+	unsigned long long int d;		//private key, solves 1=(d*e)%lambda
 
 	mt19937 RNG(time(NULL));
-	uniform_int_distribution<unsigned long int> Uniform(numeric_limits<int>::max(), numeric_limits<unsigned long int>::max());
+	uniform_int_distribution<unsigned int> Uniform(numeric_limits<unsigned short>::max(), numeric_limits<unsigned int>::max());
 
-	/*cout << numeric_limits<int>::max() << " " << numeric_limits<unsigned long int>::max() << endl;*/
-
-p = 11068403342312893979;//Uniform(RNG);
-auto start = chrono::high_resolution_clock::now();
-if(prime_test(p))
-	cout << p << " is prime" << endl;
-else
-	cout << p << " is composite" << endl;
-auto end = chrono::high_resolution_clock::now();
-auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
-cout << "Time taken by the function: " << duration << " nanoseconds" << endl;
-
-	/*do
+	do
 	{
 		p = Uniform(RNG);
 	}while(!prime_test(p));
@@ -45,10 +33,36 @@ cout << "Time taken by the function: " << duration << " nanoseconds" << endl;
 		q = Uniform(RNG);
 	}while(!prime_test(q));
 	n = p*q;
-
-	cout << "p: " << p << " q: " << q << " n: " << n << endl;*/
+	lambda = Carmichael(p,q);
+	d = Euclidean(e,lambda);
+	cout << hex;
+	cout << "Public key:  " << n << "," << e << endl;
+	cout << "Private key: " << n << "," << d << endl;
 
 	return(0);
+}
+
+unsigned long int Euclidean(unsigned long int a, unsigned long int b)
+{
+	//cout << "e: " << a << " lambda(n): " << b << endl;
+	pair<unsigned long int,unsigned long int> r(a,b);
+	pair<unsigned long int,unsigned long int> s(1,0);
+	pair<unsigned long int,unsigned long int> t(0,1);
+	unsigned long int quotient;
+
+	while(r.second != 0)
+	{
+		quotient = r.first/r.second;
+		r = pair<unsigned long int,unsigned long int>(r.second, r.first-quotient*r.second);
+		s = pair<unsigned long int,unsigned long int>(s.second, s.first-quotient*s.second);
+		t = pair<unsigned long int,unsigned long int>(t.second, t.first-quotient*t.second);
+	}
+
+	/*cout << "Bezout coefficients: " << s.first << " " << t.first << endl;
+	cout << "GCD: " << r.first << endl;
+	cout << "quotients by the GCD: " << t.second << " " << s.second << endl;*/
+
+	return(s.first);
 }
 
 bool prime_test(unsigned long int n)
@@ -59,9 +73,10 @@ bool prime_test(unsigned long int n)
 		if(n%Primes[i] == 0)
 			return(false);
 
-	unsigned long int d = n-1;
-	int test;
+	unsigned long long int d = n-1;
+	unsigned long long int test1, test2;
 	int s = 0;
+
 	while(d%2 == 0)
 	{
 		d >>= 1;
@@ -69,29 +84,35 @@ bool prime_test(unsigned long int n)
 	}
 	for(int i = 0; i < 12; i++)	//Miller-Rabin test with the first 12 primes as bases which exceeds 2^64 by 14 orders of magnitude
 	{
-		unsigned long int a = Primes[i];
-		test = PowMod(a,d,n);
-cout << a << "^" << d << '%' << n << "=" << test << endl;
-		if(!(test == 1 || test == n-1))
+		unsigned long long int a = Primes[i];
+		test1 = PowMod(a,d,n);
+		for(int j = 0; j < s; j++)
+		{
+			test2 = PowMod(test1,2,n);
+			if(test2 == 1 && test1 != 1 && test1 != n-1)
+				return(false);
+			test1 = test2;
+		}
+		if(test2 != 1)
 			return(false);
 	}
 	return(true);
 }
 
-unsigned long int PowMod(unsigned long int b, unsigned long int n, unsigned long int m)
+unsigned long long int PowMod(unsigned long long int b, unsigned long long int n, unsigned long long int m)
 {
 	if(m == 1)
 		return(0);
 
-	int answer = 1;
-	b %= m;
+	unsigned long long int answer = 1;
+	unsigned long long int bint = b%m;
 
 	while(n > 0)
 	{
 		if(n%2 == 1)
-			answer = (answer*b)%m;
+			answer = (answer*bint)%m;
 		n >>= 1;
-		b = (b*b)%m;
+		bint = (bint*bint)%m;
 	}
 
 	return(answer);
