@@ -58,7 +58,6 @@ int main()
 
 unsigned long int Euclidean(unsigned long int a, unsigned long int b)
 {
-	//cout << "e: " << a << " lambda(n): " << b << endl;
 	pair<unsigned long int,unsigned long int> r(a,b);
 	pair<unsigned long int,unsigned long int> s(1,0);
 	pair<unsigned long int,unsigned long int> t(0,1);
@@ -71,10 +70,6 @@ unsigned long int Euclidean(unsigned long int a, unsigned long int b)
 		s = pair<unsigned long int,unsigned long int>(s.second, s.first-quotient*s.second);
 		t = pair<unsigned long int,unsigned long int>(t.second, t.first-quotient*t.second);
 	}
-
-	/*cout << "Bezout coefficients: " << s.first << " " << t.first << endl;
-	cout << "GCD: " << r.first << endl;
-	cout << "quotients by the GCD: " << t.second << " " << s.second << endl;*/
 
 	return(s.first);
 }
