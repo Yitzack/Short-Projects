@@ -22,22 +22,36 @@ int main()
 	unsigned long long int d;		//private key, solves 1=(d*e)%lambda
 
 	mt19937 RNG(time(NULL));
-	uniform_int_distribution<unsigned int> Uniform(numeric_limits<unsigned short>::max(), numeric_limits<unsigned int>::max());
+	uniform_int_distribution<unsigned int> Prime(255,16777215);
+	uniform_int_distribution<unsigned int> message(0, 16777215);
 
 	do
 	{
-		p = Uniform(RNG);
-	}while(!prime_test(p));
-	do
-	{
-		q = Uniform(RNG);
-	}while(!prime_test(q));
-	n = p*q;
-	lambda = Carmichael(p,q);
-	d = Euclidean(e,lambda);
-	cout << hex;
+		do
+		{
+			p = Prime(RNG);
+		}while(!prime_test(p));
+		do
+		{
+			q = Prime(RNG);
+		}while(!prime_test(q));
+		n = p*q;
+		lambda = Carmichael(p,q);
+		d = Euclidean(e,lambda);
+	}while(((d*e)%lambda != 1) || (n < 2147483647 || n > 4294967295));
+
+	//cout << "p: " << p << " q: " << q << " lambda: " << lambda << " n: " << n << endl;
+	//cout << hex;
 	cout << "Public key:  " << n << "," << e << endl;
 	cout << "Private key: " << n << "," << d << endl;
+	
+	unsigned long long int Message = message(RNG);
+	unsigned long long int Cypher = PowMod(Message,d,n);
+	unsigned long long int Decrypt = PowMod(Cypher,e,n);
+
+	cout << "Message:  " << Message << endl;
+	cout << "Cypher:   " << Cypher << endl;
+	cout << "Message': " << Decrypt << endl;
 
 	return(0);
 }
