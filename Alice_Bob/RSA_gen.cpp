@@ -3,7 +3,7 @@
 #include<random>
 #include<limits>
 #include<chrono>
-#include"Arbitrary Int.h"
+#include<boost/multiprecision/gmp.hpp>
 using namespace std;
 
 bool AKS_Prime_Test(unsigned long int);	//AKS primaility test
