@@ -2,9 +2,43 @@
 #include<cmath>
 #include<random>
 #include<limits>
+#include<exception>
+#include<string>
 #include<boost/multiprecision/cpp_int.hpp>
 using namespace std;
 using namespace boost::multiprecision;
+
+class LargeException : public exception
+{
+	public:
+		enum class ErrorType	//Enumeration of error types
+		{
+			MessageTooLarge,
+			CodeTooLarge
+		};
+
+		LargeException(ErrorType type) : errorType(type)	//Constructor of the LargeException
+		{
+			switch(type)	//Setting the error message based off the error type
+			{
+				case ErrorType::MessageTooLarge:
+					errorMessage = "Message is greater than common key modulo";
+					break;
+				case ErrorType::CodeTooLarge:
+					errorMessage = "Code is greater than common key modulo";
+					break;
+			}
+		}
+
+		virtual const char* what() const throw()	//Allow the error message to be retrived in a try/catch block
+		{
+			return(errorMessage.c_str());
+		}
+	private:
+		ErrorType errorType;
+		string errorMessage;
+};
+
 
 class RSA
 {
@@ -59,16 +93,31 @@ cpp_int RSA::Public_key_e()
 
 cpp_int RSA::Encrypt(cpp_int message)
 {
+	if(message > key_n)
+	{
+		throw(LargeException(LargeException::ErrorType::MessageTooLarge));
+	}
+
 	return(PowMod(message,public_key_e,key_n));
 }
 
 cpp_int RSA::Sign(cpp_int message)
 {
+	if(message > key_n)
+	{
+		throw(LargeException(LargeException::ErrorType::MessageTooLarge));
+	}
+
 	return(PowMod(message,private_key_d,key_n));
 }
 
 cpp_int RSA::Decrypt(cpp_int code)
 {
+	if(code > key_n)
+	{
+		throw(LargeException(LargeException::ErrorType::CodeTooLarge));
+	}
+
 	return(PowMod(code,private_key_d,key_n));
 }
 
