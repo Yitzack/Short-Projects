@@ -23,7 +23,7 @@ int main()
 
 	Construct_SBox();	//Construct the SBox. SBox is global and so this function has a side effect.. constructing the SBox
 	Construct_InvSBox();	//Construct the InvSBox. InvSBox is global and so this function has a side effect.. constructing the InvSBox
-
+cout << endl;
 	return(0);
 }
 
@@ -31,12 +31,12 @@ void Construct_SBox()
 {
 	uint8_t p = 1, q = 1;
 	
-	do	//Code pulled from Wikipedia
+	do
 	{
-		//Pick bytes in a clever order to make everything work out right
+		//Multiply by x+1%(x^8+x^4+x^3+x+1) in GF(256), x+1 is 3 and coprime with 256.
 		p = p ^ (p << 1) ^ (p & 0x80 ? 0x1B : 0);
 
-		//Multiplicative inverse of p*q in GF(258)
+		//Divide by x+1%(x^8+x^4+x^3+x+1), which is equivalent to multiplying by x^7+x^6+x^5+x^4+x^2+x%(x^8+x^4+x^3+x+1) in GF(256)
 		q ^= q << 1;
 		q ^= q << 2;
 		q ^= q << 4;
