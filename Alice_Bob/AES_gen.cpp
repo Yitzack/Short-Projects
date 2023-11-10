@@ -10,6 +10,8 @@ void Construct_InvSBox();
 uint8_t circularLeftShift(uint8_t, int);
 void Rotate_Word(uint8_t *, int);
 void Sub_Word(uint8_t *);
+void Inv_Rotate_Word(uint8_t *, int);
+void Inv_Sub_Word(uint8_t *);
 
 uint8_t SBox[256];
 uint8_t InvSBox[256];
@@ -111,7 +113,7 @@ void Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and RotWord
 		temp = Word[0];
 		for (int j = 0; j < 3; j++)	//Shift left
 		{
-			Word[j] = Word[j + 1];
+			Word[j] = Word[j+1];
 		}
 		Word[3] = temp;
 	}*/
@@ -121,6 +123,56 @@ void Sub_Word(uint8_t * Word)	//Substitute from the SBox for 4 bytes
 {
 	for(int i = 0; i < 4; i++)
 		Word[i] = SBox[Word[i]];
+}
+
+void Inv_Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
+{
+	uint8_t temp[2];
+
+	switch(Shift%4)
+	{
+	case 1:
+		temp[0] = Word[3];
+		Word[3] = Word[2];
+		Word[2] = Word[1];
+		Word[1] = Word[0];
+		Word[0] = temp[0];
+		break;
+	case 2:
+		temp[0] = Word[2];
+		temp[1] = Word[3];
+		Word[3] = Word[1];
+		Word[2] = Word[0];
+		Word[1] = temp[1];
+		Word[0] = temp[0];
+		break;
+	case 3:
+		temp[0] = Word[0];
+		Word[0] = Word[1];
+		Word[1] = Word[2];
+		Word[2] = Word[3];
+		Word[3] = temp[0];
+		break;
+	}
+
+	/*Shift = Shift % 4;	//ChatGPT suggested this code for the code above. The looping is probably slower than the switch/case above. It could take a while to figure that out.
+	uint8_t temp;
+
+	for(int i = 0; i < Shift; i++)	//Shift the specified number of times
+	{
+		temp = Word[0];
+		for (int j = 0; j < 3; j++)	//Shift left
+		{
+			Word[j+1] = Word[j];
+		}
+		Word[3] = temp;
+	}*/
+}
+
+void Inv_Sub_Word(uint8_t * Word)	//Substitute from the SBox for 4 bytes
+{
+	for(int i = 0; i < 4; i++)
+		Word[i] = InvSBox[Word[i]];
 }
 
 uint8_t circularLeftShift(uint8_t num, int shift)
