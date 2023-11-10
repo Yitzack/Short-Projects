@@ -7,10 +7,12 @@ using namespace boost::multiprecision;
 
 void Construct_SBox();
 void Construct_InvSBox();
+uint8_t circularLeftShift(uint8_t, int);
+void Rotate_Word(uint8_t *, int);
+void Sub_Word(uint8_t *);
+
 uint8_t SBox[256];
 uint8_t InvSBox[256];
-long int Euclidean(long int, long int);
-uint8_t circularLeftShift(uint8_t, int);
 
 int main()
 {
@@ -23,8 +25,107 @@ int main()
 
 	Construct_SBox();	//Construct the SBox. SBox is global and so this function has a side effect.. constructing the SBox
 	Construct_InvSBox();	//Construct the InvSBox. InvSBox is global and so this function has a side effect.. constructing the InvSBox
-cout << endl;
+
+	uint8_t Word0[4] = {0,1,2,3};
+	uint8_t Word1[4] = {0,1,2,3};
+	uint8_t Word2[4] = {0,1,2,3};
+	uint8_t Word3[4] = {0,1,2,3};
+
+	cout << "Original" << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word0[i]) << " ";
+	cout << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word1[i]) << " ";
+	cout << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word2[i]) << " ";
+	cout << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word3[i]) << " ";
+	cout << endl;
+
+	Rotate_Word(Word0,0);
+	Rotate_Word(Word1,1);
+	Rotate_Word(Word2,2);
+	Rotate_Word(Word3,3);
+
+	cout << "Test" << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word0[i]) << " ";
+	cout << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word1[i]) << " ";
+	cout << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word2[i]) << " ";
+	cout << endl;
+	for(int i = 0; i < 4; i++)
+		cout << int(Word3[i]) << " ";
+	cout << endl;
+
+	cout << "Correct" << endl;
+	cout << "0 1 2 3" << endl;
+	cout << "1 2 3 0" << endl;
+	cout << "2 3 0 1" << endl;
+	cout << "3 0 1 2" << endl;
+
 	return(0);
+}
+
+void Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
+{
+	uint8_t temp[2];
+
+	switch(Shift%4)
+	{
+	case 3:
+		temp[0] = Word[3];
+		Word[3] = Word[2];
+		Word[2] = Word[1];
+		Word[1] = Word[0];
+		Word[0] = temp[0];
+		break;
+	case 2:
+		temp[0] = Word[2];
+		temp[1] = Word[3];
+		Word[3] = Word[1];
+		Word[2] = Word[0];
+		Word[1] = temp[1];
+		Word[0] = temp[0];
+		break;
+	case 1:
+		temp[0] = Word[0];
+		Word[0] = Word[1];
+		Word[1] = Word[2];
+		Word[2] = Word[3];
+		Word[3] = temp[0];
+		break;
+	}
+
+	/*Shift = Shift % 4;	//ChatGPT suggested this code for the code above. The looping is probably slower than the switch/case above. It could take a while to figure that out.
+	uint8_t temp;
+
+	for(int i = 0; i < Shift; i++)	//Shift the specified number of times
+	{
+		temp = Word[0];
+		for (int j = 0; j < 3; j++)	//Shift left
+		{
+			Word[j] = Word[j + 1];
+		}
+		Word[3] = temp;
+	}*/
+}
+
+void Sub_Word(uint8_t * Word)	//Substitute from the SBox for 4 bytes
+{
+	for(int i = 0; i < 4; i++)
+		Word[i] = SBox[Word[i]];
+}
+
+uint8_t circularLeftShift(uint8_t num, int shift)
+{
+	return((num << shift) | (num >> (8 - shift)));
 }
 
 void Construct_SBox()
@@ -54,9 +155,4 @@ void Construct_InvSBox()
 {
 	for(int i = 0; i < 256; i++)
 		InvSBox[SBox[i]] = i;
-}
-
-uint8_t circularLeftShift(uint8_t num, int shift)
-{
-	return((num << shift) | (num >> (8 - shift)));
 }
