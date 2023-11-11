@@ -13,7 +13,7 @@ void Sub_Word(uint8_t *);
 void Inv_Rotate_Word(uint8_t *, int);
 void Inv_Sub_Word(uint8_t *);
 
-class GF256
+class GF256	// Galois Field(256) implementation
 {
 	public:
 		GF256();
@@ -22,7 +22,7 @@ class GF256
 		GF256 operator+(GF256);
 		GF256 operator-(GF256);
 		GF256 operator*(GF256);
-		GF256 operator/(GF256);
+		//GF256 operator/(GF256); I don't think I need this one.
 		friend ostream& operator<<(ostream&, const GF256&);
 	private:
 		uint8_t Byte;
@@ -48,8 +48,14 @@ GF256 GF256::operator=(GF256 x)
 
 GF256 GF256::operator+(GF256 x)
 {
-	Byte ^= x.Byte;
-	return(Byte);
+	uint8_t answer = Byte ^ x.Byte;
+	return(answer);
+}
+
+GF256 GF256::operator-(GF256 x)
+{
+	uint8_t answer = Byte ^ ~x.Byte;
+	return(answer);
 }
 
 GF256 GF256::operator*(GF256 x)
