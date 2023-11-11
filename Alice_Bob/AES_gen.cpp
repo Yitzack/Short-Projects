@@ -13,6 +13,74 @@ void Sub_Word(uint8_t *);
 void Inv_Rotate_Word(uint8_t *, int);
 void Inv_Sub_Word(uint8_t *);
 
+class GF256
+{
+	public:
+		GF256();
+		GF256(uint8_t);
+		GF256 operator=(GF256);
+		GF256 operator+(GF256);
+		GF256 operator-(GF256);
+		GF256 operator*(GF256);
+		GF256 operator/(GF256);
+		friend ostream& operator<<(ostream&, const GF256&);
+	private:
+		uint8_t Byte;
+};
+
+GF256::GF256()
+{
+	Byte = 0;
+	return;
+}
+
+GF256::GF256(uint8_t x)
+{
+	Byte = x;
+	return;
+}
+
+GF256 GF256::operator=(GF256 x)
+{
+	Byte = x.Byte;
+	return(Byte);
+}
+
+GF256 GF256::operator+(GF256 x)
+{
+	Byte ^= x.Byte;
+	return(Byte);
+}
+
+GF256 GF256::operator*(GF256 x)
+{
+	uint8_t temp = Byte;
+	uint8_t answer = 0;
+
+	for(int i = 0; i < 8; i++)
+	{
+		if((x.Byte&1))
+		{
+			answer ^= temp;
+		}
+		x.Byte >>= 1;
+
+		if(temp&0x80)
+			temp = (temp << 1) ^ 0x1B;
+		else
+			temp <<= 1;
+	}
+
+	return(GF256(answer));
+}
+
+ostream& operator<<(ostream& os, const GF256& A)
+{
+	os << int(A.Byte);
+	return(os);
+}
+
+
 uint8_t SBox[256];
 uint8_t InvSBox[256];
 
@@ -27,50 +95,6 @@ int main()
 
 	Construct_SBox();	//Construct the SBox. SBox is global and so this function has a side effect.. constructing the SBox
 	Construct_InvSBox();	//Construct the InvSBox. InvSBox is global and so this function has a side effect.. constructing the InvSBox
-
-	uint8_t Word0[4] = {0,1,2,3};
-	uint8_t Word1[4] = {0,1,2,3};
-	uint8_t Word2[4] = {0,1,2,3};
-	uint8_t Word3[4] = {0,1,2,3};
-
-	cout << "Original" << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word0[i]) << " ";
-	cout << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word1[i]) << " ";
-	cout << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word2[i]) << " ";
-	cout << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word3[i]) << " ";
-	cout << endl;
-
-	Rotate_Word(Word0,0);
-	Rotate_Word(Word1,1);
-	Rotate_Word(Word2,2);
-	Rotate_Word(Word3,3);
-
-	cout << "Test" << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word0[i]) << " ";
-	cout << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word1[i]) << " ";
-	cout << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word2[i]) << " ";
-	cout << endl;
-	for(int i = 0; i < 4; i++)
-		cout << int(Word3[i]) << " ";
-	cout << endl;
-
-	cout << "Correct" << endl;
-	cout << "0 1 2 3" << endl;
-	cout << "1 2 3 0" << endl;
-	cout << "2 3 0 1" << endl;
-	cout << "3 0 1 2" << endl;
 
 	return(0);
 }
@@ -182,14 +206,14 @@ uint8_t circularLeftShift(uint8_t num, int shift)
 
 void Construct_SBox()
 {
-	uint8_t p = 1, q = 1;
+	GF256 p(1), q(1);
 	
 	do
 	{
-		//Multiply by x+1%(x^8+x^4+x^3+x+1) in GF(256), x+1 is 3 and coprime with 256.
+		//Multiply by x+1%(x^8+x^4+x^3+x+1) in GF(256), x+1 is 3 and coprime with 256. (p*=GF256(0x03))
 		p = p ^ (p << 1) ^ (p & 0x80 ? 0x1B : 0);
 
-		//Divide by x+1%(x^8+x^4+x^3+x+1), which is equivalent to multiplying by x^7+x^6+x^5+x^4+x^2+x%(x^8+x^4+x^3+x+1) in GF(256)
+		//Divide by x+1%(x^8+x^4+x^3+x+1), which is equivalent to multiplying by x^7+x^6+x^5+x^4+x^2+x%(x^8+x^4+x^3+x+1) in GF(256),  (q*=GF256(0xf6))
 		q ^= q << 1;
 		q ^= q << 2;
 		q ^= q << 4;
