@@ -5,25 +5,34 @@
 using namespace std;
 using namespace boost::multiprecision;
 
-void Construct_SBox();
-void Construct_InvSBox();
-uint8_t circularLeftShift(uint8_t, int);
-void Rotate_Word(uint8_t *, int);
-void Sub_Word(uint8_t *);
-void Inv_Rotate_Word(uint8_t *, int);
-void Inv_Sub_Word(uint8_t *);
-
 class GF256	// Galois Field(256) implementation
 {
 	public:
 		GF256();
 		GF256(uint8_t);
+		uint8_t to_int();
 		GF256 operator=(GF256);
+		GF256 operator=(uint8_t);
+		bool operator==(GF256);
+		bool operator==(uint8_t);
+		bool operator!=(GF256);
+		bool operator!=(uint8_t);
 		GF256 operator+(GF256);
+		GF256 operator+(uint8_t);
 		GF256 operator-(GF256);
+		GF256 operator-(uint8_t);
 		GF256 operator*(GF256);
+		GF256 operator*(uint8_t);
+		GF256 operator^(GF256);
+		GF256 operator^(uint8_t);
+		GF256 operator|(GF256);
+		GF256 operator|(uint8_t);
+		GF256 operator&(GF256);
+		GF256 operator&(uint8_t);
 		//GF256 operator/(GF256); I don't think I need this one.
 		friend ostream& operator<<(ostream&, const GF256&);
+		GF256 operator<<(uint8_t);
+		GF256 operator>>(uint8_t);
 	private:
 		uint8_t Byte;
 };
@@ -40,22 +49,100 @@ GF256::GF256(uint8_t x)
 	return;
 }
 
+uint8_t GF256::to_int()
+{
+	return(Byte);
+}
+
 GF256 GF256::operator=(GF256 x)
 {
 	Byte = x.Byte;
 	return(Byte);
 }
 
+GF256 GF256::operator=(uint8_t x)
+{
+	return(GF256(x));
+}
+
+bool GF256::operator==(GF256 x)
+{
+	return(Byte == x.Byte);
+}
+
+bool GF256::operator==(uint8_t x)
+{
+	return(Byte == x);
+}
+
+bool GF256::operator!=(GF256 x)
+{
+	return(Byte != x.Byte);
+}
+
+bool GF256::operator!=(uint8_t x)
+{
+	return(Byte != x);
+}
+
 GF256 GF256::operator+(GF256 x)
 {
 	uint8_t answer = Byte ^ x.Byte;
-	return(answer);
+	return(GF256(answer));
+}
+
+GF256 GF256::operator+(uint8_t x)
+{
+	uint8_t answer = Byte ^ x;
+	return(GF256(answer));
 }
 
 GF256 GF256::operator-(GF256 x)
 {
 	uint8_t answer = Byte ^ ~x.Byte;
-	return(answer);
+	return(GF256(answer));
+}
+
+GF256 GF256::operator-(uint8_t x)
+{
+	uint8_t answer = Byte ^ ~x;
+	return(GF256(answer));
+}
+
+GF256 GF256::operator^(GF256 x)
+{
+	uint8_t answer = Byte ^ x.Byte;
+	return(GF256(answer));
+}
+
+GF256 GF256::operator^(uint8_t x)
+{
+	uint8_t answer = Byte ^ x;
+	return(GF256(answer));
+}
+
+GF256 GF256::operator|(GF256 x)
+{
+	uint8_t answer = Byte | x.Byte;
+	return(GF256(answer));
+}
+
+GF256 GF256::operator|(uint8_t x)
+{
+	uint8_t answer = Byte | x;
+	return(GF256(answer));
+}
+
+GF256 GF256::operator&(GF256 x)
+{
+	uint8_t answer = Byte & x.Byte;
+	return(GF256(answer));
+}
+
+GF256 GF256::operator&(uint8_t x)
+{
+	uint8_t answer = Byte & x;
+	return(GF256(answer));
 }
 
 GF256 GF256::operator*(GF256 x)
@@ -80,15 +167,54 @@ GF256 GF256::operator*(GF256 x)
 	return(GF256(answer));
 }
 
+GF256 GF256::operator*(uint8_t x)
+{
+	uint8_t temp = Byte;
+	uint8_t answer = 0;
+
+	for(int i = 0; i < 8; i++)
+	{
+		if((x&1))
+		{
+			answer ^= temp;
+		}
+		x >>= 1;
+
+		if(temp&0x80)
+			temp = (temp << 1) ^ 0x1B;
+		else
+			temp <<= 1;
+	}
+
+	return(GF256(answer));
+}
+
 ostream& operator<<(ostream& os, const GF256& A)
 {
 	os << int(A.Byte);
 	return(os);
 }
 
+GF256 GF256::operator<<(uint8_t shift)
+{
+	return(GF256(Byte<<shift));
+}
 
-uint8_t SBox[256];
-uint8_t InvSBox[256];
+GF256 GF256::operator>>(uint8_t shift)
+{
+	return(GF256(Byte>>shift));
+}
+
+void Construct_SBox();
+void Construct_InvSBox();
+GF256 circularLeftShift(GF256, int);
+void Rotate_Word(uint8_t *, int);
+void Sub_Word(uint8_t *);
+void Inv_Rotate_Word(uint8_t *, int);
+void Inv_Sub_Word(uint8_t *);
+
+GF256 SBox[256];
+GF256 InvSBox[256];
 
 int main()
 {
@@ -149,10 +275,10 @@ void Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and RotWord
 	}*/
 }
 
-void Sub_Word(uint8_t * Word)	//Substitute from the SBox for 4 bytes
+void Sub_Word(GF256 * Word)	//Substitute from the SBox for 4 bytes
 {
 	for(int i = 0; i < 4; i++)
-		Word[i] = SBox[Word[i]];
+		Word[i] = SBox[Word[i].to_int()];
 }
 
 void Inv_Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
@@ -199,34 +325,31 @@ void Inv_Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and Rot
 	}*/
 }
 
-void Inv_Sub_Word(uint8_t * Word)	//Substitute from the SBox for 4 bytes
+void Inv_Sub_Word(GF256 * Word)	//Substitute from the SBox for 4 bytes
 {
 	for(int i = 0; i < 4; i++)
-		Word[i] = InvSBox[Word[i]];
+		Word[i] = InvSBox[Word[i].to_int()];
 }
 
-uint8_t circularLeftShift(uint8_t num, int shift)
+GF256 circularLeftShift(GF256 num, int shift)
 {
 	return((num << shift) | (num >> (8 - shift)));
 }
 
 void Construct_SBox()
 {
-	GF256 p(1), q(1);
+	GF256 p = 1, q = 1;
 	
 	do
 	{
 		//Multiply by x+1%(x^8+x^4+x^3+x+1) in GF(256), x+1 is 3 and coprime with 256. (p*=GF256(0x03))
-		p = p ^ (p << 1) ^ (p & 0x80 ? 0x1B : 0);
+		p = p*0x03;
 
 		//Divide by x+1%(x^8+x^4+x^3+x+1), which is equivalent to multiplying by x^7+x^6+x^5+x^4+x^2+x%(x^8+x^4+x^3+x+1) in GF(256),  (q*=GF256(0xf6))
-		q ^= q << 1;
-		q ^= q << 2;
-		q ^= q << 4;
-		q ^= q & 0x80 ? 0x09 : 0;
+		q = q*0xF6;
 
 		//Compute the affine transformation
-		SBox[p] = q ^ circularLeftShift(q, 1) ^ circularLeftShift(q, 2) ^ circularLeftShift(q, 3) ^ circularLeftShift(q, 4) ^ 0x63;
+		SBox[p.to_int()] = q ^ circularLeftShift(q, 1) ^ circularLeftShift(q, 2) ^ circularLeftShift(q, 3) ^ circularLeftShift(q, 4) ^ 0x63;
 	}while(p != 1);
 
 	//0 is a special case since it has no inverse
@@ -236,5 +359,5 @@ void Construct_SBox()
 void Construct_InvSBox()
 {
 	for(int i = 0; i < 256; i++)
-		InvSBox[SBox[i]] = i;
+		InvSBox[SBox[i].to_int()] = i;
 }
