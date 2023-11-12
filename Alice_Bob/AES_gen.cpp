@@ -215,7 +215,7 @@ void Sub_Word(GF256 *);
 void Inv_Rotate_Word(GF256 *, int);
 void Inv_Sub_Word(GF256 *);
 GF256* Key_Expansion(uint8_t[]);
-void KeyAddition(uint32_t[], GF256*, int, int);
+void KeyAddition(GF256[], GF256*, int);
 
 GF256 SBox[256];
 GF256 InvSBox[256];
@@ -229,7 +229,14 @@ int main()
 	uint32_t CipherTextCorrect[] = {0xF3EED1BD, 0xB5D2A03C, 0x064B5A7E, 0x3DB181F8, 0x591CCB10, 0xD410ED26, 0xDC5BA74A, 0x31362870, 0xB6ED21B9, 0x9CA6F4F9, 0xF153E7B1, 0xBEAFED1D, 0x23304B7A, 0x39F9F3FF, 0x067D8D8F, 0x9E24ECC7};	//Correct cipher text
 	uint32_t* CipherTextTest;	//Place to store result of encyrption
 	uint32_t* PlainTextTest;	//Place to store result of decryption
-	memcpy(CipherTextTest, PlainText, 16*sizeof(uint32_t));
+	GF256 IntermediateText[64];
+	for(int i = 0; i < 16; i++)
+	{
+		IntermediateText[4*i] = PlainText[i] >> 24;
+		IntermediateText[4*i+1] = (PlainText[i] >> 16) & 0xFF;
+		IntermediateText[4*i+2] = (PlainText[i] >> 8) & 0xFF;
+		IntermediateText[4*i+3] = PlainText[i] & 0xFF;
+	}
 
 	cout << hex;
 
@@ -237,14 +244,13 @@ int main()
 	Construct_InvSBox();	//Construct the InvSBox. InvSBox is global and so this function has a side effect.. constructing the InvSBox
 	GF256* Expanded_Key = Key_Expansion(Key);	//Expand out the key
 
-	KeyAddition(CipherTextTest, Expanded_Key, 0, 0);
-	KeyAddition(CipherTextTest, Expanded_Key, 4, 0);
-	KeyAddition(CipherTextTest, Expanded_Key, 8, 0);
-	KeyAddition(CipherTextTest, Expanded_Key, 12, 0);
+	KeyAddition(IntermediateText, Expanded_Key, 0);
 
 	for(int i = 0; i < 16; i++)
 	{
-		cout << CipherTextTest[i] << " ";
+		cout << IntermediateText[i] << " ";
+		if(i%4 == 3)
+			cout << "| ";
 	}
 	cout << endl;
 
@@ -253,19 +259,11 @@ int main()
 	return(0);
 }
 
-void KeyAddition(uint32_t CipherText[], GF256* Expanded_Key, int start_Plain_Text, int start_key)
+void KeyAddition(GF256 Text[], GF256* Expanded_Key, int start_Text)
 {
-	uint32_t Key;
-
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 16; i++)
 	{
-		Key = 0;
-		for(int j = 0; j < 4; j++)
-		{
-			Key <<= 8;
-			Key += Expanded_Key[start_key+4*i+j].to_int();
-		}
-		CipherText[start_Plain_Text+i] ^= Key;
+		Text[start_Text+i] = Text[start_Text+i] ^ Expanded_Key[i];
 	}
 
 	return;
