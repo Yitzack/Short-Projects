@@ -212,6 +212,7 @@ void Construct_InvSBox();
 GF256 circularLeftShift(GF256, int);
 void Rotate_Word(GF256 *, int);
 void Sub_Word(GF256 *);
+void Shift_Row(GF256[]);
 void Inv_Rotate_Word(GF256 *, int);
 void Inv_Sub_Word(GF256 *);
 GF256* Key_Expansion(uint8_t[]);
@@ -245,6 +246,9 @@ int main()
 	GF256* Expanded_Key = Key_Expansion(Key);	//Expand out the key
 
 	KeyAddition(IntermediateText, Expanded_Key, 0);
+	for(int i = 0; i < 4; i++)
+		Sub_Word(&IntermediateText[4*i]);
+	Shift_Row(IntermediateText);
 
 	for(int i = 0; i < 16; i++)
 	{
@@ -257,6 +261,25 @@ int main()
 	delete Expanded_Key;
 
 	return(0);
+}
+
+void Shift_Row(GF256 Text[])
+{
+	GF256 Block[4][4];
+	int i,j;
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Block[i][j] = Text[4*j+i];
+
+	for(i = 0; i < 4; i++)
+		Rotate_Word(Block[i], i);
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Text[4*j+i] = Block[i][j];
+
+	return;
 }
 
 void KeyAddition(GF256 Text[], GF256* Expanded_Key, int start_Text)
