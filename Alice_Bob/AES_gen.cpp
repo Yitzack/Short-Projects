@@ -212,14 +212,18 @@ void Construct_InvSBox();
 GF256 circularLeftShift(GF256, int);
 void Rotate_Word(GF256 *, int);
 void Sub_Word(GF256 *);
-void Shift_Row(GF256[]);
+void Round(GF256[]);
+void Partial_Round(GF256[]);
 void Inv_Rotate_Word(GF256 *, int);
 void Inv_Sub_Word(GF256 *);
 GF256* Key_Expansion(uint8_t[]);
 void KeyAddition(GF256[], GF256*, int);
+void Output_Check(GF256[], const char[]);
+void Encryption(GF256*);
 
 GF256 SBox[256];
 GF256 InvSBox[256];
+GF256* Expanded_Key;
 const int Nk = 8;	//Number of 4-byte words that make up the AES-256 key.
 const int Nr = 14;	//Number of rounds taken in AES-256
 
@@ -228,8 +232,8 @@ int main()
 	uint8_t Key[] = {0x60, 0x3D, 0xEB, 0x10, 0x15, 0xCA, 0x71, 0xBE, 0x2B, 0x73, 0xAE, 0xF0, 0x85, 0x7D, 0x77, 0x81, 0x1F, 0x35, 0x2C, 0x07, 0x3B, 0x61, 0x08, 0xD7, 0x2D, 0x98, 0x10, 0xA3, 0x09, 0x14, 0xDF, 0xF4};	//32-block key of 8-bit blocks
 	uint32_t PlainText[] = {0x6BC1BEE2, 0x2E409F96, 0xE93D7E11, 0x7393172A, 0xAE2D8A57, 0x1E03AC9C, 0x9EB76FAC, 0x45AF8E51, 0x30C81C46, 0xA35CE411, 0xE5FBC119, 0x1A0A52EF, 0xF69F2445, 0xDF4F9B17, 0xAD2B417B, 0xE66C3710};	//Plain text to test with
 	uint32_t CipherTextCorrect[] = {0xF3EED1BD, 0xB5D2A03C, 0x064B5A7E, 0x3DB181F8, 0x591CCB10, 0xD410ED26, 0xDC5BA74A, 0x31362870, 0xB6ED21B9, 0x9CA6F4F9, 0xF153E7B1, 0xBEAFED1D, 0x23304B7A, 0x39F9F3FF, 0x067D8D8F, 0x9E24ECC7};	//Correct cipher text
-	uint32_t* CipherTextTest;	//Place to store result of encyrption
-	uint32_t* PlainTextTest;	//Place to store result of decryption
+	uint32_t CipherTextTest[16];	//Place to store result of encyrption
+	uint32_t PlainTextTest[16];	//Place to store result of decryption
 	GF256 IntermediateText[64];
 	for(int i = 0; i < 16; i++)
 	{
@@ -243,19 +247,22 @@ int main()
 
 	Construct_SBox();	//Construct the SBox. SBox is global and so this function has a side effect.. constructing the SBox
 	Construct_InvSBox();	//Construct the InvSBox. InvSBox is global and so this function has a side effect.. constructing the InvSBox
-	GF256* Expanded_Key = Key_Expansion(Key);	//Expand out the key
+	Expanded_Key = Key_Expansion(Key);	//Expand out the key
 
-	KeyAddition(IntermediateText, Expanded_Key, 0);
 	for(int i = 0; i < 4; i++)
-		Sub_Word(&IntermediateText[4*i]);
-	Shift_Row(IntermediateText);
+		Encryption(&IntermediateText[16*i]);
 
 	for(int i = 0; i < 16; i++)
 	{
-		cout << IntermediateText[i] << " ";
-		if(i%4 == 3)
-			cout << "| ";
+		CipherTextTest[i] = IntermediateText[4*i].to_int() << 24;
+		CipherTextTest[i] += IntermediateText[4*i+1].to_int() << 16;
+		CipherTextTest[i] += IntermediateText[4*i+2].to_int() << 8;
+		CipherTextTest[i] += IntermediateText[4*i+3].to_int();
+		cout << CipherTextTest[i] << " ";
 	}
+	cout << endl;
+	for(int i = 0; i < 16; i++)
+		cout << CipherTextCorrect[i] << " ";
 	cout << endl;
 
 	delete Expanded_Key;
@@ -263,21 +270,78 @@ int main()
 	return(0);
 }
 
-void Shift_Row(GF256 Text[])
+void Encryption(GF256* Text)
+{
+	KeyAddition(Text, Expanded_Key, 0);
+	for(int i = 1; i <= 13; i++)
+	{
+		Round(Text);
+		KeyAddition(Text, &Expanded_Key[16*i], 0);
+	}
+	Partial_Round(Text);
+	KeyAddition(Text, &Expanded_Key[223], 0);
+}
+
+void Output_Check(GF256 Text[], const char Note[])
+{
+	for(int i = 0; i < 16; i++)
+	{
+		cout << Text[i] << " ";
+		if(i%4 == 3)
+			cout << "| ";
+	}
+	cout << Note;
+	return;
+}
+
+void Partial_Round(GF256 Text[])
 {
 	GF256 Block[4][4];
+	GF256 M[4][4] = {{GF256(2),GF256(3),GF256(1),GF256(1)},
+			  {GF256(1),GF256(2),GF256(3),GF256(1)},
+			  {GF256(1),GF256(1),GF256(2),GF256(3)},
+			  {GF256(3),GF256(1),GF256(1),GF256(2)}};
 	int i,j;
 
 	for(i = 0; i < 4; i++)
 		for(j = 0; j < 4; j++)
 			Block[i][j] = Text[4*j+i];
 
-	for(i = 0; i < 4; i++)
+	for(i = 0; i < 4; i++)	//Substitution and row shifting (commutible)
+	{
+		Sub_Word(Block[i]);
 		Rotate_Word(Block[i], i);
+	}
 
 	for(i = 0; i < 4; i++)
 		for(j = 0; j < 4; j++)
 			Text[4*j+i] = Block[i][j];
+
+	return;
+}
+
+void Round(GF256 Text[])
+{
+	GF256 Block[4][4];
+	GF256 M[4][4] = {{GF256(2),GF256(3),GF256(1),GF256(1)},
+			  {GF256(1),GF256(2),GF256(3),GF256(1)},
+			  {GF256(1),GF256(1),GF256(2),GF256(3)},
+			  {GF256(3),GF256(1),GF256(1),GF256(2)}};
+	int i,j,k;
+
+	for(i = 0; i < 4; i++)	//Substitution and row shifting (commutible)
+	{
+		Sub_Word(Block[i]);
+		Rotate_Word(Block[i], i);
+	}
+
+	for(i = 0; i < 16; i++)
+		Text[i] = 0;
+
+	for(i = 0; i < 4; i++)	//4x4 times 4x4 matrix multiplication
+		for(j = 0; j < 4; j++)
+			for(k = 0; k < 4; k++)
+				Text[4*i+k] = Text[4*i+k] + M[k][j]*Block[j][i];
 
 	return;
 }
@@ -321,10 +385,10 @@ GF256* Key_Expansion(uint8_t Key[])
 		{
 			Rotate_Word(temp,1);
 			Sub_Word(temp);
-			w[4*i] = w[4*i-32]+temp[0]+rcon[i/Nk][0];
-			w[4*i+1] = w[4*i-31]+temp[1]+rcon[i/Nk][1];
-			w[4*i+2] = w[4*i-30]+temp[2]+rcon[i/Nk][2];
-			w[4*i+3] = w[4*i-29]+temp[3]+rcon[i/Nk][3];
+			w[4*i] = w[4*i-32]+temp[0]+rcon[i/Nk-1][0];
+			w[4*i+1] = w[4*i-31]+temp[1]+rcon[i/Nk-1][1];
+			w[4*i+2] = w[4*i-30]+temp[2]+rcon[i/Nk-1][2];
+			w[4*i+3] = w[4*i-29]+temp[3]+rcon[i/Nk-1][3];
 		}
 		else if(i%Nk == 4)
 		{
@@ -336,10 +400,10 @@ GF256* Key_Expansion(uint8_t Key[])
 		}
 		else
 		{
-			w[4*i] = w[4*i-32];
-			w[4*i+1] = w[4*i-31];
-			w[4*i+2] = w[4*i-30];
-			w[4*i+3] = w[4*i-29];
+			w[4*i] = w[4*i-32]+temp[0];
+			w[4*i+1] = w[4*i-31]+temp[1];
+			w[4*i+2] = w[4*i-30]+temp[2];
+			w[4*i+3] = w[4*i-29]+temp[3];
 		}
 	}
 
