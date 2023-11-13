@@ -219,7 +219,8 @@ void Inv_Sub_Word(GF256 *);
 GF256* Key_Expansion(uint8_t[]);
 void KeyAddition(GF256[], GF256*, int);
 void Output_Check(GF256[], const char[]);
-void Encryption(GF256*);
+void Key_Print(GF256[240]);
+void Encrypt(GF256[]);
 
 GF256 SBox[256];
 GF256 InvSBox[256];
@@ -250,7 +251,7 @@ int main()
 	Expanded_Key = Key_Expansion(Key);	//Expand out the key
 
 	for(int i = 0; i < 4; i++)
-		Encryption(&IntermediateText[16*i]);
+		Encrypt(&IntermediateText[16*i]);
 
 	for(int i = 0; i < 16; i++)
 	{
@@ -262,7 +263,9 @@ int main()
 	}
 	cout << endl;
 	for(int i = 0; i < 16; i++)
+	{
 		cout << CipherTextCorrect[i] << " ";
+	}
 	cout << endl;
 
 	delete Expanded_Key;
@@ -270,7 +273,7 @@ int main()
 	return(0);
 }
 
-void Encryption(GF256* Text)
+void Encrypt(GF256 Text[])
 {
 	KeyAddition(Text, Expanded_Key, 0);
 	for(int i = 1; i <= 13; i++)
@@ -279,7 +282,7 @@ void Encryption(GF256* Text)
 		KeyAddition(Text, &Expanded_Key[16*i], 0);
 	}
 	Partial_Round(Text);
-	KeyAddition(Text, &Expanded_Key[223], 0);
+	KeyAddition(Text, &Expanded_Key[224], 0);
 }
 
 void Output_Check(GF256 Text[], const char Note[])
@@ -294,6 +297,38 @@ void Output_Check(GF256 Text[], const char Note[])
 	return;
 }
 
+void Key_Print(GF256 w[240])
+{
+	cout << "      ";
+	for(int j = 0; j < 48; j++)
+	{
+		if(j < 10)
+			cout << "0";
+		cout << dec << j << " ";
+		if(j%16==15)
+			cout << "| ";
+	}
+	cout << "\n000 | " << hex;
+	for(int j = 0; j < 240; j++)
+	{
+		if(w[j].to_int() <= 0xf)
+			cout << "0";
+		cout << w[j] << " ";
+		if(j%16==15)
+			cout << "| ";
+		if(j%48==47)
+		{
+			if(j < 100)
+				cout << endl << dec << "0" << j+1 << " | " << hex;
+			else if(j < 200)
+				cout << endl << dec << j+1 << " | " << hex;
+			else
+				cout << endl;
+		}
+	}
+	cout << endl;
+}
+
 void Partial_Round(GF256 Text[])
 {
 	GF256 Block[4][4];
@@ -301,7 +336,7 @@ void Partial_Round(GF256 Text[])
 			  {GF256(1),GF256(2),GF256(3),GF256(1)},
 			  {GF256(1),GF256(1),GF256(2),GF256(3)},
 			  {GF256(3),GF256(1),GF256(1),GF256(2)}};
-	int i,j;
+	int i,j,k;
 
 	for(i = 0; i < 4; i++)
 		for(j = 0; j < 4; j++)
@@ -328,6 +363,10 @@ void Round(GF256 Text[])
 			  {GF256(1),GF256(1),GF256(2),GF256(3)},
 			  {GF256(3),GF256(1),GF256(1),GF256(2)}};
 	int i,j,k;
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Block[i][j] = Text[4*j+i];
 
 	for(i = 0; i < 4; i++)	//Substitution and row shifting (commutible)
 	{
