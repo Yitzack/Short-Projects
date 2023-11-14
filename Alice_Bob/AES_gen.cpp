@@ -213,7 +213,9 @@ GF256 circularLeftShift(GF256, int);
 void Rotate_Word(GF256 *, int);
 void Sub_Word(GF256 *);
 void Round(GF256[]);
+void Inv_Round(GF256[],int);
 void Partial_Round(GF256[]);
+void Inv_Partial_Round(GF256[]);
 void Inv_Rotate_Word(GF256 *, int);
 void Inv_Sub_Word(GF256 *);
 GF256* Key_Expansion(uint8_t[]);
@@ -221,6 +223,7 @@ void KeyAddition(GF256[], GF256*, int);
 void Output_Check(GF256[], const char[]);
 void Key_Print(GF256[240]);
 void Encrypt(GF256[]);
+void Decrypt(GF256[]);
 
 GF256 SBox[256];
 GF256 InvSBox[256];
@@ -268,9 +271,39 @@ int main()
 	}
 	cout << endl;
 
+	for(int i = 0; i < 4; i++)
+		Decrypt(&IntermediateText[16*i]);
+
+	for(int i = 0; i < 16; i++)
+	{
+		PlainTextTest[i] = IntermediateText[4*i].to_int() << 24;
+		PlainTextTest[i] += IntermediateText[4*i+1].to_int() << 16;
+		PlainTextTest[i] += IntermediateText[4*i+2].to_int() << 8;
+		PlainTextTest[i] += IntermediateText[4*i+3].to_int();
+		cout << PlainTextTest[i] << " ";
+	}
+	cout << endl;
+	for(int i = 0; i < 16; i++)
+	{
+		cout << PlainText[i] << " ";
+	}
+	cout << endl;
+
+
 	delete Expanded_Key;
 
 	return(0);
+}
+
+void Decrypt(GF256 Text[])
+{
+	KeyAddition(Text, &Expanded_Key[224], 0);
+	for(int i = 13; i >= 1; i--)
+	{
+		Inv_Round(Text,i);
+	}
+	Inv_Partial_Round(Text);
+	KeyAddition(Text, Expanded_Key, 0);
 }
 
 void Encrypt(GF256 Text[])
@@ -329,6 +362,28 @@ void Key_Print(GF256 w[240])
 	cout << endl;
 }
 
+void Inv_Partial_Round(GF256 Text[])
+{
+	GF256 Block[4][4];
+	int i,j;
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Block[i][j] = Text[4*j+i];
+
+	for(i = 0; i < 4; i++)	//Substitution and row shifting (commutible)
+	{
+		Inv_Sub_Word(Block[i]);
+		Inv_Rotate_Word(Block[i], i);
+	}
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Text[4*j+i] = Block[i][j];
+
+	return;
+}
+
 void Partial_Round(GF256 Text[])
 {
 	GF256 Block[4][4];
@@ -347,6 +402,48 @@ void Partial_Round(GF256 Text[])
 		Sub_Word(Block[i]);
 		Rotate_Word(Block[i], i);
 	}
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Text[4*j+i] = Block[i][j];
+
+	return;
+}
+
+void Inv_Round(GF256 Text[], int Round)
+{
+	GF256 Block[4][4];
+	GF256 Block1[4][4];
+	GF256 M[4][4] = {{GF256(14),GF256(11),GF256(13),GF256(9)},
+			  {GF256(9),GF256(14),GF256(11),GF256(13)},
+			  {GF256(13),GF256(9),GF256(14),GF256(11)},
+			  {GF256(11),GF256(13),GF256(9),GF256(14)}};
+	int i,j,k;
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Block1[i][j] = Text[4*j+i];
+
+	for(i = 0; i < 4; i++)	//Substitution and row shifting (commutible)
+	{
+		Inv_Sub_Word(Block1[i]);
+		Inv_Rotate_Word(Block1[i], i);
+	}
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Text[4*j+i] = Block1[i][j];
+
+	KeyAddition(Text, &Expanded_Key[16*Round], 0); 
+
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < 4; j++)
+			Block1[i][j] = Text[4*j+i];
+
+	for(i = 0; i < 4; i++)	//4x4 times 4x4 matrix multiplication
+		for(j = 0; j < 4; j++)
+			for(k = 0; k < 4; k++)
+				Block[k][i] = Block[k][i] + M[k][j]*Block1[j][i];
 
 	for(i = 0; i < 4; i++)
 		for(j = 0; j < 4; j++)
@@ -499,9 +596,9 @@ void Sub_Word(GF256 * Word)	//Substitute from the SBox for 4 bytes
 		Word[i] = SBox[Word[i].to_int()];
 }
 
-void Inv_Rotate_Word(uint8_t * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
+void Inv_Rotate_Word(GF256 * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
 {
-	uint8_t temp[2];
+	GF256 temp[2];
 
 	switch(Shift%4)
 	{
