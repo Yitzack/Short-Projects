@@ -2,6 +2,7 @@
 #include<iomanip>
 #include<random>
 #include<cstdint>	//defines data type uint8_t for 1-byte (8-bit) integers
+#include<cstring>
 #include"GF256.h"
 using namespace std;
 
@@ -41,9 +42,21 @@ class AES
 		void Inv_Rotate_Word(GF256 *, int);
 		void Inv_Sub_Word(GF256 *);
 		void KeyAddition(GF256[], GF256*, int);
+		void Output(GF256*, const char[]);
 };
 
 #endif
+
+void AES::Output(GF256* Text, const char Note[])
+{
+	for(int i = 0; i < 16; i++)
+	{
+		cout << Text[i] << " ";
+		if(i%4 == 3)
+			cout << "| ";
+	}
+	cout << Note;
+}
 
 AES::AES()
 {
@@ -120,7 +133,7 @@ void AES::Decrypt(uint32_t CipherText32[], GF256* PlainText, int length)
 		CipherText[4*i+2] = (CipherText32[i] >> 8) & 0xFF;
 		CipherText[4*i+3] = CipherText32[i] & 0xFF;
 	}
-	Encrypt(CipherText, PlainText, length);
+	Decrypt(CipherText, PlainText, length);
 }
 
 void AES::Encrypt(uint32_t PlainText32[], GF256* CipherText, int length)
@@ -149,7 +162,7 @@ void AES::Decrypt(GF256 CipherText[], GF256* PlainText, int length)
 	for(int i = 0; i < 16*Blocks; i++)	//Copy the CipherText into Text
 		PlainText[i] = CipherText[i];
 
-	for(int j = 0; j < Blocks; j += 16)	//Decrypt 16 bytes at a time
+	for(int j = 0; j < 16*Blocks; j += 16)	//Decrypt 16 bytes at a time
 	{
 		KeyAddition(&PlainText[j], &Expanded_Key[224], 0);
 		for(int i = 13; i >= 1; i--)
@@ -177,10 +190,10 @@ void AES::Encrypt(GF256 PlainText[], GF256* CipherText, int length)
 	for(; i < 16*Blocks; i++)
 		CipherText[i] = 0;	//Pad out the rest of the PlainText with null characters or 0
 
-	for(j = 0; j < 16*Blocks; j += 4)
+	for(j = 0; j < 16*Blocks; j += 16)
 	{
 		KeyAddition(&CipherText[j], Expanded_Key, 0);	//Encrypt 16 bytes at a time
-		for(int i = 1; i <= 13; i++)
+		for(i = 1; i <= 13; i++)
 		{
 			Round(&CipherText[j]);
 			KeyAddition(&CipherText[j], &Expanded_Key[16*i], 0);
