@@ -7,7 +7,7 @@ Displays the Mandelbrot set.
 Install SFML first. If you're on an approiate version of Linux, use ```sudo apt-get install libssfml-dev```  
 ```g++ main.cpp -lsfml-graphics -lsfml-window -lsfml-system -fopenmp -p```
 
-Install tkinter (aka python3-tk) package first.
+Install tkinter (aka python3-tk) package first.  
 ```python3 main.py``` will execute the script if the dependency has been met.
 
 ```javac Complex.java```  
