@@ -4,7 +4,7 @@ Calculate Pi using Monte Carlo techniques.
 
 ## Compile directions for g++
 
-g++ Pi.cpp -O3 -fopenmp -p
+```g++ Pi.cpp -O3 -fopenmp -p```
 
 ## Details of operation
 

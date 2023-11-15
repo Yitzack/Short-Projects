@@ -9,13 +9,14 @@ Will probably copy and paste into a Boid Simulation.
 ## Compile directions for g++
 
 First install the Boost library.  
-g++ Client.cpp -o Client -pthread -O3  
-g++ Server.cpp -o Server -pthread -O3
+```g++ Client.cpp -o Client -pthread -O3```  
+```g++ Server.cpp -o Server -pthread -O3```
 
 First install the Boost library.  
-g++ RSA_gen.cpp -O3
+```g++ RSA_gen.cpp -O3```
 
-g++ AES_gen.cpp -O3
+No dependency on the Boost library.
+```g++ AES_gen.cpp -O3```
 
 ## Features to be implemented
 

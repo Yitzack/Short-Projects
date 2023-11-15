@@ -4,9 +4,9 @@ Integrate one or more Lorentz peaks over a finite interval using Monte Carlo met
 
 ## Compile directions for g++
 
-g++ Simple_Monte_Carlo.cpp -O3 -fopenmp -p
+```g++ Simple_Monte_Carlo.cpp -O3 -fopenmp -p```
 
-g++ Importance_Monte_Carlo.cpp -O3 -fopenmp -p
+```g++ Importance_Monte_Carlo.cpp -O3 -fopenmp -p```
 
 ## Details of operation
 
