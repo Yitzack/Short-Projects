@@ -15,7 +15,7 @@ First install the Boost library.
 First install the Boost library.  
 ```g++ RSA_gen.cpp -O3```
 
-No dependency on the Boost library.
+No dependency on the Boost library.  
 ```g++ AES_gen.cpp -O3```
 
 ## Features to be implemented
