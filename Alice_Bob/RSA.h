@@ -39,6 +39,8 @@ class LargeException : public exception
 		string errorMessage;
 };
 
+#ifndef RSA_HEADER
+#define RSA_HEADER
 
 class RSA
 {
@@ -67,6 +69,7 @@ class RSA
 		cpp_int PowMod(cpp_int b, cpp_int n, cpp_int m);	//returns (b^n)%m
 		cpp_int pow(cpp_int b, cpp_int n);	//return b^n
 };
+#endif
 
 RSA::RSA()
 {
