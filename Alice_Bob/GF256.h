@@ -1,4 +1,5 @@
 #include<iostream>
+#include<cstdint>	//defines data type uint8_t for 1-byte (8-bit) integers
 using namespace std;
 
 #ifndef GF256_HEADER

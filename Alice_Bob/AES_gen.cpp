@@ -3,7 +3,6 @@
 #include<random>
 #include<cstdint>	//defines data type uint8_t for 1-byte (8-bit) integers
 #include"AES.h"
-#include<chrono>
 using namespace std;
 
 int main()
