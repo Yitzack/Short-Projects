@@ -21,3 +21,10 @@ No dependency on the Boost library.
 
 No dependency on the Boost library.  
 ```g++ SHA256_gen.cpp -O3```
+
+No dependency on the Boost library.  
+```g++ Hamming_test.cpp -O3```
+
+## Future features
+
+* Extended Hamming code, Hammaing(511,502)+total parity
