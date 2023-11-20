@@ -44,7 +44,7 @@ Hamming::Hamming(uint8_t Message[])
 
 void Hamming::Encode(uint8_t Message[])
 {
-	uint512_t Encoding = 0;
+	Encoding = 0;
 	int i;
 
 	for(i = 0; i < 62; i++)	//Load the message into Encoding. The for loop will exit with a byte of zeros on either end and 62 bytes of data in the middle.
@@ -67,39 +67,7 @@ void Hamming::Encode(uint8_t Message[])
 
 bool Hamming::Decode(uint8_t Message[])
 {
-	int i;
-	uint16_t Parity_bit_error = 0;	//Location of flipped bit
-	bool Total_Parity;			//Total parity
-
-	for(i = 14; i >= 6; i--)
-	{
-		Parity_bit_error += Parity(Encoding, BitMasks[i]);
-		Parity_bit_error <<= 1;
-	}
-	Parity_bit_error >>= 1;
-	Total_Parity = Parity(Encoding, BitMasks[15]);
-
-	if(Total_Parity)	//If odd Parity, there is a chance for correction, so make it
-		Encoding = FlipBit(Encoding, 511-Parity_bit_error);
-
-	Encoding = RemoveBit(Encoding, 512);	//Remove the normal extended Hamming(511,502) parity bits
-	for(i = 0; i < 9; i++)
-		Encoding = RemoveBit(Encoding, 512-(1<<i));
-
-	uint8_t Extra_Parity = uint8_t(Encoding & 0x3F);	//Pull the extra parity bits and hopefully restore the original encoding
-	Encoding >>= 6;
-
-	uint8_t Extra_Parity_Check = 0;	//Calculate the current extra parity bits
-	for(i = 0; i < 6; i++)
-		Extra_Parity_Check += (Parity(Encoding, BitMasks[i]) << 5-i);
-
-	for(i = 61; i >= 0; i--)	//Load the Encoding into recovered
-	{
-		Message[i] = uint8_t(Encoding & 0xFF);
-		Encoding >>= 8;
-	}
-
-	return(!(Extra_Parity^Extra_Parity_Check));
+	return(Decode(Encoding,Message));
 }
 
 bool Hamming::Decode(uint512_t Coding, uint8_t Message[])
