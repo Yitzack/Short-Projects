@@ -1,5 +1,9 @@
-#include <iostream>
-#include <boost/asio.hpp>
+#include<iostream>
+#include<boost/asio.hpp>
+#include"RSA.h"
+#include"AES.h"
+#include"SHA256.h"
+#include"Hamming.h"
 using namespace std;
 using namespace boost::asio;
 using ip::tcp;
