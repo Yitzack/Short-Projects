@@ -8,16 +8,17 @@
 using namespace std;
 using namespace boost::multiprecision;
 
-class LargeException : public exception
+class RSAException : public exception
 {
 	public:
 		enum class ErrorType	//Enumeration of error types
 		{
 			MessageTooLarge,
-			CodeTooLarge
+			CodeTooLarge,
+			MismatchKeys
 		};
 
-		LargeException(ErrorType type) : errorType(type)	//Constructor of the LargeException
+		RSAException(ErrorType type) : errorType(type)	//Constructor of the RSAException
 		{
 			switch(type)	//Setting the error message based off the error type
 			{
@@ -26,6 +27,9 @@ class LargeException : public exception
 					break;
 				case ErrorType::CodeTooLarge:
 					errorMessage = "Code is greater than common key modulo";
+					break;
+				case ErrorType::MismatchKeys:
+					errorMessage = "Private and public keys are not a pair";
 					break;
 			}
 		}
@@ -47,6 +51,7 @@ class RSA
 	public:
 		RSA();					//Do nothing constructor
 		RSA(cpp_int, cpp_int);			//Set the public key of the RSA object
+		RSA(cpp_int, cpp_int, cpp_int);	//Set the private and public key of the RSA object
 		cpp_int Public_key_n();		//Output the public key n=pq
 		cpp_int Public_key_e();		//Output the public key e such that (e*d)%lamda(n)=1
 		cpp_int Encrypt(cpp_int);		//Encrypt with the message with the public key
@@ -84,6 +89,15 @@ RSA::RSA(cpp_int n, cpp_int e)
 	public_key_e = e;
 }
 
+RSA::RSA(cpp_int n, cpp_int e, cpp_int d)
+{
+	key_n = n;
+	public_key_e = e;
+	private_key_d = d;
+	if(PowerMod(PowMod(0xFF, e, n), d, n) != 0xFF)
+		throw(RSAExcreption(RSAException::ErrorType::MismatchKeys));
+}
+
 cpp_int RSA::Public_key_n()
 {
 	return(key_n);
@@ -98,7 +112,7 @@ cpp_int RSA::Encrypt(cpp_int message)
 {
 	if(message > key_n)
 	{
-		throw(LargeException(LargeException::ErrorType::MessageTooLarge));
+		throw(RSAException(RSAException::ErrorType::MessageTooLarge));
 	}
 
 	return(PowMod(message,public_key_e,key_n));
@@ -108,7 +122,7 @@ cpp_int RSA::Sign(cpp_int message)
 {
 	if(message > key_n)
 	{
-		throw(LargeException(LargeException::ErrorType::MessageTooLarge));
+		throw(RSAException(RSAException::ErrorType::MessageTooLarge));
 	}
 
 	return(PowMod(message,private_key_d,key_n));
@@ -118,7 +132,7 @@ cpp_int RSA::Decrypt(cpp_int code)
 {
 	if(code > key_n)
 	{
-		throw(LargeException(LargeException::ErrorType::CodeTooLarge));
+		throw(RSAException(RSAException::ErrorType::CodeTooLarge));
 	}
 
 	return(PowMod(code,private_key_d,key_n));
