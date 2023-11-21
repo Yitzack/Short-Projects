@@ -1,5 +1,7 @@
-#include <iostream>
-#include <boost/asio.hpp>
+#include<iostream>
+#include<fstream>
+#include<cstring>
+#include<boost/asio.hpp>
 #include"RSA.h"
 #include"AES.h"
 #include"SHA256.h"
@@ -7,6 +9,12 @@
 using namespace std;
 using namespace boost::asio;
 using ip::tcp;
+
+void Initalize_RSA();
+void Hexer(char*, cpp_int);
+
+RSA* RSA_Encryption;
+SHA256 Hashing;
 
 int main()
 {
@@ -34,3 +42,69 @@ int main()
 
 	return(0);
 }
+
+
+void Initalize_RSA()
+{
+	ifstream iRSA_Keys("./RSA_Keys");
+	ofstream oRSA_Keys;
+
+	if(iRSA_Keys.is_open())
+	{
+		char dstr1[1101], estr1[101], nstr1[1101];
+		iRSA_Keys.getline(dstr1, 1101);
+		iRSA_Keys.getline(estr1, 101);
+		iRSA_Keys.getline(nstr1, 1101);
+		iRSA_Keys.close();
+		char dstr[1104] = "0x";
+		char estr[1104] = "0x";
+		char nstr[1104] = "0x";
+		cpp_int d(strcat(dstr,dstr1));
+		cpp_int e(strcat(estr,estr1));
+		cpp_int n(strcat(nstr,nstr1));
+		RSA_Encryption = new RSA(d,e,n);
+	}
+	else
+	{
+		RSA_Encryption = new RSA();
+		iRSA_Keys.close();
+		oRSA_Keys.open("./RSA_Keys");
+		oRSA_Keys << hex;
+		RSA_Encryption->Print_Private_Key(oRSA_Keys);
+		oRSA_Keys << RSA_Encryption->Public_key_e() << endl;
+		oRSA_Keys << RSA_Encryption->Public_key_n();
+		oRSA_Keys.close();
+
+		oRSA_Keys.open("./Certificate");
+		char Cert[6000] = "Server Public Key: ";
+		char Hex_Code[2000];
+		Hexer(Hex_Code, RSA_Encryption->Public_key_e());
+		strcpy(Cert, Hex_Code);
+		strcpy(Cert, ",");
+		Hexer(Hex_Code, RSA_Encryption->Public_key_n());
+		strcpy(Cert, Hex_Code);
+		strcpy(Cert, "\n,Server IP: 127.0.0.1\n,Server Location: Author's Bedroom\n,Server Organization: Independent\n,Certificate Validity Period: Nov 30, 2024\n,CA Name: Author\n,CA Public Key: ");
+		Hexer(Hex_Code, RSA_Encryption->Public_key_e());
+		strcpy(Cert, Hex_Code);
+		strcpy(Cert, ",");
+		Hexer(Hex_Code, RSA_Encryption->Public_key_n());
+		strcpy(Cert, Hex_Code);
+		strcpy(Cert, "\nCertificate Serial Number: 0\n");
+		uint32_t Hash[8];
+		Hashing.Hash_func(Cert, strlen(Cert), Hash);
+		oRSA_Keys << Cert << "Signature: " << RSA_Encryption->Encrypt(Hash, 8);
+		oRSA_Keys.close();
+	}
+}
+
+void Hexer(char* Hex_Code, cpp_int Number)
+{
+	Hex_Code[0] = 0x00;
+}
+
+
+
+
+
+
+

@@ -6,7 +6,9 @@ using namespace std;
 class SHA256
 {
 	public:
+		SHA256(){};
 		void Hash_func(uint8_t*, uint64_t Length, uint32_t*);
+		void Hash_func(char*, uint64_t Length, uint32_t*);
 	private:
 		uint32_t RightRot(uint32_t, int);
 		uint32_t Ch(uint32_t, uint32_t, uint32_t);
@@ -67,6 +69,14 @@ void SHA256::DataCopy(uint32_t w[], uint8_t* Message)
 	return;
 }
 
+
+void SHA256::Hash_func(char* Message, uint64_t Length, uint32_t* Hash)
+{
+	uint8_t* Mess = new uint8_t[Length];
+	memcpy(Mess, Message, Length);
+	Hash_func(Mess, Length, Hash);
+	delete Mess;
+}
 
 void SHA256::Hash_func(uint8_t* Message, uint64_t Length, uint32_t* Hash)
 {

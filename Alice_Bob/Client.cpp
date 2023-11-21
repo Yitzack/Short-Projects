@@ -1,4 +1,6 @@
 #include<iostream>
+#include<fstream>
+#include<cstring>
 #include<boost/asio.hpp>
 #include"RSA.h"
 #include"AES.h"
@@ -7,6 +9,9 @@
 using namespace std;
 using namespace boost::asio;
 using ip::tcp;
+
+RSA RSA_Encryption;
+SHA256 Hashing;
 
 int main()
 {
@@ -24,3 +29,26 @@ int main()
 
 	return(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

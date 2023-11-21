@@ -8,6 +8,9 @@
 using namespace std;
 using namespace boost::multiprecision;
 
+#ifndef RSA_HEADER
+#define RSA_HEADER
+
 class RSAException : public exception
 {
 	public:
@@ -43,9 +46,6 @@ class RSAException : public exception
 		string errorMessage;
 };
 
-#ifndef RSA_HEADER
-#define RSA_HEADER
-
 class RSA
 {
 	public:
@@ -54,6 +54,8 @@ class RSA
 		RSA(cpp_int, cpp_int, cpp_int);	//Set the private and public key of the RSA object
 		cpp_int Public_key_n();		//Output the public key n=pq
 		cpp_int Public_key_e();		//Output the public key e such that (e*d)%lamda(n)=1
+		cpp_int Encrypt(uint8_t[], int);	//Encrypt with the message with the public key
+		cpp_int Encrypt(uint32_t[], int);	//Encrypt with the message with the public key
 		cpp_int Encrypt(cpp_int);		//Encrypt with the message with the public key
 		cpp_int Sign(cpp_int);			//Sign the message, that is encrypt with the message with the private key
 		cpp_int Decrypt(cpp_int);		//Decrypt with the message with the private key
@@ -89,13 +91,13 @@ RSA::RSA(cpp_int n, cpp_int e)
 	public_key_e = e;
 }
 
-RSA::RSA(cpp_int n, cpp_int e, cpp_int d)
+RSA::RSA(cpp_int d, cpp_int e, cpp_int n)
 {
 	key_n = n;
 	public_key_e = e;
 	private_key_d = d;
-	if(PowerMod(PowMod(0xFF, e, n), d, n) != 0xFF)
-		throw(RSAExcreption(RSAException::ErrorType::MismatchKeys));
+	if(PowMod(PowMod(0xFF, e, n), d, n) != 0xFF)
+		throw(RSAException(RSAException::ErrorType::MismatchKeys));
 }
 
 cpp_int RSA::Public_key_n()
@@ -106,6 +108,28 @@ cpp_int RSA::Public_key_n()
 cpp_int RSA::Public_key_e()
 {
 	return(public_key_e);
+}
+
+cpp_int RSA::Encrypt(uint8_t message[], int length)
+{
+	cpp_int Number = message[0];
+	for(int i = 1; i <= length; i++)	//Need to include the null terminator
+	{
+		Number <<= 8;
+		Number += message[i];
+	}
+	return(Encrypt(Number));
+}
+
+cpp_int RSA::Encrypt(uint32_t message[], int length)
+{
+	cpp_int Number = message[0];
+	for(int i = 1; i <= length; i++)	//Need to include the null terminator
+	{
+		Number <<= 32;
+		Number += message[i];
+	}
+	return(Encrypt(Number));
 }
 
 cpp_int RSA::Encrypt(cpp_int message)
