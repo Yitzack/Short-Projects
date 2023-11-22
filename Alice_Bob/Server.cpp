@@ -107,33 +107,37 @@ void Initalize_RSA()
 	strcat(Cert, "\nCertificate Serial Number: 0\n");
 	uint32_t Hash[8];
 	Hashing.Hash_func(Cert, strlen(Cert), Hash);
-	oRSA_Keys << Cert << "Signature: " << RSA_Encryption.Encrypt(Hash, 8);
+	oRSA_Keys << Cert << "Signature: " << RSA_Encryption.Encrypt(Hash, 8) << endl;
 	oRSA_Keys.close();
 }
 
-void Hexer(char* Hex_Code, cpp_int Number)
-{
+void Hexer(char* Hex_Code, cpp_int Number) {
 	const char hexDigits[] = "0123456789abcdef";
-	int digit;
-	int Length;
-	int i = 0;
+	int Length = 0;
+	cpp_int temp = Number;
 
-	while((Number >> i) > cpp_int(0))
+	while(temp > 0)	//Count the number of hex digits needed
 	{
-		i+=4;
+		temp >>= 4;
+		Length++;
 	}
-	Length = i/4-1;
-	i /= 4;
 
-	while(i != 0)
+	if(Length == 0)
 	{
-		digit = int((Number >> 4*i) & 0xF); // Extract 4 bits at a time
-		Hex_Code[Length-i] = hexDigits[digit];
-		i--;
+		Hex_Code[0] = '0';	//If the number is zero, the hexadecimal representation is "0"
+		Hex_Code[1] = '\0';
+		return;
 	}
-	Hex_Code[Length+1] = char(0);
+
+	// Fill Hex_Code from right to left
+	for (int i = Length - 1; i >= 0; i--)
+	{
+		int digit = int((Number >> (4 * i)) & 0xF);	//Extract 4 bits at a time
+		Hex_Code[Length - i - 1] = hexDigits[digit];
+	}
+
+	Hex_Code[Length] = '\0';	//Null-terminate the string
 }
-
 
 
 
