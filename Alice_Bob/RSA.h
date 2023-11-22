@@ -140,10 +140,8 @@ cpp_int RSA::Encrypt(uint32_t message[], int length)
 		Number <<= 32;
 		Number += message[i];
 	}
-cout << hex << Number << endl;
-	Number = Encrypt(Number);
-cout << Number << endl;
-	return(Number);
+
+	return(Encrypt(Number));
 }
 
 cpp_int RSA::Encrypt(cpp_int message)

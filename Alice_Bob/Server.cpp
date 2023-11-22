@@ -91,8 +91,8 @@ void Initalize_RSA()
 	oRSA_Keys.close();
 
 	oRSA_Keys.open("./Certificate");
-	char Cert[6000] = "Server Public Key: ";
-	char Hex_Code[2000];
+	char Cert[3500] = "Server Public Key: ";
+	char Hex_Code[1000];
 	Hexer(Hex_Code, RSA_Encryption.Public_key_e());
 	strcat(Cert, Hex_Code);
 	strcat(Cert, ",");
