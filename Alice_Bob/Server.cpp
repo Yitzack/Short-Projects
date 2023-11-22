@@ -13,12 +13,13 @@ using ip::tcp;
 void Initalize_RSA();
 void Hexer(char*, cpp_int);
 
-RSA* RSA_Encryption;
+RSA RSA_Encryption;
 SHA256 Hashing;
 
 int main()
 {
-	io_service io;	//I/O Context
+	Initalize_RSA();
+	/*io_service io;	//I/O Context
 	tcp::acceptor acceptor(io, tcp::endpoint(tcp::v4(), 50624));	//Create a connection acceptor into the I/O context
 
 	//while(true)
@@ -38,7 +39,7 @@ int main()
 		tcp::endpoint remote_endpoint = socket.remote_endpoint();	//Record the socket remote endpoint
 		string client_ip = remote_endpoint.address().to_string();	//Pull out the IP address of the remote endpoint
 		cout << "Message received from IP address: " << client_ip << endl;	//Log the IP address
-	}
+	}*/
 
 	return(0);
 }
@@ -53,6 +54,7 @@ void Initalize_RSA()
 	{
 		char dstr1[1101], estr1[101], nstr1[1101];
 		iRSA_Keys.getline(dstr1, 1101);
+		iRSA_Keys.getline(dstr1, 1101);
 		iRSA_Keys.getline(estr1, 101);
 		iRSA_Keys.getline(nstr1, 1101);
 		iRSA_Keys.close();
@@ -62,44 +64,74 @@ void Initalize_RSA()
 		cpp_int d(strcat(dstr,dstr1));
 		cpp_int e(strcat(estr,estr1));
 		cpp_int n(strcat(nstr,nstr1));
-		RSA_Encryption = new RSA(d,e,n);
+		if(d <= 5)
+			return;
+		try
+		{
+			RSA_Encryption.set_Keys(d,e,n);
+		}
+		catch(const RSAException& Error)
+		{
+			if(Error.errorType == RSAException::ErrorType::MismatchKeys)
+				goto Redo_RSA;
+			else
+				throw;
+		}
+		return;
 	}
-	else
-	{
-		RSA_Encryption = new RSA();
-		iRSA_Keys.close();
-		oRSA_Keys.open("./RSA_Keys");
-		oRSA_Keys << hex;
-		RSA_Encryption->Print_Private_Key(oRSA_Keys);
-		oRSA_Keys << RSA_Encryption->Public_key_e() << endl;
-		oRSA_Keys << RSA_Encryption->Public_key_n();
-		oRSA_Keys.close();
 
-		oRSA_Keys.open("./Certificate");
-		char Cert[6000] = "Server Public Key: ";
-		char Hex_Code[2000];
-		Hexer(Hex_Code, RSA_Encryption->Public_key_e());
-		strcpy(Cert, Hex_Code);
-		strcpy(Cert, ",");
-		Hexer(Hex_Code, RSA_Encryption->Public_key_n());
-		strcpy(Cert, Hex_Code);
-		strcpy(Cert, "\n,Server IP: 127.0.0.1\n,Server Location: Author's Bedroom\n,Server Organization: Independent\n,Certificate Validity Period: Nov 30, 2024\n,CA Name: Author\n,CA Public Key: ");
-		Hexer(Hex_Code, RSA_Encryption->Public_key_e());
-		strcpy(Cert, Hex_Code);
-		strcpy(Cert, ",");
-		Hexer(Hex_Code, RSA_Encryption->Public_key_n());
-		strcpy(Cert, Hex_Code);
-		strcpy(Cert, "\nCertificate Serial Number: 0\n");
-		uint32_t Hash[8];
-		Hashing.Hash_func(Cert, strlen(Cert), Hash);
-		oRSA_Keys << Cert << "Signature: " << RSA_Encryption->Encrypt(Hash, 8);
-		oRSA_Keys.close();
-	}
+	Redo_RSA:
+	RSA_Encryption.initalize();
+	iRSA_Keys.close();
+	oRSA_Keys.open("./RSA_Keys");
+	oRSA_Keys << hex;
+	RSA_Encryption.Print_Private_Key(oRSA_Keys);
+	oRSA_Keys << RSA_Encryption.Public_key_e() << endl;
+	oRSA_Keys << RSA_Encryption.Public_key_n();
+	oRSA_Keys.close();
+
+	oRSA_Keys.open("./Certificate");
+	char Cert[6000] = "Server Public Key: ";
+	char Hex_Code[2000];
+	Hexer(Hex_Code, RSA_Encryption.Public_key_e());
+	strcat(Cert, Hex_Code);
+	strcat(Cert, ",");
+	Hexer(Hex_Code, RSA_Encryption.Public_key_n());
+	strcat(Cert, Hex_Code);
+	strcat(Cert, "\nServer IP: 127.0.0.1\nServer Location: Author's Bedroom\nServer Organization: Independent\nCertificate Validity Period: Nov 30, 2024\nCA Name: Author\nCA Public Key: ");
+	Hexer(Hex_Code, RSA_Encryption.Public_key_e());
+	strcat(Cert, Hex_Code);
+	strcat(Cert, ",");
+	Hexer(Hex_Code, RSA_Encryption.Public_key_n());
+	strcat(Cert, Hex_Code);
+	strcat(Cert, "\nCertificate Serial Number: 0\n");
+	uint32_t Hash[8];
+	Hashing.Hash_func(Cert, strlen(Cert), Hash);
+	oRSA_Keys << Cert << "Signature: " << RSA_Encryption.Encrypt(Hash, 8);
+	oRSA_Keys.close();
 }
 
 void Hexer(char* Hex_Code, cpp_int Number)
 {
-	Hex_Code[0] = 0x00;
+	const char hexDigits[] = "0123456789abcdef";
+	int digit;
+	int Length;
+	int i = 0;
+
+	while((Number >> i) > cpp_int(0))
+	{
+		i+=4;
+	}
+	Length = i/4-1;
+	i /= 4;
+
+	while(i != 0)
+	{
+		digit = int((Number >> 4*i) & 0xF); // Extract 4 bits at a time
+		Hex_Code[Length-i] = hexDigits[digit];
+		i--;
+	}
+	Hex_Code[Length+1] = char(0);
 }
 
 

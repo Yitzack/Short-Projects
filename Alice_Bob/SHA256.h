@@ -72,10 +72,10 @@ void SHA256::DataCopy(uint32_t w[], uint8_t* Message)
 
 void SHA256::Hash_func(char* Message, uint64_t Length, uint32_t* Hash)
 {
-	uint8_t* Mess = new uint8_t[Length];
+	int Blocks = ((Length<<3)+64)/512+1;
+	uint8_t* Mess = new uint8_t[Blocks*64];
 	memcpy(Mess, Message, Length);
 	Hash_func(Mess, Length, Hash);
-	delete Mess;
 }
 
 void SHA256::Hash_func(uint8_t* Message, uint64_t Length, uint32_t* Hash)

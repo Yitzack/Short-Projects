@@ -21,6 +21,8 @@ class RSAException : public exception
 			MismatchKeys
 		};
 
+		ErrorType errorType;
+
 		RSAException(ErrorType type) : errorType(type)	//Constructor of the RSAException
 		{
 			switch(type)	//Setting the error message based off the error type
@@ -42,7 +44,6 @@ class RSAException : public exception
 			return(errorMessage.c_str());
 		}
 	private:
-		ErrorType errorType;
 		string errorMessage;
 };
 
@@ -61,6 +62,7 @@ class RSA
 		cpp_int Decrypt(cpp_int);		//Decrypt with the message with the private key
 		void set_Public_key_n(cpp_int);	//Set the public key n=pq
 		void set_Public_key_e(cpp_int);	//Set the public key e such that (e*d)%lambda(n)=1
+		void set_Keys(cpp_int, cpp_int, cpp_int);
 		void initalize();			//Initalize the public and private key pairs
 		void Print_Private_Key(ostream&);	//Print the private key, under no circumstance shall this function provide the private key in program. It shall only go out of program to file, stdout, or stderr. The user will have to release the private key themselves directly or load it back in themselves.
 	private:
@@ -100,6 +102,15 @@ RSA::RSA(cpp_int d, cpp_int e, cpp_int n)
 		throw(RSAException(RSAException::ErrorType::MismatchKeys));
 }
 
+void RSA::set_Keys(cpp_int d, cpp_int e, cpp_int n)
+{
+	key_n = n;
+	public_key_e = e;
+	private_key_d = d;
+	if(PowMod(PowMod(0xFF, e, n), d, n) != 0xFF)
+		throw(RSAException(RSAException::ErrorType::MismatchKeys));
+}
+
 cpp_int RSA::Public_key_n()
 {
 	return(key_n);
@@ -124,12 +135,15 @@ cpp_int RSA::Encrypt(uint8_t message[], int length)
 cpp_int RSA::Encrypt(uint32_t message[], int length)
 {
 	cpp_int Number = message[0];
-	for(int i = 1; i <= length; i++)	//Need to include the null terminator
+	for(int i = 1; i < length; i++)	//Need to include the null terminator
 	{
 		Number <<= 32;
 		Number += message[i];
 	}
-	return(Encrypt(Number));
+cout << hex << Number << endl;
+	Number = Encrypt(Number);
+cout << Number << endl;
+	return(Number);
 }
 
 cpp_int RSA::Encrypt(cpp_int message)
@@ -282,14 +296,15 @@ cpp_int RSA::PowMod(cpp_int b, cpp_int n, cpp_int m)
 		return(0);
 
 	cpp_int answer = 1;
-	cpp_int bint = b%m;
+	b = b%m;
 
 	while(n > 0)
 	{
 		if(n%2 == 1)
-			answer = (answer*bint)%m;
+			answer = (answer*b)%m;
 		n >>= 1;
-		bint = (bint*bint)%m;
+//cout << hex << b << " " << m << endl;
+		b = (b*b)%m;
 	}
 
 	return(answer);
