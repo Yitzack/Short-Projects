@@ -53,30 +53,30 @@ class RSA
 		RSA();					//Do nothing constructor
 		RSA(cpp_int, cpp_int);			//Set the public key of the RSA object
 		RSA(cpp_int, cpp_int, cpp_int);	//Set the private and public key of the RSA object
-		cpp_int Public_key_n();		//Output the public key n=pq
-		cpp_int Public_key_e();		//Output the public key e such that (e*d)%lamda(n)=1
-		cpp_int Encrypt(uint8_t[], int);	//Encrypt with the message with the public key
-		cpp_int Encrypt(uint32_t[], int);	//Encrypt with the message with the public key
-		cpp_int Encrypt(cpp_int);		//Encrypt with the message with the public key
-		cpp_int Sign(cpp_int);			//Sign the message, that is encrypt with the message with the private key
-		cpp_int Decrypt(cpp_int);		//Decrypt with the message with the private key
+		cpp_int Public_key_n() const;		//Output the public key n=pq
+		cpp_int Public_key_e() const;		//Output the public key e such that (e*d)%lamda(n)=1
+		cpp_int Encrypt(uint8_t[], int) const;//Encrypt with the message with the public key
+		cpp_int Encrypt(uint32_t[], int) const;//Encrypt with the message with the public key
+		cpp_int Encrypt(cpp_int) const;	//Encrypt with the message with the public key
+		cpp_int Sign(cpp_int) const;		//Sign the message, that is encrypt with the message with the private key
+		cpp_int Decrypt(cpp_int) const;	//Decrypt with the message with the private key
 		void set_Public_key_n(cpp_int);	//Set the public key n=pq
 		void set_Public_key_e(cpp_int);	//Set the public key e such that (e*d)%lambda(n)=1
 		void set_Keys(cpp_int, cpp_int, cpp_int);
 		void initalize();			//Initalize the public and private key pairs
-		void Print_Private_Key(ostream&);	//Print the private key, under no circumstance shall this function provide the private key in program. It shall only go out of program to file, stdout, or stderr. The user will have to release the private key themselves directly or load it back in themselves.
+		void Print_Private_Key(ostream&) const;//Print the private key, under no circumstance shall this function provide the private key in program. It shall only go out of program to file, stdout, or stderr. The user will have to release the private key themselves directly or load it back in themselves.
 	private:
 		cpp_int private_key_d;
 		cpp_int key_n;
 		cpp_int public_key_e;
-		bool AKS_Prime_Test(cpp_int);		//AKS primaility test (not used in the current implemenation because it takes forever)
-		bool prime_test(cpp_int);		//Probablistic prime test, uses the first 100 primes as witness numbers. Primes are particularlly good at the task.
-		cpp_int Carmichael(cpp_int, cpp_int);	//Carmichael Totient Function of p*q (lcm(p-1, q-1)=(q-1)(p-1)/(gcd(p-1, q-1)))
-		cpp_int Euclidean(cpp_int, cpp_int);	//Extended Euclidean algorithm to solve 1=(d*e)%lambda
-		cpp_int GCD(cpp_int, cpp_int);	//Greatest common denominator
-		cpp_int EulerTotient(cpp_int);	//Euler Totient Function
-		cpp_int PowMod(cpp_int b, cpp_int n, cpp_int m);	//returns (b^n)%m
-		cpp_int pow(cpp_int b, cpp_int n);	//return b^n
+		bool AKS_Prime_Test(cpp_int) const;		//AKS primaility test (not used in the current implemenation because it takes forever)
+		bool prime_test(cpp_int) const;		//Probablistic prime test, uses the first 100 primes as witness numbers. Primes are particularlly good at the task.
+		cpp_int Carmichael(cpp_int, cpp_int) const;	//Carmichael Totient Function of p*q (lcm(p-1, q-1)=(q-1)(p-1)/(gcd(p-1, q-1)))
+		cpp_int Euclidean(cpp_int, cpp_int) const;	//Extended Euclidean algorithm to solve 1=(d*e)%lambda
+		cpp_int GCD(cpp_int, cpp_int) const;		//Greatest common denominator
+		cpp_int EulerTotient(cpp_int) const;		//Euler Totient Function
+		cpp_int PowMod(cpp_int b, cpp_int n, cpp_int m) const;	//returns (b^n)%m
+		cpp_int pow(cpp_int b, cpp_int n) const;	//return b^n
 };
 #endif
 
@@ -111,17 +111,17 @@ void RSA::set_Keys(cpp_int d, cpp_int e, cpp_int n)
 		throw(RSAException(RSAException::ErrorType::MismatchKeys));
 }
 
-cpp_int RSA::Public_key_n()
+cpp_int RSA::Public_key_n() const
 {
 	return(key_n);
 }
 
-cpp_int RSA::Public_key_e()
+cpp_int RSA::Public_key_e() const
 {
 	return(public_key_e);
 }
 
-cpp_int RSA::Encrypt(uint8_t message[], int length)
+cpp_int RSA::Encrypt(uint8_t message[], int length) const
 {
 	cpp_int Number = message[0];
 	for(int i = 1; i <= length; i++)	//Need to include the null terminator
@@ -132,7 +132,7 @@ cpp_int RSA::Encrypt(uint8_t message[], int length)
 	return(Encrypt(Number));
 }
 
-cpp_int RSA::Encrypt(uint32_t message[], int length)
+cpp_int RSA::Encrypt(uint32_t message[], int length) const
 {
 	cpp_int Number = message[0];
 	for(int i = 1; i < length; i++)	//Need to include the null terminator
@@ -144,7 +144,7 @@ cpp_int RSA::Encrypt(uint32_t message[], int length)
 	return(Encrypt(Number));
 }
 
-cpp_int RSA::Encrypt(cpp_int message)
+cpp_int RSA::Encrypt(cpp_int message) const
 {
 	if(message > key_n)
 	{
@@ -154,7 +154,7 @@ cpp_int RSA::Encrypt(cpp_int message)
 	return(PowMod(message,public_key_e,key_n));
 }
 
-cpp_int RSA::Sign(cpp_int message)
+cpp_int RSA::Sign(cpp_int message) const
 {
 	if(message > key_n)
 	{
@@ -164,7 +164,7 @@ cpp_int RSA::Sign(cpp_int message)
 	return(PowMod(message,private_key_d,key_n));
 }
 
-cpp_int RSA::Decrypt(cpp_int code)
+cpp_int RSA::Decrypt(cpp_int code) const
 {
 	if(code > key_n)
 	{
@@ -186,7 +186,7 @@ void RSA::set_Public_key_e(cpp_int e)
 	return;
 }
 
-void RSA::Print_Private_Key(ostream& out)
+void RSA::Print_Private_Key(ostream& out) const
 {
 	out << "Under no circumstance should you share this with anyone else. It is a private key and should remain that way." << endl;
 	out << hex << private_key_d << endl;
@@ -236,7 +236,7 @@ void RSA::initalize()
 	}while((private_key_d*public_key_e)%lambda != 1);
 }
 
-cpp_int RSA::Euclidean(cpp_int a, cpp_int b)
+cpp_int RSA::Euclidean(cpp_int a, cpp_int b) const
 {
 	pair<cpp_int,cpp_int> r(a,b);
 	pair<cpp_int,cpp_int> s(1,0);
@@ -254,7 +254,7 @@ cpp_int RSA::Euclidean(cpp_int a, cpp_int b)
 	return(s.first);
 }
 
-bool RSA::prime_test(cpp_int n)
+bool RSA::prime_test(cpp_int n) const
 {
 	int Primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541}; //100 primes
 
@@ -288,7 +288,7 @@ bool RSA::prime_test(cpp_int n)
 	return(true);
 }
 
-cpp_int RSA::PowMod(cpp_int b, cpp_int n, cpp_int m)
+cpp_int RSA::PowMod(cpp_int b, cpp_int n, cpp_int m) const
 {
 	if(m == 1)
 		return(0);
@@ -301,14 +301,13 @@ cpp_int RSA::PowMod(cpp_int b, cpp_int n, cpp_int m)
 		if(n%2 == 1)
 			answer = (answer*b)%m;
 		n >>= 1;
-//cout << hex << b << " " << m << endl;
 		b = (b*b)%m;
 	}
 
 	return(answer);
 }
 
-cpp_int RSA::pow(cpp_int b, cpp_int n)
+cpp_int RSA::pow(cpp_int b, cpp_int n) const
 {
 	cpp_int answer = 1;
 	cpp_int bint = b;
@@ -324,12 +323,12 @@ cpp_int RSA::pow(cpp_int b, cpp_int n)
 	return(answer);
 }
 
-cpp_int RSA::Carmichael(cpp_int p, cpp_int q)
+cpp_int RSA::Carmichael(cpp_int p, cpp_int q) const
 {
 	return((q-1)*(p-1)/(GCD(p-1, q-1)));
 }
 
-cpp_int RSA::GCD(cpp_int u, cpp_int v)
+cpp_int RSA::GCD(cpp_int u, cpp_int v) const
 {
 	cpp_int answer = 1;
 	if(u == 0)
@@ -362,7 +361,7 @@ cpp_int RSA::GCD(cpp_int u, cpp_int v)
 	return(answer * u);
 }
 
-cpp_int RSA::EulerTotient(cpp_int a)
+cpp_int RSA::EulerTotient(cpp_int a) const
 {
 	cpp_int answer = 0;
 	for(cpp_int i = 1; i <= a; i++)
@@ -370,7 +369,7 @@ cpp_int RSA::EulerTotient(cpp_int a)
 	return(answer);
 }
 
-bool RSA::AKS_Prime_Test(cpp_int n)
+bool RSA::AKS_Prime_Test(cpp_int n) const
 {
 	//Test perfect power
 	for(int b = 2; b <= log((long double)(n))/log(2.); b++)

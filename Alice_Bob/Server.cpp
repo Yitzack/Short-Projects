@@ -16,6 +16,34 @@ void Hexer(char*, cpp_int);
 RSA RSA_Encryption;
 SHA256 Hashing;
 
+class Client
+{
+	public:
+		Client(int);
+		void Send_Message(uint8_t[], int) const;
+		void Recieve_Message(uint8_t[], int&) const;
+	private:
+		RSA RSA_Encryption;
+		AES AES_Encryption;
+		io_service io;
+		tcp::acceptor acceptor;
+		int socket_number;
+};
+
+Client::Client(int socket_num)
+{
+	socket_number = socket_num;
+	acceptor(io, tcp::endpoint(tcp:;v4(), socket_number));
+}
+
+void Client::Send_Message(uint8_t Message[], int Length) const
+{
+}
+
+void Client::Recieve_Message(uint8_t Message[], int& Length) const
+{
+}
+
 int main()
 {
 	Initalize_RSA();
@@ -107,7 +135,7 @@ void Initalize_RSA()
 	strcat(Cert, "\nCertificate Serial Number: 0\n");
 	uint32_t Hash[8];
 	Hashing.Hash_func(Cert, strlen(Cert), Hash);
-	oRSA_Keys << Cert << "Signature: " << RSA_Encryption.Encrypt(Hash, 8) << endl;
+	oRSA_Keys << Cert << "Signature: " << RSA_Encryption.Sign(Hash, 8) << endl;
 	oRSA_Keys.close();
 }
 

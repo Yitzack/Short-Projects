@@ -7,10 +7,11 @@ class Hamming
 		Hamming(){};
 		Hamming(uint8_t[]);
 		void Encode(uint8_t[]);
-		bool Decode(uint8_t[]);
-		bool Decode(uint512_t, uint8_t[]);
+		bool Decode(uint8_t[]) const;
+		bool Decode(uint512_t, uint8_t[]) const;
 		void Set_Encoding(uint512_t);
-		uint512_t Export_Encoding();
+		void Set_Encoding(Hamming);
+		uint512_t Export_Encoding() const;
 		void FlipBit(int);
 	private:
 		uint512_t Encoding;
@@ -31,10 +32,10 @@ class Hamming
 		uint512_t("0x00000000000000000000000000000000ffffffffffffffffffffffffffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffff"),
 		uint512_t("0x0000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
 		uint512_t("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")};
-		bool Parity(uint512_t, uint512_t);
-		uint512_t InsertBit(uint512_t, int, bool);
-		uint512_t RemoveBit(uint512_t, int);
-		uint512_t FlipBit(uint512_t, int);
+		bool Parity(uint512_t, uint512_t) const;
+		uint512_t InsertBit(uint512_t, int, bool) const;
+		uint512_t RemoveBit(uint512_t, int) const;
+		uint512_t FlipBit(uint512_t, int) const;
 };
 
 Hamming::Hamming(uint8_t Message[])
@@ -65,12 +66,12 @@ void Hamming::Encode(uint8_t Message[])
 	Encoding |= uint512_t(Parity(Encoding, BitMasks[15])) << 511;
 }
 
-bool Hamming::Decode(uint8_t Message[])
+bool Hamming::Decode(uint8_t Message[]) const
 {
 	return(Decode(Encoding,Message));
 }
 
-bool Hamming::Decode(uint512_t Coding, uint8_t Message[])
+bool Hamming::Decode(uint512_t Coding, uint8_t Message[]) const
 {
 	int i;
 	uint16_t Parity_bit_error = 0;	//Location of flipped bit
@@ -113,12 +114,18 @@ void Hamming::Set_Encoding(uint512_t Code)
 	return;
 }
 
-uint512_t Hamming::Export_Encoding()
+void Hamming::Set_Encoding(Hamming Code)
+{
+	Encoding = Code.Encoding;
+	return;
+}
+
+uint512_t Hamming::Export_Encoding() const
 {
 	return(Encoding);
 }
 
-bool Hamming::Parity(uint512_t num, uint512_t mask)
+bool Hamming::Parity(uint512_t num, uint512_t mask) const
 {
 	uint512_t maskedBits = num & mask;	//Extract only the specified bits
 
@@ -132,7 +139,7 @@ bool Hamming::Parity(uint512_t num, uint512_t mask)
 	return(parity);
 }
 
-uint512_t Hamming::InsertBit(uint512_t number, int position, bool Bit)
+uint512_t Hamming::InsertBit(uint512_t number, int position, bool Bit) const
 {
 	uint512_t mask = (uint512_t(1) << position) - 1;	//Create a mask to clear bits to the left of the position
 	uint512_t leftBits = (number & (~mask)) << 1;		//Shift bits to the left by 1 position
@@ -141,7 +148,7 @@ uint512_t Hamming::InsertBit(uint512_t number, int position, bool Bit)
 	return(leftBits | rightBits | (uint512_t(Bit) << position));	//Combine both parts with the bit inserted in between
 }
 
-uint512_t Hamming::RemoveBit(uint512_t number, int position)
+uint512_t Hamming::RemoveBit(uint512_t number, int position) const
 {
 	uint512_t mask = (uint512_t(1) << position) - 1;	//Create a mask to clear bits to the left of the position
 	uint512_t leftBits = (number & (~mask)) >> 1;		//Shift bits to the left by 1 position
@@ -150,7 +157,7 @@ uint512_t Hamming::RemoveBit(uint512_t number, int position)
 	return(leftBits | rightBits);	//Combine both parts
 }
 
-uint512_t Hamming::FlipBit(uint512_t num, int Position)
+uint512_t Hamming::FlipBit(uint512_t num, int Position) const
 {
 	// Flipping the bit
 	uint512_t mask = (uint512_t(1) << Position);

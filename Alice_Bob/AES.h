@@ -15,12 +15,12 @@ class AES
 		AES();
 		AES(uint8_t[]);
 		AES(GF256[]);
-		void Encrypt(GF256[], GF256*, int);
-		void Decrypt(GF256[], GF256*, int);
-		void Encrypt(uint8_t[], GF256*, int);
-		void Decrypt(uint8_t[], GF256*, int);
-		void Encrypt(uint32_t[], GF256*, int);
-		void Decrypt(uint32_t[], GF256*, int);
+		void Encrypt(GF256[], GF256*, int) const;
+		void Decrypt(GF256[], GF256*, int) const;
+		void Encrypt(uint8_t[], GF256*, int) const;
+		void Decrypt(uint8_t[], GF256*, int) const;
+		void Encrypt(uint32_t[], GF256*, int) const;
+		void Decrypt(uint32_t[], GF256*, int) const;
 		void Set_Key(uint8_t[]);
 		void Set_Key(GF256[]);
 	private:
@@ -32,22 +32,22 @@ class AES
 		void Construct_SBox();
 		void Construct_InvSBox();
 		void Key_Expansion(uint8_t[]);
-		GF256 circularLeftShift(GF256, int);
-		void Rotate_Word(GF256 *, int);
-		void Sub_Word(GF256 *);
-		void Round(GF256[]);
-		void Inv_Round(GF256[],int);
-		void Partial_Round(GF256[]);
-		void Inv_Partial_Round(GF256[]);
-		void Inv_Rotate_Word(GF256 *, int);
-		void Inv_Sub_Word(GF256 *);
-		void KeyAddition(GF256[], GF256*, int);
-		void Output(GF256*, const char[]);
+		GF256 circularLeftShift(GF256, int) const;
+		void Rotate_Word(GF256 *, int) const;
+		void Sub_Word(GF256 *) const;
+		void Round(GF256[]) const;
+		void Inv_Round(GF256[],int) const;
+		void Partial_Round(GF256[]) const;
+		void Inv_Partial_Round(GF256[]) const;
+		void Inv_Rotate_Word(GF256 *, int) const;
+		void Inv_Sub_Word(GF256 *) const;
+		void KeyAddition(GF256[], GF256*, int) const;
+		void Output(GF256*, const char[]) const;
 };
 
 #endif
 
-void AES::Output(GF256* Text, const char Note[])
+void AES::Output(GF256* Text, const char Note[]) const
 {
 	for(int i = 0; i < 16; i++)
 	{
@@ -95,7 +95,7 @@ void AES::Set_Key(GF256 Key[])
 	Key_Expansion(IntKey);
 }
 
-void AES::Decrypt(uint8_t CipherText8[], GF256* PlainText, int length)
+void AES::Decrypt(uint8_t CipherText8[], GF256* PlainText, int length) const
 {
 	int Blocks = length/16;	//How long is the plaintext
 	if(length%16 != 0)
@@ -107,7 +107,7 @@ void AES::Decrypt(uint8_t CipherText8[], GF256* PlainText, int length)
 	Decrypt(CipherText, PlainText, length);
 }
 
-void AES::Encrypt(uint8_t PlainText8[], GF256* CipherText, int length)
+void AES::Encrypt(uint8_t PlainText8[], GF256* CipherText, int length) const
 {
 	int Blocks = length/16;	//How long is the plaintext
 	if(length%16 != 0)
@@ -119,7 +119,7 @@ void AES::Encrypt(uint8_t PlainText8[], GF256* CipherText, int length)
 	Encrypt(PlainText, CipherText, length);
 }
 
-void AES::Decrypt(uint32_t CipherText32[], GF256* PlainText, int length)
+void AES::Decrypt(uint32_t CipherText32[], GF256* PlainText, int length) const
 {
 	int Blocks = length/16;	//How long is the plaintext
 	if(length%16 != 0)
@@ -136,7 +136,7 @@ void AES::Decrypt(uint32_t CipherText32[], GF256* PlainText, int length)
 	Decrypt(CipherText, PlainText, length);
 }
 
-void AES::Encrypt(uint32_t PlainText32[], GF256* CipherText, int length)
+void AES::Encrypt(uint32_t PlainText32[], GF256* CipherText, int length) const
 {
 	int Blocks = length/16;	//How long is the plaintext
 	if(length%16 != 0)
@@ -153,7 +153,7 @@ void AES::Encrypt(uint32_t PlainText32[], GF256* CipherText, int length)
 	Encrypt(PlainText, CipherText, length);
 }
 
-void AES::Decrypt(GF256 CipherText[], GF256* PlainText, int length)
+void AES::Decrypt(GF256 CipherText[], GF256* PlainText, int length) const
 {
 	int Blocks = length/16;	//How long is the plaintext
 	if(length%16 != 0)
@@ -177,7 +177,7 @@ void AES::Decrypt(GF256 CipherText[], GF256* PlainText, int length)
 		PlainText[i] = 0;
 }
 
-void AES::Encrypt(GF256 PlainText[], GF256* CipherText, int length)
+void AES::Encrypt(GF256 PlainText[], GF256* CipherText, int length) const
 {
 	int Blocks = length/16;	//How long is the plaintext
 	int i,j;
@@ -203,7 +203,7 @@ void AES::Encrypt(GF256 PlainText[], GF256* CipherText, int length)
 	}
 }
 
-void AES::Inv_Partial_Round(GF256 Text[])
+void AES::Inv_Partial_Round(GF256 Text[]) const
 {
 	GF256 Block[4][4];
 	int i,j;
@@ -225,7 +225,7 @@ void AES::Inv_Partial_Round(GF256 Text[])
 	return;
 }
 
-void AES::Partial_Round(GF256 Text[])
+void AES::Partial_Round(GF256 Text[]) const
 {
 	GF256 Block[4][4];
 	GF256 M[4][4] = {{GF256(2),GF256(3),GF256(1),GF256(1)},
@@ -251,7 +251,7 @@ void AES::Partial_Round(GF256 Text[])
 	return;
 }
 
-void AES::Inv_Round(GF256 Text[], int Round)
+void AES::Inv_Round(GF256 Text[], int Round) const
 {
 	GF256 Block[4][4];
 	GF256 Block1[4][4];
@@ -293,7 +293,7 @@ void AES::Inv_Round(GF256 Text[], int Round)
 	return;
 }
 
-void AES::Round(GF256 Text[])
+void AES::Round(GF256 Text[]) const
 {
 	GF256 Block[4][4];
 	GF256 M[4][4] = {{GF256(2),GF256(3),GF256(1),GF256(1)},
@@ -323,7 +323,7 @@ void AES::Round(GF256 Text[])
 	return;
 }
 
-void AES::KeyAddition(GF256 Text[], GF256* Expanded_Key, int start_Text)
+void AES::KeyAddition(GF256 Text[], GF256* Expanded_Key, int start_Text) const
 {
 	for(int i = 0; i < 16; i++)
 	{
@@ -383,7 +383,7 @@ void AES::Key_Expansion(uint8_t Key[])
 	}
 }
 
-void AES::Rotate_Word(GF256 * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
+void AES::Rotate_Word(GF256 * Word, int Shift) const	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
 {
 	GF256 temp[2];
 
@@ -427,13 +427,13 @@ void AES::Rotate_Word(GF256 * Word, int Shift)	//Useful for ShiftRows() and RotW
 	}*/
 }
 
-void AES::Sub_Word(GF256 * Word)	//Substitute from the SBox for 4 bytes
+void AES::Sub_Word(GF256 * Word) const	//Substitute from the SBox for 4 bytes
 {
 	for(int i = 0; i < 4; i++)
 		Word[i] = SBox[Word[i].to_int()];
 }
 
-void AES::Inv_Rotate_Word(GF256 * Word, int Shift)	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
+void AES::Inv_Rotate_Word(GF256 * Word, int Shift) const	//Useful for ShiftRows() and RotWord() in specification. Shift to the left Shift elements. Word had better be 4 bytes or there will be problems.
 {
 	GF256 temp[2];
 
@@ -477,13 +477,13 @@ void AES::Inv_Rotate_Word(GF256 * Word, int Shift)	//Useful for ShiftRows() and 
 	}*/
 }
 
-void AES::Inv_Sub_Word(GF256 * Word)	//Substitute from the SBox for 4 bytes
+void AES::Inv_Sub_Word(GF256 * Word) const	//Substitute from the SBox for 4 bytes
 {
 	for(int i = 0; i < 4; i++)
 		Word[i] = InvSBox[Word[i].to_int()];
 }
 
-GF256 AES::circularLeftShift(GF256 num, int shift)
+GF256 AES::circularLeftShift(GF256 num, int shift) const
 {
 	return((num << shift) | (num >> (8 - shift)));
 }
