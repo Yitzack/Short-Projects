@@ -17,11 +17,14 @@ Build everything:
 make all
 
 Build all libraries:  
-make librariers
+make libraries
 
 Build examples:  
 Progtams included as examples: AES RSA SHA256 Hamming  
 make examples
+
+Build Server and Client:  
+make core
 
 Build specific library or program:  
 Avalible libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a  
