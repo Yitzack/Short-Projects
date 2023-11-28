@@ -11,19 +11,22 @@ Will probably copy and paste into a Boid Simulation and/or Conway's Game of Life
 
 ## Compile directions for g++
 
-First install the Boost library.  
-```g++ Client.cpp -o Client -pthread -O3```  
-```g++ Server.cpp -o Server -pthread -O3```
+You can use the included makefile to build everything. If you are missing the Boost library, it will let you know and build anything it can.
 
-First install the Boost library.  
-```g++ RSA_gen.cpp -O3```
+Build everything:  
+make all
 
-No dependency on the Boost library.  
-```g++ AES_gen.cpp -O3```
+Build all libraries:  
+make librariers
 
-No dependency on the Boost library.  
-```g++ SHA256_gen.cpp -O3```
+Build examples:  
+Progtams included as examples: AES RSA SHA256 Hamming  
+make examples
 
-First install the Boost library.  
-```g++ Hamming_test.cpp -O3```
+Build specific library or program:  
+Avalible libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a  
+Avalible programs: Server Client AES RSA SHA256 Hamming  
+make <library or program>
 
+Remove all builds:  
+make clean

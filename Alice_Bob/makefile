@@ -12,9 +12,11 @@ OBJ = $(SRC:.cpp=.o)
 # Static libraries
 LIBS = libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a
 
-libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a
+libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a clean_objs
 
-all: libraries Server Client AES RSA SHA256 Hamming clean_objs
+examples: libraries AES RSA SHA256 Hamming clean_objs
+
+all: libraries Server Client examples clean_objs
 
 # Build libraries
 libAES.a: AES.cpp GF256.cpp
@@ -23,9 +25,13 @@ libAES.a: AES.cpp GF256.cpp
 	rm -f AES.o GF256.o
 
 libRSA.a: RSA.cpp
-	$(CC) $(CFLAGS) -c $^
-	ar rcs $@ RSA.o
-	rm -f RSA.o
+	@if [ ! -d /usr/include/boost ]; then \
+		echo "Boost library not found. Please install Boost!"; \
+	else \
+		$(CC) $(CFLAGS) -c $^; \
+		ar rcs $@ RSA.o; \
+		rm -f RSA.o; \
+	fi
 
 libSHA256.a: SHA256.cpp
 	$(CC) $(CFLAGS) -c $^
@@ -38,28 +44,49 @@ libGF256.a: GF256.cpp
 	rm -f GF256.o
 
 libHamming.a: Hamming.cpp
-	$(CC) $(CFLAGS) -c $^
-	ar rcs $@ Hamming.o
-	rm -f Hamming.o
+	@if [ ! -d /usr/include/boost ]; then \
+		echo "Boost library not found. Please install Boost!"; \
+	else \
+		$(CC) $(CFLAGS) -c $^; \
+		ar rcs $@ Hamming.o; \
+		rm -f Hamming.o; \
+	fi
 
 # Build server and client
 AES: $(LIBS) AES_gen.cpp
 	$(CC) $(CFLAGS) AES_gen.cpp -o $@ -L. -lAES -lGF256
 
+
 RSA: $(LIBS) RSA_gen.cpp
-	$(CC) $(CFLAGS) RSA_gen.cpp -o $@ -L. -lRSA
+	@if [ ! -d /usr/include/boost ]; then \
+		echo "Boost library not found. Please install Boost!"; \
+	else \
+		$(CC) $(CFLAGS) RSA_gen.cpp -o $@ -L. -lRSA; \
+	fi
 
 SHA256: $(LIBS) SHA256_gen.cpp
 	$(CC) $(CFLAGS) SHA256_gen.cpp -o $@ -L. -lSHA256
 
 Hamming: $(LIBS) Hamming_test.cpp
-	$(CC) $(CFLAGS) Hamming_test.cpp -o $@ -L. -lHamming
+	@if [ ! -d /usr/include/boost ]; then \
+		echo "Boost library not found. Please install Boost!"; \
+	else \
+		$(CC) $(CFLAGS) Hamming_test.cpp -o $@ -L. -lHamming; \
+	fi
 
 Server: $(LIBS) Server.cpp
-	$(CC) $(CFLAGS) Server.cpp -o $@ -L. -lAES -lRSA -lSHA256 -lGF256 -lHamming
+	@if [ ! -d /usr/include/boost ]; then \
+		echo "Boost library not found. Please install Boost!"; \
+	else \
+		$(CC) $(CFLAGS) Server.cpp -o $@ -L. -lAES -lRSA -lSHA256 -lGF256 -lHamming; \
+	fi
 
 Client: $(LIBS) Client.cpp
-	$(CC) $(CFLAGS) Client.cpp -o $@ -L. -lAES -lRSA -lSHA256 -lGF256 -lHamming
+	@if [ ! -d /usr/include/boost ]; then \
+		echo "Boost library not found. Please install Boost!"; \
+	else \
+		$(CC) $(CFLAGS) Client.cpp -o $@ -L. -lAES -lRSA -lSHA256 -lGF256 -lHamming; \
+	fi
 
 clean_objs:
 	rm -f $(OBJ)
