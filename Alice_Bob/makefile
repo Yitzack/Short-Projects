@@ -16,7 +16,9 @@ libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a clean_objs
 
 examples: libraries AES RSA SHA256 Hamming clean_objs
 
-all: libraries Server Client examples clean_objs
+core: libraries Server Client clean_objs
+
+all: libraries core examples clean_objs
 
 # Build libraries
 libAES.a: AES.cpp GF256.cpp
@@ -30,18 +32,15 @@ libRSA.a: RSA.cpp
 	else \
 		$(CC) $(CFLAGS) -c $^; \
 		ar rcs $@ RSA.o; \
-		rm -f RSA.o; \
 	fi
 
 libSHA256.a: SHA256.cpp
 	$(CC) $(CFLAGS) -c $^
 	ar rcs $@ SHA256.o
-	rm -f SHA256.o
 
 libGF256.a: GF256.cpp
 	$(CC) $(CFLAGS) -c $^
 	ar rcs $@ GF256.o
-	rm -f GF256.o
 
 libHamming.a: Hamming.cpp
 	@if [ ! -d /usr/include/boost ]; then \
@@ -49,7 +48,6 @@ libHamming.a: Hamming.cpp
 	else \
 		$(CC) $(CFLAGS) -c $^; \
 		ar rcs $@ Hamming.o; \
-		rm -f Hamming.o; \
 	fi
 
 # Build server and client
