@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<cstring>
+#include<list>
 #include<boost/asio.hpp>
 #include"RSA.h"
 #include"AES.h"
@@ -20,6 +21,11 @@ class Client
 {
 	public:
 		Client(int);
+		~Client(){};
+		Client(const Client& other);			// Copy constructor
+		Client(Client&& other) noexcept;		// Move constructor
+		Client& operator=(const Client& other);	// Copy assignment operator
+		Client& operator=(Client&& other) noexcept;	// Move assignment operator
 		void Send_Message(uint8_t[], int) const;
 		void Recieve_Message(uint8_t[], int&) const;
 	private:
@@ -30,10 +36,52 @@ class Client
 		int socket_number;
 };
 
-Client::Client(int socket_num)
+Client::Client(int socket_num):io(),acceptor(io, tcp::endpoint(tcp::v4(), socket_num))
 {
 	socket_number = socket_num;
-	acceptor(io, tcp::endpoint(tcp:;v4(), socket_number));
+}
+
+// Copy constructor
+Client::Client(const Client& other)
+	: RSA_Encryption(other.RSA_Encryption), AES_Encryption(other.AES_Encryption),
+	  io(), acceptor(io, tcp::endpoint(tcp::v4(), socket_number)), socket_number(other.socket_number)
+{}
+
+// Move constructor
+Client::Client(Client&& other) noexcept
+	: RSA_Encryption(move(other.RSA_Encryption)), 
+	  AES_Encryption(move(other.AES_Encryption)),
+	  io(), acceptor(move(other.acceptor)),
+	  socket_number(other.socket_number)
+{}
+
+// Copy assignment operator
+Client& Client::operator=(const Client& other)
+{
+	if (this != &other)
+	{
+		RSA_Encryption = other.RSA_Encryption;
+		AES_Encryption = other.AES_Encryption;
+		// Copy or handle other members
+		acceptor.close(); // Close the previous acceptor
+		acceptor.open(tcp::v4());
+		acceptor.bind(tcp::endpoint(tcp::v4(), socket_number));
+		acceptor.listen();
+	}
+	return *this;
+}
+
+// Move assignment operator
+Client& Client::operator=(Client&& other) noexcept
+{
+	if (this != &other) {
+		RSA_Encryption = move(other.RSA_Encryption);
+		AES_Encryption = move(other.AES_Encryption);
+		socket_number = move(other.socket_number);
+		acceptor.close(); // Close the previous acceptor
+		acceptor = move(other.acceptor); // Move-assign the acceptor
+	}
+	return *this;
 }
 
 void Client::Send_Message(uint8_t Message[], int Length) const
@@ -49,19 +97,47 @@ int main()
 	Initalize_RSA();
 	io_service io;	//I/O Context
 	tcp::acceptor acceptor(io, tcp::endpoint(tcp::v4(), 50624));	//Create a connection acceptor into the I/O context
+	int last_used_port = 50624;
+	list<Client> Client_List;
 
 	//while(true)
 	{
 		tcp::socket socket(io);	//Creat a socket in the I/O Context
+		cout << "Server is ready for clients." << endl;
 		acceptor.accept(socket);	//Accept a connection on the socket, passively wait for a connection
 
-		uint8_t message[] = "Hello, client!";		//Before the client can send a message, send it a hello, it is looking for the hello
+		uint8_t message[1024];		//Before the client can send a message, send it a hello, it is looking for the hello
+		Hamming Hmessage[2];
 		boost::system::error_code ignored_error;	//Error Code that should be used in sending and receiving data. The error code can't be used unless a flag is also set.
-		socket.send(buffer(message));	//Send the message
+		cpp_int Number = RSA_Encryption.Public_key_n();
+		for(int i = 503; i >= 0; i--)
+		{
+			message[i] = uint8_t(Number & 0xFF);
+			Number >>= 8;
+		}
+		message[504] = '\n';
+		Number = RSA_Encryption.Public_key_e();
+		message[505] = uint8_t((Number & 0xFF0000) >> 16);
+		message[506] = uint8_t((Number & 0xFF00) >> 8);
+		message[507] = uint8_t(Number & 0xFF);
+		message[508] = '\n';
+		last_used_port++;
+		Number = last_used_port;
+		message[509] = uint8_t((Number & 0xFF00) >> 8);
+		message[510] = uint8_t(Number & 0xFF);
+		for(int i = 511; i < 1024; i++)
+			message[i] = 0;
+		Client_List.push_back(Client(last_used_port));
+
+		Hmessage[0].Encode(message);
+		Hmessage[1].Encode(&message[496]);
+		Hmessage[0].Decode(message);
+		Hmessage[1].Decode(&message[512]);
+		socket.send(buffer(message,1024));	//Send the message
 
 		uint8_t buf[1024];	//I don't know why a chacter array (either the primary datatype or std) has to be used to receive but a string can used to send.
 		socket.receive(buffer(buf,1024));	//Receive the reply
-		cout << "Received: " << buf << endl;
+		cout << "Server Received: " << buf << endl;
 
 		// Check the client's IP address and ignore messages from other sources if needed
 		tcp::endpoint remote_endpoint = socket.remote_endpoint();	//Record the socket remote endpoint
