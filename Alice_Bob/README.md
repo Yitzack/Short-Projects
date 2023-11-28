@@ -14,22 +14,22 @@ Will probably copy and paste into a Boid Simulation and/or Conway's Game of Life
 You can use the included makefile to build everything. If you are missing the Boost library, it will let you know and build anything it can.
 
 Build everything:  
-make all
+```make all```
 
 Build all libraries:  
-make libraries
+```make libraries```
 
 Build examples:  
 Progtams included as examples: AES RSA SHA256 Hamming  
-make examples
+```make examples```
 
 Build Server and Client:  
-make core
+```make core```
 
 Build specific library or program:  
 Avalible libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a  
 Avalible programs: Server Client AES RSA SHA256 Hamming  
-make <library or program>
+```make <library or program>```
 
 Remove all builds:  
-make clean
+```make clean```
