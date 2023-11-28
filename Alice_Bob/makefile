@@ -26,21 +26,25 @@ libAES.a: AES.cpp GF256.cpp
 	ar rcs $@ AES.o GF256.o
 	rm -f AES.o GF256.o
 
+
 libRSA.a: RSA.cpp
 	@if [ ! -d /usr/include/boost ]; then \
 		echo "Boost library not found. Please install Boost!"; \
 	else \
 		$(CC) $(CFLAGS) -c $^; \
 		ar rcs $@ RSA.o; \
+		rm -f RSA.o; \
 	fi
 
 libSHA256.a: SHA256.cpp
 	$(CC) $(CFLAGS) -c $^
 	ar rcs $@ SHA256.o
+	rm -f SHA256.o
 
 libGF256.a: GF256.cpp
 	$(CC) $(CFLAGS) -c $^
 	ar rcs $@ GF256.o
+	rm -f GF256.o
 
 libHamming.a: Hamming.cpp
 	@if [ ! -d /usr/include/boost ]; then \
@@ -48,24 +52,24 @@ libHamming.a: Hamming.cpp
 	else \
 		$(CC) $(CFLAGS) -c $^; \
 		ar rcs $@ Hamming.o; \
+		rm -f Hamming.o; \
 	fi
 
 # Build server and client
-AES: $(LIBS) AES_gen.cpp
+AES: libAES.a libGF256.a AES_gen.cpp
 	$(CC) $(CFLAGS) AES_gen.cpp -o $@ -L. -lAES -lGF256
 
-
-RSA: $(LIBS) RSA_gen.cpp
+RSA: libRSA.a RSA_gen.cpp
 	@if [ ! -d /usr/include/boost ]; then \
 		echo "Boost library not found. Please install Boost!"; \
 	else \
 		$(CC) $(CFLAGS) RSA_gen.cpp -o $@ -L. -lRSA; \
 	fi
 
-SHA256: $(LIBS) SHA256_gen.cpp
+SHA256: libSHA256.a SHA256_gen.cpp
 	$(CC) $(CFLAGS) SHA256_gen.cpp -o $@ -L. -lSHA256
 
-Hamming: $(LIBS) Hamming_test.cpp
+Hamming: libHamming.a Hamming_test.cpp
 	@if [ ! -d /usr/include/boost ]; then \
 		echo "Boost library not found. Please install Boost!"; \
 	else \
