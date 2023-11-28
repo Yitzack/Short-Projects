@@ -20,7 +20,7 @@ Build all libraries:
 ```make libraries```
 
 Build examples:  
-Progtams included as examples: AES RSA SHA256 Hamming  
+Programs included as examples: AES RSA SHA256 Hamming  
 ```make examples```
 
 Build Server and Client:  
