@@ -23,6 +23,7 @@ int main()
 	cpp_int Cypher = rsa.Encrypt(Message);
 	cpp_int Decrypt = rsa.Decrypt(Cypher);
 
+	cout << hex;
 	cout << "Message:  " << Message << endl;
 	cout << "Cypher:   " << Cypher << endl;
 	cout << "Message': " << Decrypt << endl;
@@ -31,7 +32,7 @@ int main()
 	else
 		cout << "Error" << endl;
 
-	cout << hex << rsa.Public_key_n() << " " << rsa.Public_key_e() << endl;
+	cout << rsa.Public_key_n() << " " << rsa.Public_key_e() << endl;
 	rsa.Print_Private_Key(cout);
 
 	return(0);
