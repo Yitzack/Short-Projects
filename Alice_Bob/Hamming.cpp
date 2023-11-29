@@ -72,6 +72,18 @@ bool Hamming::Decode(uint512_t Coding, uint8_t Message[]) const
 	return(!(Extra_Parity^Extra_Parity_Check));
 }
 
+void Hamming::Set_Encoding(uint8_t Code[64])
+{
+	uint512_t Number = 0;
+	for(int i = 0; i < 64; i++)
+	{
+		Number <<= 8;
+		Number += Code[i];
+	}
+	Encoding = Number;
+	return;
+}
+
 void Hamming::Set_Encoding(uint512_t Code)
 {
 	Encoding = Code;

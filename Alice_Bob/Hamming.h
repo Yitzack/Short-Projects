@@ -12,6 +12,7 @@ class Hamming
 		void Encode(uint8_t[]);
 		bool Decode(uint8_t[]) const;
 		bool Decode(uint512_t, uint8_t[]) const;
+		void Set_Encoding(uint8_t[64]);
 		void Set_Encoding(uint512_t);
 		void Set_Encoding(Hamming);
 		uint512_t Export_Encoding() const;
