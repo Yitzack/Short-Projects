@@ -107,9 +107,9 @@ int main()
 		acceptor.accept(socket);	//Accept a connection on the socket, passively wait for a connection
 
 		uint8_t message[1024];		//Before the client can send a message, send it a hello, it is looking for the hello
-		Hamming Hmessage[2];
+		Hamming Hmessage[9];
 		boost::system::error_code ignored_error;	//Error Code that should be used in sending and receiving data. The error code can't be used unless a flag is also set.
-		cpp_int Number = RSA_Encryption.Public_key_n();
+		cpp_int Number = RSA_Encryption.Public_key_n();	//Construct a message of the server's public keys and the port to communicate over
 		for(int i = 503; i >= 0; i--)
 		{
 			message[i] = uint8_t(Number & 0xFF);
@@ -127,17 +127,37 @@ int main()
 		message[510] = uint8_t(Number & 0xFF);
 		for(int i = 511; i < 1024; i++)
 			message[i] = 0;
-		Client_List.push_back(Client(last_used_port));
+		Client_List.push_back(Client(last_used_port));	//Place the new client in the client list
 
-		Hmessage[0].Encode(message);
-		Hmessage[1].Encode(&message[496]);
-		Hmessage[0].Decode(message);
-		Hmessage[1].Decode(&message[512]);
-		socket.send(buffer(message,1024));	//Send the message
+		for(int i = 0; i < 9; i++)	//Convert the message from uint8_t[] to Hamming[] and store in uint8_t[]
+			Hmessage[i].Encode(&message[i*62]);
+		for(int i = 0; i < 9; i++)
+		{
+			Number = Hmessage[i].Export_Encoding();
+			for(int j = 63; j >= 0; j--)
+			{
+				message[i*64+j] = uint8_t(Number & 0xff);
+				Number >>= 8;
+			}
+		}
+		socket.send(buffer(message,576));	//Send the message
 
 		uint8_t buf[1024];	//I don't know why a chacter array (either the primary datatype or std) has to be used to receive but a string can used to send.
 		socket.receive(buffer(buf,1024));	//Receive the reply
-		cout << "Server Received: " << buf << endl;
+		cout << "Server Received: " << hex << endl;
+		for(int i = 0; i < 576; i++)
+		{
+			if(buf[i] < 16)
+				cout << 0;
+			cout << uint16_t(buf[i]);
+			if(i%4 == 3)
+				cout << " ";
+			if(i%16 == 15)
+				cout << "| ";
+			if(i%64 == 63)
+				cout << endl;
+		}
+		cout << endl << dec;
 
 		// Check the client's IP address and ignore messages from other sources if needed
 		tcp::endpoint remote_endpoint = socket.remote_endpoint();	//Record the socket remote endpoint
