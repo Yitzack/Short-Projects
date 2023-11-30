@@ -11,6 +11,8 @@ using namespace boost::asio;
 using ip::tcp;
 
 RSA RSA_Encryption;
+RSA Server_Encryption;
+AES AES_Encryption;
 SHA256 Hashing;
 
 int main()
@@ -19,16 +21,47 @@ int main()
 	io_service io;	//I/O Context
 	tcp::socket socket(io);	//Creat a socket in the I/O Context
 	socket.connect(tcp::endpoint(ip::address::from_string("127.0.0.1"), 50624));	//Connect the socket to the server at 127.0.0.1:50624
+	int i;
 
-	uint8_t buf[1024];	//I don't know why a chacter array (either the primary datatype or std) has to be used to receive but a string can used to send.
+	uint8_t RSAServer[576];	//I don't know why a chacter array (either the primary datatype or std) has to be used to receive but a string can used to send.
 	boost::system::error_code error;	//Error Code that should be used in sending and receiving data. The error code can't be used unless a flag is also set.
-	socket.receive(buffer(buf,576));	//Receive into the character array, a data stream from the socket and store it in the buffer.
+	socket.receive(buffer(RSAServer,576));	//Receive into the character array, a data stream from the socket and store it in the buffer.
+
 	cout << "Client Received: " << endl << hex;
-	for(int i = 0; i < 576; i++)
+	for(i = 0; i < 576; i++)
 	{
-		if(buf[i] < 16)
+		if(RSAServer[i] < 16)
 			cout << 0;
-		cout << uint16_t(buf[i]);
+		cout << uint16_t(RSAServer[i]);
+		if(i%4 == 3)
+			cout << " ";
+		if(i%16 == 15)
+			cout << "| ";
+		if(i%64 == 63)
+			cout << endl;
+	}
+	cout << endl << dec;
+	uint8_t RSAClient[576];	//Send a message back to the server
+	Hamming Hmessage[9];
+
+	cpp_int Number = RSA_Encryption.Public_key_n();	//Construct a message of the server's public keys and the port to communicate over
+	for(i = 503; i >= 0; i--)
+	{
+		RSAClient[i] = uint8_t(Number & 0xFF);
+		Number >>= 8;
+	}
+	Number = RSA_Encryption.Public_key_e();
+	RSAClient[504] = uint8_t((Number & 0xFF0000) >> 16);
+	RSAClient[505] = uint8_t((Number & 0xFF00) >> 8);
+	RSAClient[506] = uint8_t(Number & 0xFF);
+	for(i = 507; i < 576; i++)
+		RSAClient[i] = 0;
+	cout << "Client Sent: " << endl << hex;
+	for(i = 0; i < 576; i++)
+	{
+		if(RSAClient[i] < 16)
+			cout << 0;
+		cout << uint16_t(RSAClient[i]);
 		if(i%4 == 3)
 			cout << " ";
 		if(i%16 == 15)
@@ -38,35 +71,83 @@ int main()
 	}
 	cout << endl << dec;
 
-	uint8_t message[1024];	//Send a message back to the server
-	Hamming Hmessage[9];
-
-	cpp_int Number = RSA_Encryption.Public_key_n();	//Construct a message of the server's public keys and the port to communicate over
-	for(int i = 503; i >= 0; i--)
-	{
-		message[i] = uint8_t(Number & 0xFF);
-		Number >>= 8;
-	}
-	message[504] = '\n';
-	Number = RSA_Encryption.Public_key_e();
-	message[505] = uint8_t((Number & 0xFF0000) >> 16);
-	message[506] = uint8_t((Number & 0xFF00) >> 8);
-	message[507] = uint8_t(Number & 0xFF);
-	for(int i = 508; i < 1024; i++)
-		message[i] = 0;
-
-	for(int i = 0; i < 9; i++)	//Convert the message from uint8_t[] to Hamming[] and store in uint8_t[]
-		Hmessage[i].Encode(&message[i*62]);
-	for(int i = 0; i < 9; i++)
+	for(i = 0; i < 9; i++)	//Convert the message from uint8_t[] to Hamming[] and store in uint8_t[]
+		Hmessage[i].Encode(&RSAClient[i*62]);
+	for(i = 0; i < 9; i++)
 	{
 		Number = Hmessage[i].Export_Encoding();
 		for(int j = 63; j >= 0; j--)
 		{
-			message[i*64+j] = uint8_t(Number & 0xff);
+			RSAClient[i*64+j] = uint8_t(Number & 0xff);
 			Number >>= 8;
 		}
 	}
-	socket.send(buffer(message,576));
+	socket.send(buffer(RSAClient,576));
+for(i = 0; i < 576; i++) RSAClient[i] = 0;
+	bool decode_success = true;
+	for(i = 0; i < 9; i++)
+	{
+		decode_success &= Hmessage[i].Decode(&RSAClient[i*64]);
+		Hmessage[i].Set_Encoding(&RSAServer[i*64]);
+		decode_success &= Hmessage[i].Decode(&RSAServer[i*64]);
+	}
+	/*if(!decode_success)	//Message has been tampered with beyond recovery and Client will need to relaunch
+	{
+		cout << "Message has been altered beyond recovery. Please relaunch to try again." << endl;
+		return(0);
+	}*/
+	cout << "Client Sent: " << endl << hex;
+	for(i = 0; i < 576; i++)
+	{
+		if(RSAClient[i] < 16)
+			cout << 0;
+		cout << uint16_t(RSAClient[i]);
+		if(i%4 == 3)
+			cout << " ";
+		if(i%16 == 15)
+			cout << "| ";
+		if(i%64 == 63)
+			cout << endl;
+	}
+	cout << endl;
+	int writeIndex = 0;
+	for(i = 0; i < 576; i++)
+		if(!(i % 64 == 62 || i % 64 == 63))
+		{
+			RSAClient[writeIndex] = RSAClient[i];
+			RSAServer[writeIndex] = RSAServer[i];
+			writeIndex++;
+		}
+
+	cout << "Client Sent: " << endl << hex;
+	for(i = 0; i < 576; i++)
+	{
+		if(RSAClient[i] < 16)
+			cout << 0;
+		cout << uint16_t(RSAClient[i]);
+		if(i%4 == 3)
+			cout << " ";
+		if(i%16 == 15)
+			cout << "| ";
+		if(i%64 == 63)
+			cout << endl;
+	}
+	cout << "\nClient Received: " << endl << hex;
+	for(i = 0; i < 576; i++)
+	{
+		if(RSAServer[i] < 16)
+			cout << 0;
+		cout << uint16_t(RSAServer[i]);
+		if(i%4 == 3)
+			cout << " ";
+		if(i%16 == 15)
+			cout << "| ";
+		if(i%64 == 63)
+			cout << endl;
+	}
+	cout << endl << dec;
+	Server_Encryption.set_Public_key_n(RSAServer);
+	Server_Encryption.set_Public_key_e(&RSAServer[504]);
 
 	return(0);
 }

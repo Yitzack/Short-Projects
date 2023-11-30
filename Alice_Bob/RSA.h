@@ -68,7 +68,9 @@ class RSA
 		cpp_int Sign(cpp_int) const;		//Sign the message, that is encrypt with the message with the private key
 		cpp_int Decrypt(cpp_int) const;	//Decrypt with the message with the private key
 		void set_Public_key_n(cpp_int);	//Set the public key n=pq
+		void set_Public_key_n(uint8_t[]);	//Set the public key n=pq
 		void set_Public_key_e(cpp_int);	//Set the public key e such that (e*d)%lambda(n)=1
+		void set_Public_key_e(uint8_t[]);	//Set the public key e such that (e*d)%lambda(n)=1
 		void set_Keys(cpp_int, cpp_int, cpp_int);
 		void initalize();			//Initalize the public and private key pairs
 		void Print_Private_Key(ostream&) const;//Print the private key, under no circumstance shall this function provide the private key in program. It shall only go out of program to file, stdout, or stderr. The user will have to release the private key themselves directly or load it back in themselves.

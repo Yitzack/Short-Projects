@@ -159,6 +159,32 @@ cpp_int RSA::Decrypt(cpp_int code) const
 	return(PowMod(code,private_key_d,key_n));
 }
 
+void RSA::set_Public_key_n(uint8_t public_key_n[])
+{
+	cpp_int n = 0;
+	cpp_int e = 0;
+	for(int i = 0; i < 504; i++)
+	{
+		n <<= 8;
+		n += public_key_n[i];
+	}
+	key_n = n;
+	return;
+}
+
+void RSA::set_Public_key_e(uint8_t key_e[])
+{
+	cpp_int n = 0;
+	cpp_int e = 0;
+	for(int i = 0; i < 3; i++)
+	{
+		e <<= 8;
+		e += key_e[i];
+	}
+	public_key_e = e;
+	return;
+}
+
 void RSA::set_Public_key_n(cpp_int n)
 {
 	key_n = n;
