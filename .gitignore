@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+#Java files
+*.java
+*.class
+
+#bash scripts
+*.sh
+
+#Mathematica Notebook
+*.nb
