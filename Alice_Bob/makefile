@@ -1,7 +1,7 @@
 # Compiler
 CC = g++
 # Compiler flags
-CFLAGS = -O3 -pthread -I./
+CFLAGS = -pthread -I./
 
 # Source files
 SRC = AES.cpp RSA.cpp SHA256.cpp GF256.cpp Hamming.cpp Server.cpp Client.cpp
@@ -11,6 +11,12 @@ OBJ = $(SRC:.cpp=.o)
 
 # Static libraries
 LIBS = libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a
+
+ifeq ($(filter debug,$(MAKECMDGOALS)),debug)
+	CFLAGS += -g
+else
+	CFLAGS += -O3
+endif
 
 libraries: libAES.a libRSA.a libSHA256.a libGF256.a libHamming.a clean_objs
 

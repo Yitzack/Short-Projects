@@ -87,6 +87,7 @@ for(i = 0; i < 576; i++) RSAClient[i] = 0;
 	bool decode_success = true;
 	for(i = 0; i < 9; i++)
 	{
+	cout << hex << Hmessage[i].Export_Encoding() << endl;
 		decode_success &= Hmessage[i].Decode(&RSAClient[i*64]);
 		Hmessage[i].Set_Encoding(&RSAServer[i*64]);
 		decode_success &= Hmessage[i].Decode(&RSAServer[i*64]);
