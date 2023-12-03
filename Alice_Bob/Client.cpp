@@ -27,20 +27,6 @@ int main()
 	boost::system::error_code error;	//Error Code that should be used in sending and receiving data. The error code can't be used unless a flag is also set.
 	socket.receive(buffer(RSAServer,576));	//Receive into the character array, a data stream from the socket and store it in the buffer.
 
-	cout << "Client Received: " << endl << hex;
-	for(i = 0; i < 576; i++)
-	{
-		if(RSAServer[i] < 16)
-			cout << 0;
-		cout << uint16_t(RSAServer[i]);
-		if(i%4 == 3)
-			cout << " ";
-		if(i%16 == 15)
-			cout << "| ";
-		if(i%64 == 63)
-			cout << endl;
-	}
-	cout << endl << dec;
 	uint8_t RSAClient[576];	//Send a message back to the server
 	Hamming Hmessage[9];
 
@@ -56,20 +42,6 @@ int main()
 	RSAClient[506] = uint8_t(Number & 0xFF);
 	for(i = 507; i < 576; i++)
 		RSAClient[i] = 0;
-	cout << "Client Sent: " << endl << hex;
-	for(i = 0; i < 576; i++)
-	{
-		if(RSAClient[i] < 16)
-			cout << 0;
-		cout << uint16_t(RSAClient[i]);
-		if(i%4 == 3)
-			cout << " ";
-		if(i%16 == 15)
-			cout << "| ";
-		if(i%64 == 63)
-			cout << endl;
-	}
-	cout << endl << dec;
 
 	for(i = 0; i < 9; i++)	//Convert the message from uint8_t[] to Hamming[] and store in uint8_t[]
 		Hmessage[i].Encode(&RSAClient[i*62]);
@@ -83,34 +55,19 @@ int main()
 		}
 	}
 	socket.send(buffer(RSAClient,576));
-for(i = 0; i < 576; i++) RSAClient[i] = 0;
+
 	bool decode_success = true;
 	for(i = 0; i < 9; i++)
 	{
-	cout << hex << Hmessage[i].Export_Encoding() << endl;
 		decode_success &= Hmessage[i].Decode(&RSAClient[i*64]);
 		Hmessage[i].Set_Encoding(&RSAServer[i*64]);
 		decode_success &= Hmessage[i].Decode(&RSAServer[i*64]);
 	}
-	/*if(!decode_success)	//Message has been tampered with beyond recovery and Client will need to relaunch
+	if(!decode_success)	//Message has been tampered with beyond recovery and Client will need to relaunch
 	{
 		cout << "Message has been altered beyond recovery. Please relaunch to try again." << endl;
 		return(0);
-	}*/
-	cout << "Client Sent: " << endl << hex;
-	for(i = 0; i < 576; i++)
-	{
-		if(RSAClient[i] < 16)
-			cout << 0;
-		cout << uint16_t(RSAClient[i]);
-		if(i%4 == 3)
-			cout << " ";
-		if(i%16 == 15)
-			cout << "| ";
-		if(i%64 == 63)
-			cout << endl;
 	}
-	cout << endl;
 	int writeIndex = 0;
 	for(i = 0; i < 576; i++)
 		if(!(i % 64 == 62 || i % 64 == 63))

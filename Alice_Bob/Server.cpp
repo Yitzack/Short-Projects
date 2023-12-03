@@ -141,21 +141,6 @@ int main()
 			RSAServer[i] = 0;
 		Client_List.push_back(Client(last_used_port));	//Place the new client in the client list
 
-		cout << "Server Sent: " << hex << endl;
-		for(i = 0; i < 576; i++)
-		{
-			if(RSAServer[i] < 16)
-				cout << 0;
-			cout << uint16_t(RSAServer[i]);
-			if(i%4 == 3)
-				cout << " ";
-			if(i%16 == 15)
-				cout << "| ";
-			if(i%64 == 63)
-				cout << endl;
-		}
-		cout << endl << dec;
-
 		for(i = 0; i < 9; i++)	//Convert the message from uint8_t[] to Hamming[] and store in uint8_t[]
 			Hmessage[i].Encode(&RSAServer[i*62]);
 		for(i = 0; i < 9; i++)
@@ -172,21 +157,6 @@ int main()
 		uint8_t RSAClient[576];	//I don't know why a chacter array (either the primary datatype or std) has to be used to receive but a string can used to send.
 		socket.receive(buffer(RSAClient,576));	//Receive the reply
 
-		cout << "Server Received: " << hex << endl;
-		for(i = 0; i < 576; i++)
-		{
-			if(RSAClient[i] < 16)
-				cout << 0;
-			cout << uint16_t(RSAClient[i]);
-			if(i%4 == 3)
-				cout << " ";
-			if(i%16 == 15)
-				cout << "| ";
-			if(i%64 == 63)
-				cout << endl;
-		}
-		cout << endl << dec;
-
 		bool decode_success = true;
 		for(i = 0; i < 9; i++)
 		{
@@ -194,26 +164,13 @@ int main()
 			Hmessage[i].Set_Encoding(&RSAClient[i*64]);
 			decode_success &= Hmessage[i].Decode(&RSAClient[i*64]);
 		}
-		cout << "Server Sent: " << hex << endl;
-		for(i = 0; i < 576; i++)
-		{
-			if(RSAServer[i] < 16)
-				cout << 0;
-			cout << uint16_t(RSAServer[i]);
-			if(i%4 == 3)
-				cout << " ";
-			if(i%16 == 15)
-				cout << "| ";
-			if(i%64 == 63)
-				cout << endl;
-		}
 		cout << endl << dec;
-		/*if(!decode_success)	//Message has been tampered with beyond recovery and Client will need to relaunch
+		if(!decode_success)	//Message has been tampered with beyond recovery and Client will need to relaunch
 		{
 			cout << "Message has been altered beyond recovery. Client will relaunch to try again." << endl;
 			Client_List.pop_back();
 			goto wait_loop;
-		}*/
+		}
 		int writeIndex = 0;
 		for(i = 0; i < 576; ++i)
 			if(!(i % 64 == 62 || i % 64 == 63))
@@ -228,6 +185,20 @@ int main()
 			if(RSAClient[i] < 16)
 				cout << 0;
 			cout << uint16_t(RSAClient[i]);
+			if(i%4 == 3)
+				cout << " ";
+			if(i%16 == 15)
+				cout << "| ";
+			if(i%64 == 63)
+				cout << endl;
+		}
+		cout << endl << dec;
+		cout << "Server Sent: " << hex << endl;
+		for(i = 0; i < 576; i++)
+		{
+			if(RSAServer[i] < 16)
+				cout << 0;
+			cout << uint16_t(RSAServer[i]);
 			if(i%4 == 3)
 				cout << " ";
 			if(i%16 == 15)
