@@ -1,6 +1,7 @@
 #include<boost/multiprecision/cpp_int.hpp>
 #include"Hamming.h"
 using namespace boost::multiprecision;
+using namespace std;
 
 Hamming::Hamming(uint8_t Message[])
 {
@@ -52,9 +53,16 @@ bool Hamming::Decode(uint512_t Coding, uint8_t Message[]) const
 	if(Total_Parity)	//If odd Parity, there is a chance for correction, so make it
 		Coding = FlipBit(Coding, 511-Parity_bit_error);
 
-	Coding = RemoveBit(Coding, 512);	//Remove the normal extended Hamming(511,502) parity bits
-	for(i = 0; i < 9; i++)
-		Coding = RemoveBit(Coding, 512-(1<<i));
+	Coding = RemoveBit(Coding, 511);	//Remove the normal extended Hamming(511,502) parity bits
+	Coding = RemoveBit(Coding, 510);
+	Coding = RemoveBit(Coding, 509);
+	Coding = RemoveBit(Coding, 507);
+	Coding = RemoveBit(Coding, 503);
+	Coding = RemoveBit(Coding, 495);
+	Coding = RemoveBit(Coding, 479);
+	Coding = RemoveBit(Coding, 447);
+	Coding = RemoveBit(Coding, 383);
+	Coding = RemoveBit(Coding, 255);
 
 	uint8_t Extra_Parity = uint8_t(Coding & 0x3F);	//Pull the extra parity bits and hopefully restore the original encoding
 	Coding >>= 6;
@@ -117,7 +125,7 @@ bool Hamming::Parity(uint512_t num, uint512_t mask) const
 
 uint512_t Hamming::InsertBit(uint512_t number, int position, bool Bit) const
 {
-	uint512_t mask = (uint512_t(1) << position) - 1;	//Create a mask to clear bits to the left of the position
+	uint512_t mask = (uint512_t(1) << position) - 1;	//Create a mask to select bits to the right of the position
 	uint512_t leftBits = (number & (~mask)) << 1;		//Shift bits to the left by 1 position
 	uint512_t rightBits = (number & mask);		//Preserve bits to the right of the position
 
@@ -126,8 +134,8 @@ uint512_t Hamming::InsertBit(uint512_t number, int position, bool Bit) const
 
 uint512_t Hamming::RemoveBit(uint512_t number, int position) const
 {
-	uint512_t mask = (uint512_t(1) << position) - 1;	//Create a mask to clear bits to the left of the position
-	uint512_t leftBits = (number & (~mask)) >> 1;		//Shift bits to the left by 1 position
+	uint512_t mask = (uint512_t(1) << position) - 1;	//Create a mask to select bits to the right of the position
+	uint512_t leftBits = ((number & ~(uint512_t(1) << position)) & (~mask)) >> 1;		//Shift bits to the left by 1 position
 	uint512_t rightBits = (number & mask);		//Preserve bits to the right of the position
 
 	return(leftBits | rightBits);	//Combine both parts
