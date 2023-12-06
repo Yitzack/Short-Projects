@@ -150,11 +150,6 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 			second_num = strcspn(Cert, "\n");
 			Cert_N = Dehexer(Cert, first_num, second_num-first_num);
 
-cout << hex << RSA_N << endl;
-cout << Cert_N << endl;
-cout << RSA_E << endl;
-cout << Cert_E << endl;
-
 			if(RSA_N != Cert_N || RSA_E != Cert_E)	//If the server and the certficate have different public keys, then the server is inauthentic
 				return(false);
 		}
