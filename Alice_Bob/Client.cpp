@@ -15,6 +15,9 @@ RSA Server_Encryption;
 AES AES_Encryption;
 SHA256 Hashing;
 
+bool Auth_Server(cpp_int, cpp_int);	//Loads the server certificate and authenticates the server.
+cpp_int Dehexer(char[], int, int);	//Changes a number stored as hexidecimal as characters into integer
+
 int main()
 {
 	RSA_Encryption.initalize();
@@ -31,16 +34,16 @@ int main()
 	Hamming Hmessage[9];
 
 	cpp_int Number = RSA_Encryption.Public_key_n();	//Construct a message of the server's public keys and the port to communicate over
-	for(i = 503; i >= 0; i--)
+	for(i = 511; i >= 0; i--)
 	{
 		RSAClient[i] = uint8_t(Number & 0xFF);
 		Number >>= 8;
 	}
 	Number = RSA_Encryption.Public_key_e();
-	RSAClient[504] = uint8_t((Number & 0xFF0000) >> 16);
-	RSAClient[505] = uint8_t((Number & 0xFF00) >> 8);
-	RSAClient[506] = uint8_t(Number & 0xFF);
-	for(i = 507; i < 576; i++)
+	RSAClient[512] = uint8_t((Number & 0xFF0000) >> 16);
+	RSAClient[513] = uint8_t((Number & 0xFF00) >> 8);
+	RSAClient[514] = uint8_t(Number & 0xFF);
+	for(i = 515; i < 576; i++)
 		RSAClient[i] = 0;
 
 	for(i = 0; i < 9; i++)	//Convert the message from uint8_t[] to Hamming[] and store in uint8_t[]
@@ -106,14 +109,84 @@ int main()
 	cout << endl << dec;
 
 	Server_Encryption.set_Public_key_n(RSAServer);
-	Server_Encryption.set_Public_key_e(&RSAServer[504]);
-	socket.close();
-	socket.connect(tcp::endpoint(tcp::v4(), int(RSAServer[507] << 8)|int(RSAServer[508])));
+	Server_Encryption.set_Public_key_e(&RSAServer[512]);
+	if(Auth_Server(Server_Encryption.Public_key_n(), Server_Encryption.Public_key_e()))
+	{
+		socket.close();
+		socket.connect(tcp::endpoint(tcp::v4(), int(RSAServer[515] << 8)|int(RSAServer[516])));
 
-	cout << "Connected on port " << (int(RSAServer[507] << 8)|int(RSAServer[508])) << endl;
+		cout << "Connected on port " << (int(RSAServer[515] << 8)|int(RSAServer[516])) << endl;
+	}
+	else
+	{
+		cout << "Inauthentic Server" << endl;
+		return(0);
+	}
 
 	return(0);
 }
+
+bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
+{
+	ifstream CertFile("./Certificate");
+	char Cert[3500];
+	cpp_int Cert_N, Cert_E;
+	if(!CertFile.is_open())
+	{
+		cout << "Certificate file not available." << endl;
+		return(false);
+	}
+
+	CertFile.getline(Cert, 3500, char(5));
+	for(int i = 0; i < 9; i++)
+	{
+		if(i == 0)
+		{
+			int first_num = strcspn(Cert, ":")+2;	//Find the first number, public key value e, and store it to Cert_E
+			int second_num = strcspn(Cert, ",");
+			Cert_E = Dehexer(Cert, first_num, second_num-first_num);
+
+			first_num = second_num+1;	//Find the second number, public key value n, and store it to Cert_N
+			second_num = strcspn(Cert, "\n");
+			Cert_N = Dehexer(Cert, first_num, second_num-first_num);
+
+cout << hex << RSA_N << endl;
+cout << Cert_N << endl;
+cout << RSA_E << endl;
+cout << Cert_E << endl;
+
+			if(RSA_N != Cert_N || RSA_E != Cert_E)	//If the server and the certficate have different public keys, then the server is inauthentic
+				return(false);
+		}
+	}
+	return(true);
+}
+
+cpp_int Dehexer(char String[], int first_byte, int length)
+{
+	cpp_int Answer = 0;
+	int i;
+
+	for(i = first_byte; i < first_byte+length; i++)
+	{
+		Answer <<= 4;
+		if(String[i] >= '0' && String[i] <= '9')	//Digits
+			Answer += uint8_t(String[i]-'0');
+		else if(String[i] >= 'a' && String[i] <= 'f')	//Lower case digits
+			Answer += uint8_t(String[i]-'a')+10;
+		else if(String[i] >= 'A' && String[i] <= 'F')	//Upper case digits
+			Answer += uint8_t(String[i]-'A')+10;
+		else						//We were told a length longer than a valid hex number
+			break;
+	}
+
+	return(Answer);
+}
+
+
+
+
+
 
 
 

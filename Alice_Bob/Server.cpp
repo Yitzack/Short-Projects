@@ -43,13 +43,13 @@ Client::Client(int socket_num):io(),acceptor(io, tcp::endpoint(tcp::v4(), socket
 	socket_number = socket_num;
 }
 
-// Copy constructor
+//Copy constructor
 Client::Client(const Client& other)
 	: RSA_Encryption(other.RSA_Encryption), AES_Encryption(other.AES_Encryption),
 	  io(), acceptor(io, tcp::endpoint(tcp::v4(), socket_number)), socket_number(other.socket_number)
 {}
 
-// Move constructor
+//Move constructor
 Client::Client(Client&& other) noexcept
 	: RSA_Encryption(move(other.RSA_Encryption)), 
 	  AES_Encryption(move(other.AES_Encryption)),
@@ -57,15 +57,14 @@ Client::Client(Client&& other) noexcept
 	  socket_number(other.socket_number)
 {}
 
-// Copy assignment operator
+//Copy assignment operator
 Client& Client::operator=(const Client& other)
 {
 	if (this != &other)
 	{
 		RSA_Encryption = other.RSA_Encryption;
 		AES_Encryption = other.AES_Encryption;
-		// Copy or handle other members
-		acceptor.close(); // Close the previous acceptor
+		acceptor.close();		//Close the previous acceptor
 		acceptor.open(tcp::v4());
 		acceptor.bind(tcp::endpoint(tcp::v4(), socket_number));
 		acceptor.listen();
@@ -73,15 +72,16 @@ Client& Client::operator=(const Client& other)
 	return *this;
 }
 
-// Move assignment operator
+//Move assignment operator
 Client& Client::operator=(Client&& other) noexcept
 {
-	if (this != &other) {
+	if (this != &other)
+	{
 		RSA_Encryption = move(other.RSA_Encryption);
 		AES_Encryption = move(other.AES_Encryption);
 		socket_number = move(other.socket_number);
-		acceptor.close(); // Close the previous acceptor
-		acceptor = move(other.acceptor); // Move-assign the acceptor
+		acceptor.close();			//Close the previous acceptor
+		acceptor = move(other.acceptor);	//Move-assign the acceptor
 	}
 	return *this;
 }
@@ -124,20 +124,21 @@ int main()
 		Hamming Hmessage[9];
 		boost::system::error_code ignored_error;	//Error Code that should be used in sending and receiving data. The error code can't be used unless a flag is also set.
 		cpp_int Number = RSA_Encryption.Public_key_n();	//Construct a message of the server's public keys and the port to communicate over
-		for(i = 503; i >= 0; i--)
+cout << hex << Number << dec << endl;
+		for(i = 511; i >= 0; i--)
 		{
 			RSAServer[i] = uint8_t(Number & 0xFF);
 			Number >>= 8;
 		}
 		Number = RSA_Encryption.Public_key_e();
-		RSAServer[504] = uint8_t((Number & 0xFF0000) >> 16);
-		RSAServer[505] = uint8_t((Number & 0xFF00) >> 8);
-		RSAServer[506] = uint8_t(Number & 0xFF);
+		RSAServer[512] = uint8_t((Number & 0xFF0000) >> 16);
+		RSAServer[513] = uint8_t((Number & 0xFF00) >> 8);
+		RSAServer[514] = uint8_t(Number & 0xFF);
 		last_used_port++;
 		Number = last_used_port;
-		RSAServer[507] = uint8_t((Number & 0xFF00) >> 8);
-		RSAServer[508] = uint8_t(Number & 0xFF);
-		for(i = 509; i < 576; i++)
+		RSAServer[515] = uint8_t((Number & 0xFF00) >> 8);
+		RSAServer[516] = uint8_t(Number & 0xFF);
+		for(i = 517; i < 576; i++)
 			RSAServer[i] = 0;
 		Client_List.push_back(Client(last_used_port));	//Place the new client in the client list
 

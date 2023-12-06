@@ -163,7 +163,7 @@ void RSA::set_Public_key_n(uint8_t public_key_n[])
 {
 	cpp_int n = 0;
 	cpp_int e = 0;
-	for(int i = 0; i < 504; i++)
+	for(int i = 0; i < 512; i++)
 	{
 		n <<= 8;
 		n += public_key_n[i];
