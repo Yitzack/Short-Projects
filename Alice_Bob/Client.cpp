@@ -104,8 +104,13 @@ int main()
 			cout << endl;
 	}
 	cout << endl << dec;
+
 	Server_Encryption.set_Public_key_n(RSAServer);
 	Server_Encryption.set_Public_key_e(&RSAServer[504]);
+	socket.close();
+	socket.connect(tcp::endpoint(tcp::v4(), int(RSAServer[507] << 8)|int(RSAServer[508])));
+
+	cout << "Connected on port " << (int(RSAServer[507] << 8)|int(RSAServer[508])) << endl;
 
 	return(0);
 }
