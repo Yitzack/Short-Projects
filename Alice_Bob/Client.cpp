@@ -1,6 +1,8 @@
 #include<iostream>
 #include<fstream>
 #include<cstring>
+#include<cstdint>
+#include<utility>
 #include<boost/asio.hpp>
 #include"RSA.h"
 #include"AES.h"
@@ -16,7 +18,8 @@ AES AES_Encryption;
 SHA256 Hashing;
 
 bool Auth_Server(cpp_int, cpp_int);	//Loads the server certificate and authenticates the server.
-cpp_int Dehexer(char[], int, int);	//Changes a number stored as hexidecimal as characters into integer
+cpp_int Dehexer(uint8_t[], int, int);	//Changes a number stored as hexidecimal as characters into integer
+tuple<uint8_t**,int*,int> Split(const char[], const char);	//Split a character array into an array of uint8_t arrays and the number of splits based on a given character
 
 int main()
 {
@@ -130,7 +133,10 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 {
 	ifstream CertFile("./Certificate");
 	char Cert[3500];
+	tuple<uint8_t**,int*,int> Lines;
 	cpp_int Cert_N, Cert_E;
+	int first_num, second_num;
+
 	if(!CertFile.is_open())
 	{
 		cout << "Certificate file not available." << endl;
@@ -138,26 +144,64 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 	}
 
 	CertFile.getline(Cert, 3500, char(5));
-	for(int i = 0; i < 9; i++)
-	{
-		if(i == 0)
-		{
-			int first_num = strcspn(Cert, ":")+2;	//Find the first number, public key value e, and store it to Cert_E
-			int second_num = strcspn(Cert, ",");
-			Cert_E = Dehexer(Cert, first_num, second_num-first_num);
+	Lines = Split(Cert, '\n');
 
-			first_num = second_num+1;	//Find the second number, public key value n, and store it to Cert_N
-			second_num = strcspn(Cert, "\n");
-			Cert_N = Dehexer(Cert, first_num, second_num-first_num);
+	first_num = find(Lines.first[0], Lines.first[0]+strlen(Lines.first[0]), ':')+2;
+	second_num = find(Lines.first[0], Lines.first[0]+strlen(Lines.first[0]), ',');
+	Cert_E = Dehexer(Lines.first[0], first_num, second_num-first_num);
 
-			if(RSA_N != Cert_N || RSA_E != Cert_E)	//If the server and the certficate have different public keys, then the server is inauthentic
-				return(false);
-		}
-	}
+	first_num = second_num+1;
+	second_num = strlen(Lines.first[0]);//find(Lines.first[0], Lines.first[0]+strlen(Lines.first[0]), '\0');
+	Cert_N = Dehexer(Lines.first[0], first_num, second_num-first_num);
+
+	if(RSA_N != Cert_N || RSA_E != Cert_E)
+		return(false);
+
+	for(int i = 0; i < Lines.second; i++)
+		delete Lines.first[i];
+	delete Lines.first;
+
 	return(true);
 }
 
-cpp_int Dehexer(char String[], int first_byte, int length)
+tuple<uint8_t**,int*,int> Split(const char String[], const char Character)
+{
+	int i, Char_Count;
+	int* locations, String_len;
+	uint8_t** String_set;
+
+	if(String == NULL || strlen(String) == 0)
+		return(pair<char**,int>(NULL,0));
+
+	Char_Count = count(String, String+strlen(String), Character);
+
+	locations = new int[Char_Count+1];
+	String_len = new int[Char_Count];
+	String_set = new char*[Char_Count];
+	locations[0] = 0;
+
+	i = 1;
+	for(int j = 0; j < strlen(String); j++)
+	{
+		if(String[j] == Character)
+		{
+			locations[i] = j;
+			i++;
+		}
+	}
+
+	for(i = 0; i < Char_Count; i++)
+	{
+		String_set[i] = new char[locations[i+1]-locations[i]];
+		String_len[i] = locations[i+1]-locations[i];
+		memcpy(String_set[i], &String[locations[i]], locations[i+1]-locations[i]);
+		String_set[i][locations[i+1]-locations[i]] = 0;
+	}
+
+	return(tuple<uint8_t**,int*,int>(String_set,String_len,Char_Count));
+}
+
+cpp_int Dehexer(uint8_t String[], int first_byte, int length)
 {
 	cpp_int Answer = 0;
 	int i;
