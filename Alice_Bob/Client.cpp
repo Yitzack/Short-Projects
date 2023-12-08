@@ -175,6 +175,8 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 	if(Signature != Cert_Signature)	//Verify the authenticity of the Server
 		return(false);
 
+//Should probably check the period of validity of the certificate against the current date and time. Probably won't.
+
 	for(int i = 0; i < get<2>(Lines); i++)
 		delete get<0>(Lines)[i];
 	delete get<0>(Lines);
