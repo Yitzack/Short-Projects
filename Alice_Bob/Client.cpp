@@ -115,6 +115,7 @@ int main()
 	Server_Encryption.set_Public_key_e(&RSAServer[512]);
 	if(Auth_Server(Server_Encryption.Public_key_n(), Server_Encryption.Public_key_e()))
 	{
+		cout << "Server is authentic" << endl;
 		socket.close();
 		socket.connect(tcp::endpoint(tcp::v4(), int(RSAServer[515] << 8)|int(RSAServer[516])));
 
@@ -134,7 +135,8 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 	ifstream CertFile("./Certificate");
 	char Cert[3500];
 	tuple<uint8_t**,int*,int> Lines;
-	cpp_int Cert_N, Cert_E;
+	cpp_int Cert_N, Cert_E, Cert_Signature, Signature;
+	uint32_t Cert_Hash[8];
 	int first_num, second_num;
 
 	if(!CertFile.is_open())
@@ -146,20 +148,37 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 	CertFile.getline(Cert, 3500, char(5));
 	Lines = Split(Cert, '\n');
 
-	first_num = find(Lines.first[0], Lines.first[0]+strlen(Lines.first[0]), ':')+2;
-	second_num = find(Lines.first[0], Lines.first[0]+strlen(Lines.first[0]), ',');
-	Cert_E = Dehexer(Lines.first[0], first_num, second_num-first_num);
+	first_num = int(find(get<0>(Lines)[0], get<0>(Lines)[0]+get<1>(Lines)[0], ':')-get<0>(Lines)[0])+2;	//Get the certified public key
+	second_num = int(find(get<0>(Lines)[0], get<0>(Lines)[0]+get<1>(Lines)[0], ',')-get<0>(Lines)[0]);
+	Cert_E = Dehexer(get<0>(Lines)[0], first_num, second_num-first_num);
 
 	first_num = second_num+1;
-	second_num = strlen(Lines.first[0]);//find(Lines.first[0], Lines.first[0]+strlen(Lines.first[0]), '\0');
-	Cert_N = Dehexer(Lines.first[0], first_num, second_num-first_num);
+	second_num = get<1>(Lines)[0];
+	Cert_N = Dehexer(get<0>(Lines)[0], first_num, second_num-first_num);
 
-	if(RSA_N != Cert_N || RSA_E != Cert_E)
+	if(RSA_N != Cert_N || RSA_E != Cert_E)	//Verify the public key sent against the certified public key
 		return(false);
 
-	for(int i = 0; i < Lines.second; i++)
-		delete Lines.first[i];
-	delete Lines.first;
+	first_num = int(find(get<0>(Lines)[8], get<0>(Lines)[8]+get<1>(Lines)[8], ':')-get<0>(Lines)[8])+2;	//Get the signature
+	second_num = get<1>(Lines)[8];
+	Cert_Signature = Dehexer(get<0>(Lines)[8], first_num, second_num-first_num);
+	Cert_Signature = Server_Encryption.Encrypt(Cert_Signature);	//Encrypting with the public key something signed will decrypt it.
+
+	Hashing.Hash_func(Cert, get<1>(Lines)[0]+get<1>(Lines)[1]+get<1>(Lines)[2]+get<1>(Lines)[3]+get<1>(Lines)[4]+get<1>(Lines)[5]+get<1>(Lines)[6]+get<1>(Lines)[7]+1, Cert_Hash);	//Hash the first 8 lines of the certificate
+	Signature = 0;
+	for(int i = 0; i < 8; i++)	//Convert it from u32[8] to cpp_int to make a comparison
+	{
+		Signature <<= 32;
+		Signature += Cert_Hash[i];
+	}
+
+	if(Signature != Cert_Signature)	//Verify the authenticity of the Server
+		return(false);
+
+	for(int i = 0; i < get<2>(Lines); i++)
+		delete get<0>(Lines)[i];
+	delete get<0>(Lines);
+	delete get<1>(Lines);
 
 	return(true);
 }
@@ -167,17 +186,18 @@ bool Auth_Server(cpp_int RSA_N, cpp_int RSA_E)
 tuple<uint8_t**,int*,int> Split(const char String[], const char Character)
 {
 	int i, Char_Count;
-	int* locations, String_len;
+	int* locations;
+	int* String_len;
 	uint8_t** String_set;
 
 	if(String == NULL || strlen(String) == 0)
-		return(pair<char**,int>(NULL,0));
+		return(tuple<uint8_t**,int*,int>(NULL,NULL,0));
 
 	Char_Count = count(String, String+strlen(String), Character);
 
 	locations = new int[Char_Count+1];
 	String_len = new int[Char_Count];
-	String_set = new char*[Char_Count];
+	String_set = new uint8_t*[Char_Count];
 	locations[0] = 0;
 
 	i = 1;
@@ -192,7 +212,7 @@ tuple<uint8_t**,int*,int> Split(const char String[], const char Character)
 
 	for(i = 0; i < Char_Count; i++)
 	{
-		String_set[i] = new char[locations[i+1]-locations[i]];
+		String_set[i] = new uint8_t[locations[i+1]-locations[i]];
 		String_len[i] = locations[i+1]-locations[i];
 		memcpy(String_set[i], &String[locations[i]], locations[i+1]-locations[i]);
 		String_set[i][locations[i+1]-locations[i]] = 0;

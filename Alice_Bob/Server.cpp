@@ -269,13 +269,13 @@ void Initalize_RSA()
 	strcat(Cert, ",");
 	Hexer(Hex_Code, RSA_Encryption.Public_key_n());
 	strcat(Cert, Hex_Code);
-	strcat(Cert, "\nServer IP: 127.0.0.1\nServer Location: Author's Bedroom\nServer Organization: Independent\nCertificate Validity Period: Nov 30, 2024\nCA Name: Author\nCA Public Key: ");
+	strcat(Cert, "\nServer IP: 127.0.0.1\nServer Location: Author's Bedroom\nServer Organization: Independent\nCertificate Validity Period: 2024-12-08 12:00 UTC\nCA Name: Author\nCA Public Key: ");
 	Hexer(Hex_Code, RSA_Encryption.Public_key_e());
 	strcat(Cert, Hex_Code);
 	strcat(Cert, ",");
 	Hexer(Hex_Code, RSA_Encryption.Public_key_n());
 	strcat(Cert, Hex_Code);
-	strcat(Cert, "\nCertificate Serial Number: 0\n");
+	strcat(Cert, "\nCertificate Serial Number: 1\n");
 	uint32_t Hash[8];
 	Hashing.Hash_func(Cert, strlen(Cert), Hash);
 	oRSA_Keys << Cert << "Signature: " << RSA_Encryption.Sign(Hash, 8) << endl;
