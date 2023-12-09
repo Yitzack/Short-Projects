@@ -27,19 +27,20 @@ class Client
 		Client(Client&& other) noexcept;		//Move constructor
 		Client& operator=(const Client& other);	//Copy assignment operator
 		Client& operator=(Client&& other) noexcept;	//Move assignment operator
-		void Send_Message(uint8_t[], int) const;
-		void Recieve_Message(uint8_t[], int&) const;
+		void Send_Message(const uint8_t[], int);
+		void Receive_Message(uint8_t[], int&);
 		void Set_RSA_Key(uint8_t[],uint8_t[]);
 		void Set_AES_Key(uint8_t[]);
 	private:
 		RSA RSA_Encryption;
 		AES AES_Encryption;
 		io_service io;
+		tcp::socket socket;
 		tcp::acceptor acceptor;
 		int socket_number;
 };
 
-Client::Client(int socket_num):io(),acceptor(io, tcp::endpoint(tcp::v4(), socket_num))
+Client::Client(int socket_num):io(),socket(io),acceptor(io, tcp::endpoint(tcp::v4(), socket_num))
 {
 	socket_number = socket_num;
 }
@@ -47,14 +48,14 @@ Client::Client(int socket_num):io(),acceptor(io, tcp::endpoint(tcp::v4(), socket
 //Copy constructor
 Client::Client(const Client& other)
 	: RSA_Encryption(other.RSA_Encryption), AES_Encryption(other.AES_Encryption),
-	  io(), acceptor(io, tcp::endpoint(tcp::v4(), socket_number)), socket_number(other.socket_number)
+	  io(), socket(io), acceptor(io, tcp::endpoint(tcp::v4(), socket_number)), socket_number(other.socket_number)
 {}
 
 //Move constructor
 Client::Client(Client&& other) noexcept
 	: RSA_Encryption(move(other.RSA_Encryption)), 
 	  AES_Encryption(move(other.AES_Encryption)),
-	  io(), acceptor(move(other.acceptor)),
+	  io(), socket(move(other.socket)), acceptor(move(other.acceptor)),
 	  socket_number(other.socket_number)
 {}
 
@@ -80,21 +81,60 @@ Client& Client::operator=(Client&& other) noexcept
 	{
 		RSA_Encryption = move(other.RSA_Encryption);
 		AES_Encryption = move(other.AES_Encryption);
-		socket_number = move(other.socket_number);
+		socket_number = other.socket_number;
+		socket = move(other.socket);
 		acceptor.close();			//Close the previous acceptor
 		acceptor = move(other.acceptor);	//Move-assign the acceptor
 	}
 	return *this;
 }
 
-void Client::Send_Message(uint8_t Message[], int Length) const
+void Client::Send_Message(const uint8_t Message[], int Length)
 {
-	socket.send(buffer(Message,Length));
+	if(!socket.is_open())
+	{
+		//Reopen the socket if it's closed
+		boost::system::error_code ec;
+		acceptor.accept(socket, ec);	//Replace this line with your actual socket opening logic
+		if(ec)
+		{
+			std::cerr << "Error opening sending socket: " << ec.message() << std::endl;
+			return;
+		}
+	}
+
+	try
+	{
+		socket.send(buffer(Message, Length));
+	}
+	catch(const boost::system::system_error& e)
+	{
+		std::cerr << "Send error: " << e.what() << std::endl;
+	}
 }
 
-void Client::Recieve_Message(uint8_t Message[], int& Length) const
+void Client::Receive_Message(uint8_t Message[], int& Length)
 {
-	socket.receive(buffer(Message,Length));
+	if(!socket.is_open())
+	{
+		//Reopen the socket if it's closed
+		boost::system::error_code ec;
+		acceptor.accept(socket, ec);	//Replace this line with your actual socket opening logic
+		if(ec)
+		{
+			std::cerr << "Error opening receiving socket: " << ec.message() << std::endl;
+			return;
+		}
+	}
+
+	try
+	{
+		Length = socket.receive(buffer(Message, Length));
+	}
+	catch(const boost::system::system_error& e)
+	{
+		std::cerr << "Receive error: " << e.what() << std::endl;
+	}
 }
 
 void Client::Set_RSA_Key(uint8_t public_key_n[], uint8_t public_key_e[])
@@ -127,7 +167,7 @@ int main()
 		Hamming Hmessage[9];
 		boost::system::error_code ignored_error;	//Error Code that should be used in sending and receiving data. The error code can't be used unless a flag is also set.
 		cpp_int Number = RSA_Encryption.Public_key_n();	//Construct a message of the server's public keys and the port to communicate over
-cout << hex << Number << dec << endl;
+
 		for(i = 511; i >= 0; i--)
 		{
 			RSAServer[i] = uint8_t(Number & 0xFF);
@@ -183,34 +223,6 @@ cout << hex << Number << dec << endl;
 				RSAServer[writeIndex] = RSAServer[i];
 				writeIndex++;
 			}
-		cout << "Server Received: " << hex << endl;
-		for(i = 0; i < 576; i++)
-		{
-			if(RSAClient[i] < 16)
-				cout << 0;
-			cout << uint16_t(RSAClient[i]);
-			if(i%4 == 3)
-				cout << " ";
-			if(i%16 == 15)
-				cout << "| ";
-			if(i%64 == 63)
-				cout << endl;
-		}
-		cout << endl << dec;
-		cout << "Server Sent: " << hex << endl;
-		for(i = 0; i < 576; i++)
-		{
-			if(RSAServer[i] < 16)
-				cout << 0;
-			cout << uint16_t(RSAServer[i]);
-			if(i%4 == 3)
-				cout << " ";
-			if(i%16 == 15)
-				cout << "| ";
-			if(i%64 == 63)
-				cout << endl;
-		}
-		cout << endl << dec;
 
 		Client_List.back().Set_RSA_Key(RSAClient,&RSAClient[504]);
 
@@ -228,7 +240,36 @@ cout << hex << Number << dec << endl;
 		Hashing.Hash_func(Comms, strlen(Comms), Comm_Hash);
 		memcpy(&AESClient[32], Comm_Hash, 32);
 		Client_List.back().Send_Message(AESServer, Message_Length);
-		Client_List.back().Recieve_Message(AESClient, Message_Length);
+		Client_List.back().Receive_Message(AESClient, Message_Length);
+
+		cout << "Server Received: " << hex << endl;
+		for(i = 0; i < 64; i++)
+		{
+			if(AESClient[i] < 16)
+				cout << 0;
+			cout << uint16_t(AESClient[i]);
+			if(i%4 == 3)
+				cout << " ";
+			if(i%16 == 15)
+				cout << "| ";
+			if(i%64 == 63)
+				cout << endl;
+		}
+		cout << endl << dec;
+		cout << "Server Sent: " << hex << endl;
+		for(i = 0; i < 64; i++)
+		{
+			if(AESServer[i] < 16)
+				cout << 0;
+			cout << uint16_t(AESServer[i]);
+			if(i%4 == 3)
+				cout << " ";
+			if(i%16 == 15)
+				cout << "| ";
+			if(i%64 == 63)
+				cout << endl;
+		}
+		cout << endl << dec;
 	}
 
 	return(0);

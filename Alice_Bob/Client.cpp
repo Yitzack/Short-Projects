@@ -84,34 +84,6 @@ int main()
 			writeIndex++;
 		}
 
-	cout << "Client Sent: " << endl << hex;
-	for(i = 0; i < 576; i++)
-	{
-		if(RSAClient[i] < 16)
-			cout << 0;
-		cout << uint16_t(RSAClient[i]);
-		if(i%4 == 3)
-			cout << " ";
-		if(i%16 == 15)
-			cout << "| ";
-		if(i%64 == 63)
-			cout << endl;
-	}
-	cout << "\nClient Received: " << endl << hex;
-	for(i = 0; i < 576; i++)
-	{
-		if(RSAServer[i] < 16)
-			cout << 0;
-		cout << uint16_t(RSAServer[i]);
-		if(i%4 == 3)
-			cout << " ";
-		if(i%16 == 15)
-			cout << "| ";
-		if(i%64 == 63)
-			cout << endl;
-	}
-	cout << endl << dec;
-
 	Server_Encryption.set_Public_key_n(RSAServer);
 	Server_Encryption.set_Public_key_e(&RSAServer[512]);
 	if(Auth_Server(Server_Encryption.Public_key_n(), Server_Encryption.Public_key_e()))
@@ -143,6 +115,33 @@ int main()
 	socket.receive(buffer(AESServer,64));
 	socket.send(buffer(AESClient,64));
 	
+	cout << "Client Sent: " << endl << hex;
+	for(i = 0; i < 64; i++)
+	{
+		if(AESClient[i] < 16)
+			cout << 0;
+		cout << uint16_t(AESClient[i]);
+		if(i%4 == 3)
+			cout << " ";
+		if(i%16 == 15)
+			cout << "| ";
+		if(i%64 == 63)
+			cout << endl;
+	}
+	cout << "\nClient Received: " << endl << hex;
+	for(i = 0; i < 64; i++)
+	{
+		if(AESServer[i] < 16)
+			cout << 0;
+		cout << uint16_t(AESServer[i]);
+		if(i%4 == 3)
+			cout << " ";
+		if(i%16 == 15)
+			cout << "| ";
+		if(i%64 == 63)
+			cout << endl;
+	}
+	cout << endl << dec;
 	return(0);
 }
 
