@@ -13,6 +13,7 @@ using ip::tcp;
 
 void Initalize_RSA();
 void Hexer(char*, cpp_int);
+size_t strlen(const uint8_t[]);	//Same as int std::strlen(const char*) but for uint8_t* instead
 
 RSA RSA_Encryption;
 SHA256 Hashing;
@@ -88,10 +89,12 @@ Client& Client::operator=(Client&& other) noexcept
 
 void Client::Send_Message(uint8_t Message[], int Length) const
 {
+	socket.send(buffer(Message,Length));
 }
 
 void Client::Recieve_Message(uint8_t Message[], int& Length) const
 {
+	socket.receive(buffer(Message,Length));
 }
 
 void Client::Set_RSA_Key(uint8_t public_key_n[], uint8_t public_key_e[])
@@ -210,6 +213,22 @@ cout << hex << Number << dec << endl;
 		cout << endl << dec;
 
 		Client_List.back().Set_RSA_Key(RSAClient,&RSAClient[504]);
+
+		mt19937 RNG(time(NULL));
+		uniform_int_distribution<unsigned long long int> Prime(0,255);
+		uint8_t AESClient[128];
+		uint8_t AESServer[128];
+		uint32_t Comm_Hash[8];
+		char Comms[7000];
+		int Message_Length = 64;
+		for(i = 0; i < 32; i++)
+			AESServer[i] = Prime(RNG);
+		memcpy(Comms, RSAServer, strlen(RSAServer));
+		memcpy(&Comms[strlen(RSAServer)], RSAClient, strlen(RSAClient));
+		Hashing.Hash_func(Comms, strlen(Comms), Comm_Hash);
+		memcpy(&AESClient[32], Comm_Hash, 32);
+		Client_List.back().Send_Message(AESServer, Message_Length);
+		Client_List.back().Recieve_Message(AESClient, Message_Length);
 	}
 
 	return(0);
@@ -311,6 +330,12 @@ void Hexer(char* Hex_Code, cpp_int Number)
 	Hex_Code[Length] = '\0';	//Null-terminate the string
 }
 
+size_t strlen(const uint8_t String[])
+{
+	size_t i = 0;
+	while(String[i] != 0) i++;
+	return(i);
+}
 
 
 

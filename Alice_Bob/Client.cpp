@@ -20,6 +20,7 @@ SHA256 Hashing;
 bool Auth_Server(cpp_int, cpp_int);	//Loads the server certificate and authenticates the server.
 cpp_int Dehexer(uint8_t[], int, int);	//Changes a number stored as hexidecimal as characters into integer
 tuple<uint8_t**,int*,int> Split(const char[], const char);	//Split a character array into an array of uint8_t arrays and the number of splits based on a given character
+size_t strlen(const uint8_t[]);	//Same as int std::strlen(const char*) but for uint8_t* instead
 
 int main()
 {
@@ -127,6 +128,21 @@ int main()
 		return(0);
 	}
 
+	mt19937 RNG(time(NULL));
+	uniform_int_distribution<unsigned long long int> Prime(0,255);
+	uint8_t AESClient[128];
+	uint8_t AESServer[128];
+	uint32_t Comm_Hash[8];
+	char Comms[7000];
+	for(i = 0; i < 32; i++)
+		AESClient[i] = Prime(RNG);
+	memcpy(Comms, RSAServer, strlen(RSAServer));
+	memcpy(&Comms[strlen(RSAServer)], RSAClient, strlen(RSAClient));
+	Hashing.Hash_func(Comms, strlen(Comms), Comm_Hash);
+	memcpy(&AESClient[32], Comm_Hash, 32);
+	socket.receive(buffer(AESServer,64));
+	socket.send(buffer(AESClient,64));
+	
 	return(0);
 }
 
@@ -244,7 +260,12 @@ cpp_int Dehexer(uint8_t String[], int first_byte, int length)
 	return(Answer);
 }
 
-
+size_t strlen(const uint8_t String[])
+{
+	size_t i = 0;
+	while(String[i] != 0) i++;
+	return(i);
+}
 
 
 
