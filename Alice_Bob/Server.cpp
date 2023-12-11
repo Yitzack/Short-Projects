@@ -18,75 +18,79 @@ size_t strlen(const uint8_t[]);	//Same as int std::strlen(const char*) but for u
 RSA RSA_Encryption;
 SHA256 Hashing;
 
-class Client
+class Client_List
 {
 	public:
-		Client(int);
-		~Client(){};
-		Client(const Client& other);			//Copy constructor
-		Client(Client&& other) noexcept;		//Move constructor
-		Client& operator=(const Client& other);	//Copy assignment operator
-		Client& operator=(Client&& other) noexcept;	//Move assignment operator
-		void Send_Message(const uint8_t[], int);
-		void Receive_Message(uint8_t[], int&);
-		void Set_RSA_Key(uint8_t[],uint8_t[]);
-		void Set_AES_Key(uint8_t[]);
+		Client();
+		~Client();
+		int Add_Client(int);
+		void Remove_Client(int);
+		void Set_RSA_Encryption(int, uint8_t[], uint8_t[]);
+		void Set_AES_Encryption(int, uint8_t[32]);
+		void Send_Message(int, uint8_t[], int Length);
+		void Recieve_Message(int, uint8_t[], int& Length);
 	private:
-		RSA RSA_Encryption;
-		AES AES_Encryption;
+		Node* Head;
+		int First_Node_Socket;
 		io_service io;
-		tcp::socket socket;
-		tcp::acceptor acceptor;
-		int socket_number;
-};
-
-Client::Client(int socket_num):io(),socket(io),acceptor(io, tcp::endpoint(tcp::v4(), socket_num))
-{
-	socket_number = socket_num;
+		struct Node
+		{
+			int Node_ID;
+			tcp::socket socket;
+			tcp::acceptor acceptor;
+			RSA RSA_Encryption;
+			AES AES_Encryption;
+			Node* Next;
+			Node(int socket_num, int ID, Node* Next_Node):socket(io, tcp::endpoint(tcp::v4(), socket_num)), acceptor.accept(socket), Next(Next_Node){};
+		}
 }
 
-//Copy constructor
-Client::Client(const Client& other)
-	: RSA_Encryption(other.RSA_Encryption), AES_Encryption(other.AES_Encryption),
-	  io(), socket(io), acceptor(io, tcp::endpoint(tcp::v4(), socket_number)), socket_number(other.socket_number)
-{}
-
-//Move constructor
-Client::Client(Client&& other) noexcept
-	: RSA_Encryption(move(other.RSA_Encryption)), 
-	  AES_Encryption(move(other.AES_Encryption)),
-	  io(), socket(move(other.socket)), acceptor(move(other.acceptor)),
-	  socket_number(other.socket_number)
-{}
-
-//Copy assignment operator
-Client& Client::operator=(const Client& other)
+Client_List::Client_List()
 {
-	if (this != &other)
-	{
-		RSA_Encryption = other.RSA_Encryption;
-		AES_Encryption = other.AES_Encryption;
-		acceptor.close();		//Close the previous acceptor
-		acceptor.open(tcp::v4());
-		acceptor.bind(tcp::endpoint(tcp::v4(), socket_number));
-		acceptor.listen();
-	}
-	return *this;
+	Head = NULL;
+	First_Node_Socket = 0;
+	io();
 }
 
-//Move assignment operator
-Client& Client::operator=(Client&& other) noexcept
+~Client_List::Client_List()
 {
-	if (this != &other)
+	Node* Head_Node = Head;	//Remember the address of the first deleted node so we don't double delete it
+	Node* Next_Node = Head->Next;
+
+	do
 	{
-		RSA_Encryption = move(other.RSA_Encryption);
-		AES_Encryption = move(other.AES_Encryption);
-		socket_number = other.socket_number;
-		socket = move(other.socket);
-		acceptor.close();			//Close the previous acceptor
-		acceptor = move(other.acceptor);	//Move-assign the acceptor
+		delete Head;
+		Head = Next_Node;
+		Next_Node = Head->Next;
+	}while(Next_Node != Head_Node);	//Must be careful to not double delete head
+}
+
+int Client_List::Add_Client(int Socket_Num)
+{
+	Node* Next_Node = Head->Next;
+	if(First_Node_Socket == 0)
+		First_Node_Socket = Socket_Num;
+	Head->Next = new Node(Socket_num, Socket_Num-First_Node_Socket, Next_Node);
+	return(Socket_Num-First_Node_Socket);
+}
+
+void Client_List::Remove_Client(int Client_ID)
+{
+	Node* List_Ptr = Head;
+
+	while(List_Ptr->Next->Node_ID != Client_ID)
+	{
+		List_Ptr = List_Ptr->Next;
+		if(List_Ptr == Head)	//Don't loop around
+			break;
 	}
-	return *this;
+
+	if(List_Ptr->Next->Node_ID == Client_ID)
+	{
+		Node* To_Be_Deleted = List_Ptr->Next;
+		List_Ptr->Next = List_Ptr->Next->Next;
+		delete To_Be_Deleted;
+	}
 }
 
 void Client::Send_Message(const uint8_t Message[], int Length)
@@ -115,11 +119,11 @@ void Client::Send_Message(const uint8_t Message[], int Length)
 
 void Client::Receive_Message(uint8_t Message[], int& Length)
 {
-	if(!socket.is_open())
+	if(!socket->is_open())
 	{
 		//Reopen the socket if it's closed
 		boost::system::error_code ec;
-		acceptor.accept(socket, ec);	//Replace this line with your actual socket opening logic
+		acceptor->accept(*socket, ec);	//Replace this line with your actual socket opening logic
 		if(ec)
 		{
 			std::cerr << "Error opening receiving socket: " << ec.message() << std::endl;
@@ -129,7 +133,7 @@ void Client::Receive_Message(uint8_t Message[], int& Length)
 
 	try
 	{
-		Length = socket.receive(buffer(Message, Length));
+		Length = socket->receive(buffer(Message, Length));
 	}
 	catch(const boost::system::system_error& e)
 	{
@@ -239,8 +243,8 @@ int main()
 		memcpy(&Comms[strlen(RSAServer)], RSAClient, strlen(RSAClient));
 		Hashing.Hash_func(Comms, strlen(Comms), Comm_Hash);
 		memcpy(&AESClient[32], Comm_Hash, 32);
-		Client_List.back().Send_Message(AESServer, Message_Length);
 		Client_List.back().Receive_Message(AESClient, Message_Length);
+		Client_List.back().Send_Message(AESServer, Message_Length);
 
 		cout << "Server Received: " << hex << endl;
 		for(i = 0; i < 64; i++)
