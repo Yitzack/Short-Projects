@@ -1,3 +1,6 @@
+#include<iostream>
+using namespace std;
+
 #ifndef AIR_H
 #define AIR_H
 
@@ -19,6 +22,7 @@ class Air
 				Neighbors[i] = nullptr;
 		}
 		void Advance();			//Take the next time step
+		friend ostream& operator<<(ostream&, const Air&);
 		void Store_Neighbor(Air*, int);	//Store address of neighbors for reference, communication, and divergence calculation
 		float num_of_part() const{return(pressure*volume/(k*temp));}	//PV/kT	(number)
 		float energy() const{return(pressure*volume);}	//PV=nkT (J)

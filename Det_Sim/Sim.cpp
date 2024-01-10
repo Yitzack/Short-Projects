@@ -109,7 +109,7 @@ int main()
 			for(index[2] = 0; index[2] < 315; index[2]++)
 			{
 				if(Bunker[index[0]][index[1]][index[2]] != nullptr)
-					cout << Bunker[index[0]][index[1]][index[2]] << endl;
+					cout << *Bunker[index[0]][index[1]][index[2]] << endl;
 			}
 		}
 	}
@@ -119,7 +119,7 @@ int main()
 		{
 			for(index[2] = 0; index[2] < 400; index[2]++)
 			{
-				cout << Atmo[index[0]][index[1]][index[2]] << endl;
+				cout << *Atmo[index[0]][index[1]][index[2]] << endl;
 			}
 		}
 	}

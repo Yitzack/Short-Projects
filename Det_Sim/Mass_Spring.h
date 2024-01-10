@@ -1,4 +1,5 @@
 #include<cmath>
+#include<iostream>
 using namespace std;
 
 #ifndef MASS_H
@@ -19,7 +20,7 @@ class Mass_Spring
 		}
 		void Advance();		//Take the next time step
 		void Store_Neighbor(Mass_Spring*, int);	//Store address of neighbors for reference and communication
-		friend ostream& operator<<(ostream&, const Mass_Spring&) const;
+		friend ostream& operator<<(ostream&, const Mass_Spring&);
 		float energy() const{return(mass*(pow(velocity[0],2)+pow(velocity[1],2)+pow(velocity[2],2))/2.);}
 		float temp() const{return(thermal_energy/(specific_heat*mass));}	//kelvin
 	private:
