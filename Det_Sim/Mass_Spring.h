@@ -11,15 +11,21 @@ class Mass_Spring : public Voxel
 	public:
 		Mass_Spring(int Index[3]) : Voxel(Index)
 		{
-			thermal_energy = specific_heat*mass*298.15;
+			prev_thermal_energy = thermal_energy = specific_heat*mass*298.15;
 		}
 		void Advance() override {}		//Take the next time step
 		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference and communication
-		ostream& print(ostream& os) const override;
+		ostream& print(ostream& os) const override
+		{
+			Voxel::print(os);
+			os << "," << thermal_energy;
+			return(os);
+		}
 		float energy() const{return(mass*(pow(Voxel::velocity[0],2)+pow(Voxel::velocity[1],2)+pow(Voxel::velocity[2],2))/2.);}
 		float temp() const{return(thermal_energy/(specific_heat*mass));}	//kelvin
 	private:
 		float thermal_energy;		//J
+		float prev_thermal_energy;	//J
 		//static constants are part of the code included with a class. As such they don't get copied to every instance of the object.
 		static constexpr float density = 2400;		//mass/volume (kg/m^3)
 		static constexpr float spring_constant = 4e8;	//k=E*A/L (elastic modulus(40GPa)*area/length) (Pa*m)
@@ -28,9 +34,9 @@ class Mass_Spring : public Voxel
 		static constexpr float mass = density*Voxel::volume;	//kg
 };
 
-/*ostream& operator<<(ostream& os, const Mass_Spring& MS)
+inline ostream& operator<<(ostream& os, const Mass_Spring& A)
 {
-	return(MS.print(os));
-}*/
+	return(A.Mass_Spring::print(os));
+}
 
 #endif

@@ -5,11 +5,47 @@
 #include"Mass_Spring.h"
 using namespace std;
 
+void Init(Air****, Mass_Spring****);	//Initialize the Atmosphere and Bunker
+
 int main()
 {
 	Air**** Atmo = new Air***[400];
 	Mass_Spring**** Bunker = new Mass_Spring***[330];
 	int index[3];
+
+	Init(Atmo, Bunker);
+
+	for(index[0] = 0; index[0] < 330; index[0]++)	//print all data
+	{
+		for(index[1] = 0; index[1] < 330; index[1]++)
+		{
+			for(index[2] = 0; index[2] < 315; index[2]++)
+			{
+				if(Bunker[index[0]][index[1]][index[2]] != nullptr)
+					cout << *Bunker[index[0]][index[1]][index[2]] << endl;
+			}
+		}
+	}
+	for(index[0] = 0; index[0] < 400; index[0]++)	//print all data
+	{
+		for(index[1] = 0; index[1] < 400; index[1]++)
+		{
+			for(index[2] = 0; index[2] < 400; index[2]++)
+			{
+				cout << *Atmo[index[0]][index[1]][index[2]] << endl;
+			}
+		}
+	}
+
+	return(0);
+}
+
+void Init(Air**** Atmo, Mass_Spring**** Bunker)
+{
+	int index[3];
+	int Num_Masses = 0;
+	int Vacuum = 0;
+	int Air_Block = 0;
 
 	for(index[0] = 0; index[0] < 400; index[0]++)	//Instantiate all voxels in the same loops
 	{
@@ -26,9 +62,21 @@ int main()
 				else if(index[0] < 330 && index[1] < 330 && index[2] < 315)
 					Bunker[index[0]][index[1]][index[2]] = nullptr;
 
-				if((index[0] > 45 && index[0] <= 60) || (index[1] > 45 && index[1] <= 60) || (index[0] > 340 && index[0] <= 355) || (index[1] > 340 && index[1] <= 355) || (index[2] > 300 && index[2] <= 315))
+				if(index[2] >= 315)	//Above bunker
+					Atmo[index[0]][index[1]][index[2]] = new Air(index, true);	//This air voxel is unoccupied
+				else if((index[0] >= 35 && index[0] < 365) && (index[1] >= 35 && index[1] < 365) && (index[2] >= 300))	//Ceiling
 					Atmo[index[0]][index[1]][index[2]] = new Air(index, false);	//This air voxel is occupided by Bunker
-				else
+				else if(index[2] >= 300)	//Not ceiling
+					Atmo[index[0]][index[1]][index[2]] = new Air(index, true);	//This air voxel is unoccupied
+				else if((index[0] >= 35 && index[0] < 50) && (index[1] >= 35 && index[1] < 365))	//Walls
+					Atmo[index[0]][index[1]][index[2]] = new Air(index, false);	//This air voxel is occupided by Bunker
+				else if((index[0] >= 350 && index[0] < 365) && (index[1] >= 35 && index[1] < 365))
+					Atmo[index[0]][index[1]][index[2]] = new Air(index, false);	//This air voxel is occupided by Bunker
+				else if((index[1] >= 35 && index[1] < 50) && (index[0] >= 35 && index[0] < 365))
+					Atmo[index[0]][index[1]][index[2]] = new Air(index, false);	//This air voxel is occupided by Bunker
+				else if((index[1] >= 350 && index[1] < 365) && (index[0] >= 35 && index[0] < 365))
+					Atmo[index[0]][index[1]][index[2]] = new Air(index, false);	//This air voxel is occupided by Bunker
+				else	//Not walls
 					Atmo[index[0]][index[1]][index[2]] = new Air(index, true);	//This air voxel is unoccupied
 			}
 		}
@@ -102,28 +150,4 @@ int main()
 			}
 		}
 	}
-
-	for(index[0] = 0; index[0] < 330; index[0]++)	//print all data
-	{
-		for(index[1] = 0; index[1] < 330; index[1]++)
-		{
-			for(index[2] = 0; index[2] < 315; index[2]++)
-			{
-				if(Bunker[index[0]][index[1]][index[2]] != nullptr)
-					cout << *Bunker[index[0]][index[1]][index[2]] << endl;
-			}
-		}
-	}
-	for(index[0] = 0; index[0] < 400; index[0]++)	//print all data
-	{
-		for(index[1] = 0; index[1] < 400; index[1]++)
-		{
-			for(index[2] = 0; index[2] < 400; index[2]++)
-			{
-				cout << *Atmo[index[0]][index[1]][index[2]] << endl;
-			}
-		}
-	}
-
-	return(0);
 }
