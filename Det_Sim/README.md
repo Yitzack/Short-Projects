@@ -6,4 +6,4 @@ The simulation volume is going to be a cube 4 meters on a side. The concrete box
 
 ## Compile directions for g++
 
-g++ Sim.cpp Air.cpp Mass_Spring.cpp -O3
+g++ Sim.cpp Mass_Spring.cpp Air.cpp Voxel.cpp -O3

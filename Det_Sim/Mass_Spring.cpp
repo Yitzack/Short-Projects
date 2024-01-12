@@ -1,12 +1,19 @@
+#include"Voxel.h"
 #include"Mass_Spring.h"
+#include"Air.h"
 
-void Mass_Spring::Store_Neighbor(Mass_Spring* Neighbor, int i)
+ostream& Mass_Spring::print(ostream& os) const
 {
-	Neighbors[i] = Neighbor;
-}
-
-ostream& operator<<(ostream& os, const Mass_Spring& MS)
-{
-	os << MS.position[0] << "," << MS.position[1] << "," << MS.position[2];
+	Voxel::print(os);
+	os << "," << thermal_energy;
 	return(os);
 }
+
+void Mass_Spring::Store_Neighbor(Voxel* Neighbor, int i)
+{
+	if(dynamic_cast<Mass_Spring*>(Neighbor) != nullptr)
+		Voxel::PermNeighbors[i] = Neighbor;
+	else
+		Voxel::TempNeighbors[i] = Neighbor;
+}
+

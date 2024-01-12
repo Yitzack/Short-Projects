@@ -1,5 +1,6 @@
 #include<iostream>
 #include<cmath>
+#include"Voxel.h"
 #include"Air.h"
 #include"Mass_Spring.h"
 using namespace std;
