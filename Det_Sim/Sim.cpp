@@ -6,14 +6,52 @@
 using namespace std;
 
 void Init(Air****, Mass_Spring****);	//Initialize the Atmosphere and Bunker
+void Print(Air****, Mass_Spring****);
+void TempNeighbors(Air****, Mass_Spring****);	//Check and set temporary neighbors as Mass_Spring voxels pass through Air voxels
 
 int main()
 {
 	Air**** Atmo = new Air***[400];
 	Mass_Spring**** Bunker = new Mass_Spring***[330];
-	int index[3];
 
 	Init(Atmo, Bunker);
+	TempNeighbors(Atmo, Bunker);
+
+	return(0);
+}
+
+void TempNeighbors(Air**** Atmo, Mass_Spring**** Bunker)
+{
+	int index[3];
+	int Air_index[3];
+	float Bunker_position[3];
+
+	for(index[0] = 0; index[0] < 330; index[0]++)
+	{
+		for(index[1] = 0; index[1] < 330; index[1]++)
+		{
+			for(index[2] = 0; index[2] < 315; index[2]++)
+			{
+				if(Bunker[index[0]][index[1]][index[2]] != nullptr)
+				{
+					Bunker[index[0]][index[1]][index[2]]->Position(Bunker_position);
+					Air_index[0] = lrint(Bunker_position[0]*100.);
+					Air_index[1] = lrint(Bunker_position[1]*100.);
+					Air_index[2] = lrint(Bunker_position[2]*100.);
+					for(int i = -1; i <= 1; i++)
+						for(int j = -1; j <= 1; j++)
+							for(int k = -1; k <= 1; k++)
+								if(0 <= Air_index[0]+i && Air_index[0]+i < 400 && 0 <= Air_index[1]+j && Air_index[1]+j < 400 && 0 <=Air_index[2]+k && Air_index[2]+k < 400 && Bunker[index[0]][index[1]][index[2]]->Store_Neighbor(Atmo[Air_index[0]+i][Air_index[1]+j][Air_index[2]+k]))
+									Atmo[Air_index[0]+i][Air_index[1]+j][Air_index[2]+k]->Store_Neighbor(Bunker[index[0]][index[1]][index[2]]);
+				}
+			}
+		}
+	}
+}
+
+void Print(Air**** Atmo, Mass_Spring**** Bunker)
+{
+	int index[3];
 
 	for(index[0] = 0; index[0] < 330; index[0]++)	//print all data
 	{
@@ -36,8 +74,6 @@ int main()
 			}
 		}
 	}
-
-	return(0);
 }
 
 void Init(Air**** Atmo, Mass_Spring**** Bunker)

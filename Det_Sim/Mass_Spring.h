@@ -15,6 +15,7 @@ class Mass_Spring : public Voxel
 		}
 		void Advance() override {}		//Take the next time step
 		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference and communication
+		bool Store_Neighbor(Voxel* Neighbor) override;	//Store address of neighbors for reference and communication
 		ostream& print(ostream& os) const override
 		{
 			Voxel::print(os);
