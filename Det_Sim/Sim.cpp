@@ -8,6 +8,7 @@ using namespace std;
 void Init(Air****, Mass_Spring****);	//Initialize the Atmosphere and Bunker
 void Print(Air****, Mass_Spring****);
 void TempNeighbors(Air****, Mass_Spring****);	//Check and set temporary neighbors as Mass_Spring voxels pass through Air voxels
+void Advance(Air****, Mass_Spring****);
 
 int main()
 {
@@ -17,7 +18,45 @@ int main()
 	Init(Atmo, Bunker);
 	TempNeighbors(Atmo, Bunker);
 
+	for(int i = 0; i <= 10; i++)
+	{
+		if(i%10 == 0) Print(Atmo, Bunker);	//Print data every .01 seconds before advancing
+		Advance(Atmo, Bunker);		//Advance the simulation one time step
+		TempNeighbors(Atmo, Bunker);	//Remove temp neighbors that are too far away, add new temp neighbors that are close enough
+	}
+
 	return(0);
+}
+
+void Advance(Air**** Atmo, Mass_Spring**** Bunker)
+{
+	int index[3];
+
+	for(index[0] = 0; index[0] < 400; index[0]++)
+	{
+		for(index[1] = 0; index[1] < 400; index[1]++)
+		{
+			for(index[2] = 0; index[2] < 400; index[2]++)
+			{
+				if(index[0] < 330 && index[1] < 330 && index[2] < 315)
+					Bunker[index[0]][index[1]][index[2]]->Advance();
+				Atmo[index[0]][index[1]][index[2]]->Advance();
+			}
+		}
+	}
+
+	for(index[0] = 0; index[0] < 400; index[0]++)
+	{
+		for(index[1] = 0; index[1] < 400; index[1]++)
+		{
+			for(index[2] = 0; index[2] < 400; index[2]++)
+			{
+				if(index[0] < 330 && index[1] < 330 && index[2] < 315)
+					Bunker[index[0]][index[1]][index[2]]->Update_Prev();
+				Atmo[index[0]][index[1]][index[2]]->Update_Prev();
+			}
+		}
+	}
 }
 
 void TempNeighbors(Air**** Atmo, Mass_Spring**** Bunker)

@@ -13,7 +13,7 @@ class Mass_Spring : public Voxel
 		{
 			prev_thermal_energy = thermal_energy = specific_heat*mass*298.15;
 		}
-		void Advance() override {}		//Take the next time step
+		void Advance() override;		//Take the next time step
 		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference and communication
 		bool Store_Neighbor(Voxel* Neighbor) override;	//Store address of neighbors for reference and communication
 		ostream& print(ostream& os) const override
@@ -21,6 +21,11 @@ class Mass_Spring : public Voxel
 			Voxel::print(os);
 			os << "," << thermal_energy;
 			return(os);
+		}
+		void Update_Prev() override
+		{
+			Voxel::Update_Prev();
+			prev_thermal_energy = thermal_energy;
 		}
 		float energy() const{return(mass*(pow(Voxel::velocity[0],2)+pow(Voxel::velocity[1],2)+pow(Voxel::velocity[2],2))/2.);}
 		float temp() const{return(thermal_energy/(specific_heat*mass));}	//kelvin

@@ -23,6 +23,12 @@ class Air : public Voxel
 			os << "," << temp << "," << pressure;
 			return(os);
 		}
+		void Update_Prev() override
+		{
+			Voxel::Update_Prev();
+			prev_pressure = pressure;
+			prev_temp = temp;
+		}
 		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference, communication, and divergence calculation
 		bool Store_Neighbor(Voxel* Neighbor) override;	//Store address of neighbors for reference, communication, and divergence calculation
 		float num_of_part() const{return(pressure*Voxel::volume/(k*temp));}	//PV/kT	(number)

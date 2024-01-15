@@ -16,10 +16,10 @@ bool Air::Store_Neighbor(Voxel* Neighbor)
 
 	for(i = 0; i < 27; i++)
 	{
-		if(Voxel::Distance(Voxel::TempNeighbors[i]) > sqrt(3.)*.01)	//Too far away to be a neighbor
+		if(Voxel::TempNeighbors[i] != nullptr && Voxel::Distance(Voxel::TempNeighbors[i]) > sqrt(3.)*.01)	//Too far away to be a neighbor
 			Voxel::TempNeighbors[i] = nullptr;
 
-		if(Dist.first < Voxel::Distance(Voxel::TempNeighbors[i]))	//Find the largest distance of remaining neighbors and its index
+		if(Voxel::TempNeighbors[i] != nullptr && Dist.first < Voxel::Distance(Voxel::TempNeighbors[i]))	//Find the largest distance of remaining neighbors and its index
 		{
 			Dist.first = Voxel::Distance(Voxel::TempNeighbors[i]);
 			Dist.second = i;

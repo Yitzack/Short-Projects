@@ -10,10 +10,12 @@ void Voxel::Position(float pos[3])
 	return;
 }
 
+vector3 Voxel::Position()
+{
+	return(position);
+}
+
 float Voxel::Distance(Voxel* Other)
 {
-	float distance = 0;
-	for(int i = 0; i < 3; i++)
-		distance += pow(position[i]-Other->position[i],2);
-	return(sqrt(distance));
+	return((position-Other->position).length());
 }
