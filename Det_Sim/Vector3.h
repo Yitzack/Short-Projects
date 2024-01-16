@@ -33,6 +33,7 @@ class vector3
 		inline vector3 operator+(const vector3) const;
 		inline vector3 operator+=(const vector3);
 		inline vector3 operator-(const vector3) const;
+		inline vector3 operator-() const;
 		inline vector3 operator-=(const vector3);
 		inline vector3 operator*(const float) const;
 		inline vector3 operator*=(const float);
@@ -46,6 +47,7 @@ class vector3
 		inline vector3 cross_product(const vector3) const;
 		inline float length() const;
 		inline vector3 normalize() const;
+		inline vector3 abs() const;	//takes the abs of each element
 	private:
 		array<float,3> data;
 };

@@ -13,11 +13,28 @@ void Mass_Spring::Advance()
 		if(Voxel::PermNeighbors[i] != nullptr)
 			Force += spring_constant*((Voxel::Position()-Voxel::PermNeighbors[i]->Voxel::Position()).normalize())*((Voxel::Position()-Voxel::PermNeighbors[i]->Voxel::Position()).length()-equilibrium[i].length());	//I should have a force vector pointing at the mass on the other end of spring whose equilibrium length is set by the initialization. The spring network will mostly hold voxels in place. When the spring network fails, voxels may intersect each other.
 
-	//F=∬A​−∇P⋅ndA (int_area dA -\vec\grad P \cdot \hat{n} where \hat{n} is pointing out)
+	//F=∬A​−∇P⋅ndA (int_area dA -\vec\grad P \cdot \hat{n} where \hat{n} is pointing out, unit check)
 
 	Acceleration /= mass;
+	Acceleration += vector3(0,0,9.8);	//Add in force of gravity
 	Voxel::velocity = Voxel::prev_velocity + Acceleration*Voxel::deltaT;
 	Voxel::position = Voxel::prev_position + Voxel::prev_velocity*Voxel::deltaT + Acceleration*pow(Voxel::deltaT,2)/2.;
+
+	if(Voxel::position[3] < 0)	//If a mass is found below the ground, elastically bounce it off the ground (I think this will effectively create a normal force, but I may need to reconsider)
+	{
+		Voxel::velocity[3] *= -1;
+		Voxel::position[3] *= -1;
+	}
+
+	return;
+}
+
+bool Mass_Spring::Is_Surface()
+{
+	for(Voxel* Link: Voxel::PermNeighbors)
+		if(Link == nullptr)
+			return(true);
+	return(false);
 }
 
 void Mass_Spring::Store_Neighbor(Voxel* Neighbor, int i)

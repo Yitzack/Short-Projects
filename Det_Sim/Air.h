@@ -2,7 +2,9 @@
 #define AIR_H
 
 #include<iostream>
+#include<functional>
 #include"Voxel.h"
+#include"Vector3.h"
 using namespace std;
 
 class Air : public Voxel
@@ -16,11 +18,11 @@ class Air : public Voxel
 				prev_pressure = pressure = 0;
 			prev_temp = temp = 298.15;
 		}
-		void Advance() override {};		//Take the next time step
+		void Advance() override;		//Take the next time step
 		ostream& print(ostream& os) const override
 		{
 			Voxel::print(os);
-			os << "," << temp << "," << pressure;
+			os << "," << temp << "," << pressure << "," << .5*Density()*Voxel::velocity.dot_product(Voxel::velocity);
 			return(os);
 		}
 		void Update_Prev() override
@@ -31,10 +33,14 @@ class Air : public Voxel
 		}
 		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference, communication, and divergence calculation
 		bool Store_Neighbor(Voxel* Neighbor) override;	//Store address of neighbors for reference, communication, and divergence calculation
-		float num_of_part() const{return(pressure*Voxel::volume/(k*temp));}	//PV/kT	(number)
-		float energy() const{return(pressure*Voxel::volume);}	//PV=nkT (J)
-		float mass() const{return(num_of_part()/N*molar_mass/1000.);}	//kg
-		float density() const{return(mass()/Voxel::volume);}	//mass/volume (kg/m^3)
+		vector3 Gradient(function<float(const Air&)>);
+		float Num_of_Part() const{return(prev_pressure*Voxel::volume/(k*prev_temp));}	//PV/kT	(number)
+		float Energy() const{return(prev_pressure*Voxel::volume);}			//PV=nkT (J)
+		float Mass() const{return(Num_of_Part()/N*molar_mass/1000.);}			//kg
+		float Density() const{return(Mass()/Voxel::volume);}				//mass/volume (kg/m^3)
+		float Specific_Energy() const{return(Energy()/Mass());}				//energy/mass (J/kg, m^2/s^2)
+		float Temp() const{return(prev_temp);}						//kelvin
+		float Pressure() const{return(prev_pressure);}					//Pa
 	private:
 		float temp;			//kelvin
 		float pressure;			//pressure aka energy density (Pa)

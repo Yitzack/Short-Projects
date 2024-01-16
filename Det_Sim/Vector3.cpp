@@ -37,6 +37,15 @@ inline vector3 vector3::operator-(const vector3 A) const
 	return(B);
 }
 
+inline vector3 vector3::operator-() const
+{
+	vector3 B;
+	B.data[0] = -data[0];
+	B.data[1] = -data[1];
+	B.data[2] = -data[2];
+	return(B);
+}
+
 inline vector3 vector3::operator-=(const vector3 A)
 {
 	data[0] -= A.data[0];
@@ -132,5 +141,14 @@ inline float vector3::length() const
 inline vector3 vector3::normalize() const
 {
 	return(*this/this->length());
+}
+
+inline vector3 vector3::abs() const
+{
+	vector3 ans;
+	ans.data[0] = std::abs(data[0]);
+	ans.data[1] = std::abs(data[1]);
+	ans.data[2] = std::abs(data[2]);
+	return(ans);
 }
 

@@ -19,7 +19,7 @@ class Mass_Spring : public Voxel
 		ostream& print(ostream& os) const override
 		{
 			Voxel::print(os);
-			os << "," << thermal_energy;
+			os << "," << thermal_energy << "," << energy();
 			return(os);
 		}
 		void Update_Prev() override
@@ -27,6 +27,7 @@ class Mass_Spring : public Voxel
 			Voxel::Update_Prev();
 			prev_thermal_energy = thermal_energy;
 		}
+		bool Is_Surface();	//Returns true if one or more PermNeighbors is missing, indicating it is part of the surface of a parent object.
 		float energy() const{return(mass*(pow(Voxel::velocity[0],2)+pow(Voxel::velocity[1],2)+pow(Voxel::velocity[2],2))/2.);}
 		float temp() const{return(thermal_energy/(specific_heat*mass));}	//kelvin
 	private:

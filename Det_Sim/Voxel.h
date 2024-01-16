@@ -38,6 +38,7 @@ class Voxel
 		virtual bool Store_Neighbor(Voxel*) = 0;	//Store address of neighbors for reference, communication, and divergence calculation. Returns if Neighbor was added
 		void Position(float[3]);
 		vector3 Position();
+		float Div();
 		float Distance(Voxel*);
 	protected:
 		vector3 position;		//{0,0,0} is the origin at lower, left, back corner, position (meters)
@@ -47,6 +48,7 @@ class Voxel
 		Voxel* PermNeighbors[26];	//Addresses of 26 nearest permanent (same type) neighbors (6 face-to-face, 12 edge-to-edge, 8 vertex-to-vertex)
 		Voxel* TempNeighbors[27];	//Addresses of 27 nearest temporary (different type) neighbors (6 face-to-face, 12 edge-to-edge, 8 vertex-to-vertex, and one centered on self)
 		//static constants are part of the code included with a class. As such they don't get copied to every instance of the object.
+		static constexpr float deltaX = .01;	//Voxel side length (1 cm)
 		static constexpr float volume = 1e-6;	//1e-6 is 1cc or 1mL
 		static constexpr float deltaT = .001;	//1 ms
 };
