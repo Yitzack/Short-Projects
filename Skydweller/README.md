@@ -14,7 +14,7 @@ I will assume nothing about the wheel's position. The ferrous bolts were specifi
 
 I will assume that the plane's location is defined by the main gear and that there is 5 cm of travel in the main gear where the wheel is in contact with the runway.
 
-Acceleration doesn't appear to fast enough for take off before the plane overruns the runway. ```Weight_on_gear``` lifts off before v<sub>lof</sub>.
+Acceleration doesn't appear to fast enough to take off before the plane overruns the runway. ```Weight_on_gear``` lifts off before v<sub>lof</sub>.
 
 ## ARINC 429
 
