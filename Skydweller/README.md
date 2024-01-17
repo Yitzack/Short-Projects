@@ -14,7 +14,7 @@ I will assume nothing about the wheel's position. The ferrous bolts were specifi
 
 I will assume that the plane's location is defined by the main gear and that there is 5 cm of travel in the main gear where the wheel is in contact with the runway.
 
-##ARINC 429
+## ARINC 429
 
 I'm bit bashing a 32-bit word of data for label 312<sub>8</sub> coming from device 1 in either NCD (No Computed Data, 1) or NO(Normal Opeation, 0) status. The standard calls for odd parity.
 
