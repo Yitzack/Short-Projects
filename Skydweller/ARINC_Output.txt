@@ -7,6 +7,7 @@ Normal Operation, 15 m/s: 0x1d2953 29.1562 14.998
 Parity No Computed Data Speed:0 knots SDI: 1 Label: 202
 No Parity Normal Operation Speed:0 knots SDI: 1 Label: 202
 No Parity Normal Operation Speed:4095.98 knots SDI: 1 Label: 202
+Parity Normal Operation Speed:0.015625 knots SDI: 1 Label: 202
 No Parity Normal Operation Speed:29.1562 knots SDI: 1 Label: 202
 
 The following bad codes are by design, program only knows bad code

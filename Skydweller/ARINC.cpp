@@ -231,6 +231,12 @@ int main()
 	else
 		cout << "Bad Code" << endl;
 
+	Word = 0x80000553;
+	if(Test.Decode(Word))
+		Test.print(cout);
+	else
+		cout << "Bad Code" << endl;
+
 	Word = 0x1d2953;
 	if(Test.Decode(Word))
 		Test.print(cout);
