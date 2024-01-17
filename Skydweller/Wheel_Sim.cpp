@@ -1,4 +1,5 @@
 #include<iostream>
+#include<iomanip>
 #include"Wheel.h"
 #include"Vector3.h"
 using namespace std;
@@ -27,6 +28,7 @@ int main()
 	vector3 Acc_ground = along_runway*Acc;	//Acceleration is 1.5 gs pointing from start to end of KCFO_8
 	vector3 Acc_air = (runway_normal+along_runway).normalize()*Acc;	//1.5gs 45 degrees up from runway surface
 
+	cout << setprecision(18);
 	while(Main_Wheel.Speed() < V_lof)
 	{
 		cout << Main_Wheel << endl;
