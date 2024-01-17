@@ -2,6 +2,7 @@
 #include<cstdlib>
 #include<cmath>
 #include<ctime>
+#include"Vector3.h"
 using namespace std;
 
 #ifndef WHEEL_H
@@ -56,20 +57,16 @@ struct INS
 
 struct Airport
 {
-	double latitude_start;
-	double longitude_start;
-	double altitude_start;
-	double latitude_end;
-	double longitude_end;
-	double altitude_end;
+	vector3 start;
+	vector3 end;
 };
 
 class Wheel
 {
 	public:
-		Wheel(double Plane_position[3], double Plane_velocity[3], Airport Runway)
+		Wheel(vector3 Plane_position, vector3 Plane_velocity, Airport Runway)
 		{
-			srand(time(nullptr));
+			srand(std::time(nullptr));
 
 			Sensor_position[0] = M_PI/4.;	//Initialize the wheel
 			Sensor_position[1] = 3.*M_PI/4.;
@@ -93,17 +90,25 @@ class Wheel
 			Plane.accelerometer.ax = 5e-5;
 			Plane.accelerometer.ay = 1.8e-4;
 			Plane.accelerometer.az = -9.79669;
+			time = 0;
 
 			Set_Weight();
 		}
 		pair<bool, bool> Sensor_Read() const;
 		void Set_Weight();		//Determine if the wheel is on the ground and set Plane.weight_on_gear
-		void Advance(double[3]);	//Advance the clock with a given acceleration
-		ostream& print(ostream& os) const;
+		void Advance(vector3);		//Advance the clock with a given acceleration in m/s^2
+		double Speed() const;		//Returns plane's speed in m/s
+		double Time() const;
+		ostream& print(ostream&) const;
+		friend ostream& operator<<(ostream&, const Wheel);
 	private:
 		double Sensor_position[2];
 		double Bolt_position[4];
 		double Wheel_position;
+		double time;
+		static constexpr double DeltaT = .001;
+		static constexpr double Wheel_Radius = .1567;
+		static constexpr double Radius_Earth = 6371000;
 		Airport Location;
 		INS Plane;
 };
