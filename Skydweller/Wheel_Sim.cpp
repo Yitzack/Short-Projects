@@ -22,9 +22,10 @@ int main()
 	const vector3 across_runway = along_runway.cross_product(gravity).normalize();
 	const vector3 runway_normal = along_runway.cross_product(across_runway).normalize();
 
-	vector3 Acc_ground = along_runway*9.8*1.5;	//Acceleration is 1.5 gs pointing from start to end of KCFO_8
-	vector3 Acc_air = (runway_normal+along_runway).normalize()*9.8*1.5;	//1.5gs 45 degrees up from runway surface
-	double V_lof = 1850; //60 knots (1850 m/s) for a Cessna and 160 knots (4933 m/s) for a Boeing 777
+	double V_lof = 30.87; //60 knots (30.87 m/s) for a Cessna and 160 knots (82.31 m/s) for a Boeing 777
+	double Acc = pow(V_lof,2)/16000.;
+	vector3 Acc_ground = along_runway*Acc;	//Acceleration is 1.5 gs pointing from start to end of KCFO_8
+	vector3 Acc_air = (runway_normal+along_runway).normalize()*Acc;	//1.5gs 45 degrees up from runway surface
 
 	while(Main_Wheel.Speed() < V_lof)
 	{
