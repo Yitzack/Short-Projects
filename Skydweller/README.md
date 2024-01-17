@@ -18,6 +18,8 @@ I will assume that the plane's location is defined by the main gear and that the
 
 I'm bit bashing a 32-bit word of data for label 312<sub>8</sub> coming from device 1 in either NCD (No Computed Data, 1) or NO(Normal Opeation, 0) status. The standard calls for odd parity.
 
+The standard says that valid non-zero speeds are between .015 knots and 4096 knots. It is technically incorrect as it is actually between .015625 knots and 4095.984375 knots.
+
 ## Compile directions for g++
 
 g++ Wheel_Sim.cpp Wheel.cpp Vector3.cpp -O3
