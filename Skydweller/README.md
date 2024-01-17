@@ -1,4 +1,4 @@
-# Detination Simulation
+# Skydweller Techincal Interview
 
 I'm working on the technical interview from the PDF provisioned by Skydweller.
 
@@ -13,6 +13,8 @@ It would appear to me that the first sensor is at about 45 degrees or pi/4 radia
 I will assume nothing about the wheel's position. The ferrous bolts were specified to be 90 degrees or pi/2 radians from each other. I currently assume pi/70 radians, 2.57 degrees, .135 inches, or 3.2 mm of accuracy in placement.
 
 I will assume that the plane's location is defined by the main gear and that there is 5 cm of travel in the main gear where the wheel is in contact with the runway.
+
+Acceleration doesn't appear to fast enough for take off before the plane overruns the runway. ```Weight_on_gear``` lifts off before v<sub>lof</sub>.
 
 ## ARINC 429
 
