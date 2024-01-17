@@ -20,6 +20,8 @@ I'm bit bashing a 32-bit word of data for label 312<sub>8</sub> coming from devi
 
 The standard says that valid non-zero speeds are between .015 knots and 4096 knots. It is technically incorrect as it is actually between .015625 knots and 4095.984375 knots.
 
+To seperate the code into course and fine parts for labels 0x48, 0x49, 0x50, and 0x51, I would bitwise-and the whole code with a bit mask for each part (0x7FFFF800 and 0x7FF) and then bit shift the course down 11 bits.
+
 ## Compile directions for g++
 
 g++ Wheel_Sim.cpp Wheel.cpp Vector3.cpp -O3

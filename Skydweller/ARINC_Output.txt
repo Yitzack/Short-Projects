@@ -1,0 +1,16 @@
+Default: 0xa0000153 0 0
+Default Normal Operation: 0x153 0 0
+Normal Operation, 4095.984375 kt: 0xffffd53 4095.98 2106.97
+Normal Operation, .015 kt: 0x80000553 0.015625 0.0080375
+Normal Operation, 15 m/s: 0x1d2953 29.1562 14.998
+
+Parity No Computed Data Speed:0 knots SDI: 1 Label: 202
+No Parity Normal Operation Speed:0 knots SDI: 1 Label: 202
+No Parity Normal Operation Speed:4095.98 knots SDI: 1 Label: 202
+No Parity Normal Operation Speed:29.1562 knots SDI: 1 Label: 202
+
+The following bad codes are by design, program only knows bad code
+Bad Code (bad data sign bit)
+Bad Code (bad label)
+Bad Code (bad sdi)
+Bad Code (bad parity)
