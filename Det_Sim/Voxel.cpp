@@ -4,33 +4,119 @@ using namespace std;
 
 float Voxel::Div()
 {
-	const vector3 direction[] = {vector3(1,0,0), vector3(-1,0,0), vector3(0,1,0), vector3(0,-1,0), vector3(0,0,1), vector3(0,0,-1), vector3(1,1,0), vector3(1,-1,0), vector3(-1,1,0), vector3(-1,-1,0), vector3(1,0,1), vector3(1,0,-1), vector3(-1,0,1), vector3(-1,0,-1), vector3(0,1,1), vector3(0,1,-1), vector3(0,-1,1), vector3(0,-1,-1), vector3(1,1,1), vector3(-1,1,1), vector3(1,-1,1), vector3(-1,-1,1), vector3(1,1,-1), vector3(-1,1,-1), vector3(1,-1,-1), vector3(-1,-1,-1)};
+	float Second_W[3] = {-.5,0,.5};
+	float First_W[2] = {-1,1};
 	vector3 ans(0,0,0);
-	vector3 Count(0,0,0);
+	int i,j;
+	int count;
 
-	for(int i = 0; i < 26; i++)	//Most gradients
+	count = 0;	//X dimension
+	if(PermNeighbors[0][1][1] != nullptr && PermNeighbors[2][1][1] != nullptr)	//Not an edge
 	{
-		for(int j = 0; j < 26; j++)
-		{
-			if(PermNeighbors[i] != nullptr && PermNeighbors[j] != nullptr && (direction[i]-direction[j]).length() < 1.1)
-			{
-				ans += (PermNeighbors[i]->prev_velocity-PermNeighbors[i]->prev_velocity).dot_product(direction[i]-direction[j])*(direction[i]-direction[j])/deltaX;	//The first factor of the dot product gets the finite difference of all components. The second factor gets just the part pointing in the correct direction. The last factor turns the scalar into a vector to fit in the correct component.
-				Count += (direction[i]-direction[j]).abs();
-			}
-		}
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[0][1+i][1+j] != nullptr && PermNeighbors[2][1+i][1+j] != nullptr)
+				{
+					ans[0] += Second_W[0]*(PermNeighbors[0][1+i][1+j]->position)[0]+Second_W[2]*(PermNeighbors[2][1+i][1+j]->position)[0];
+					count++;
+				}
+		ans[0] /= count;
 	}
-	for(int i = 0; i < 6; i++)	//Gradient to center
+	else if(PermNeighbors[2][1][1] != nullptr)	//High edge
 	{
-		if(Voxel::PermNeighbors[i] != nullptr)
-		{
-			ans += (PermNeighbors[i]->prev_velocity-prev_velocity).dot_product(direction[i])*(-direction[i])/deltaX;	//The first factor of the dot product gets the finite difference of all components. The second factor gets just the part pointing in the correct direction. The last factor turns the scalar into a vector to fit in the correct component.
-			Count += direction[i].abs();
-		}
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[2][1+i][1+j] != nullptr && PermNeighbors[1][1+i][1+j] != nullptr)
+				{
+					ans[0] += First_W[0]*(PermNeighbors[1][1+i][1+j]->position)[0]+First_W[1]*(PermNeighbors[2][1+i][1+j]->position)[0];
+					count++;
+				}
+		ans[0] /= count;
+	}
+	else	//Low edge
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[0][1+i][1+j] != nullptr && PermNeighbors[1][1+i][1+j] != nullptr)
+				{
+					ans[0] += First_W[0]*(PermNeighbors[0][1+i][1+j]->position)[0]+First_W[1]*(PermNeighbors[1][1+i][1+j]->position)[0];
+					count++;
+				}
+		ans[0] /= count;
 	}
 
-	ans[0] /= Count[0];
-	ans[1] /= Count[1];
-	ans[2] /= Count[2];
+
+	count = 0;	//Y direction
+	if(PermNeighbors[1][0][1] != nullptr && PermNeighbors[1][2][1] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[1+i][0][1+j] != nullptr && PermNeighbors[1+i][2][1+j] != nullptr)
+				{
+					ans[1] += Second_W[0]*(PermNeighbors[1+i][0][1+j]->position)[1]+Second_W[2]*(PermNeighbors[1+i][2][1+j]->position)[1];
+					count++;
+				}
+		ans[1] /= count;
+	}
+	else if(PermNeighbors[1][2][1] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[1+i][2][1+j] != nullptr && PermNeighbors[1+i][1][1+j] != nullptr)
+				{
+					ans[1] += First_W[0]*(PermNeighbors[1+i][1][1+j]->position)[1]+First_W[1]*(PermNeighbors[1+i][2][1+j]->position)[1];
+					count++;
+				}
+		ans[1] /= count;
+	}
+	else
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[1+i][0][1+j] != nullptr && PermNeighbors[1+i][1][1+j] != nullptr)
+				{
+					ans[1] += First_W[0]*(PermNeighbors[1+i][0][1+j]->position)[1]+First_W[1]*(PermNeighbors[1+i][1][1+j]->position)[1];
+					count++;
+				}
+		ans[1] /= count;
+	}
+
+
+	count = 0;	//Z direction
+	if(PermNeighbors[1][1][0] != nullptr && PermNeighbors[1][1][2] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[1+i][1+j][0] != nullptr && PermNeighbors[1+i][1+j][2] != nullptr)
+				{
+					ans[2] += Second_W[0]*(PermNeighbors[1+i][1+j][0]->position)[2]+Second_W[2]*(PermNeighbors[1+i][1+j][2]->position)[2];
+					count++;
+				}
+		ans[2] /= count;
+	}
+	else if(PermNeighbors[1][1][2] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[1+i][1+j][2] != nullptr && PermNeighbors[1+i][1+j][1] != nullptr)
+				{
+					ans[2] += First_W[0]*(PermNeighbors[1+i][1+j][1]->position)[2]+First_W[1]*(PermNeighbors[1+i][1+j][2]->position)[2];
+					count++;
+				}
+		ans[2] /= count;
+	}
+	else
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(PermNeighbors[1+i][1+j][0] != nullptr && PermNeighbors[1+i][1+j][1] != nullptr)
+				{
+					ans[2] += First_W[0]*(PermNeighbors[1+i][1+j][0]->position)[2]+First_W[1]*(PermNeighbors[1+i][1+j][1]->position)[2];
+					count++;
+				}
+		ans[2] /= count;
+	}
+	ans /= deltaX;
 
 	return(ans[0]+ans[1]+ans[2]);
 }

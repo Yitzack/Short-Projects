@@ -14,7 +14,7 @@ class Mass_Spring : public Voxel
 			prev_thermal_energy = thermal_energy = specific_heat*mass*298.15;
 		}
 		void Advance() override;		//Take the next time step
-		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference and communication
+		void Store_Neighbor(Voxel* Neighbor, int, int, int) override;	//Store address of neighbors for reference and communication
 		bool Store_Neighbor(Voxel* Neighbor) override;	//Store address of neighbors for reference and communication
 		ostream& print(ostream& os) const override
 		{

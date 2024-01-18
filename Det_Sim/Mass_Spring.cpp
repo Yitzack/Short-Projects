@@ -5,13 +5,18 @@
 
 void Mass_Spring::Advance()
 {
-	const vector3 equilibrium[] = {vector3(.01,0,0), vector3(-.01,0,0), vector3(0,.01,0), vector3(0,-.01,0), vector3(0,0,.01), vector3(0,0,-.01), vector3(.01,.01,0), vector3(.01,-.01,0), vector3(-.01,.01,0), vector3(-.01,-.01,0), vector3(.01,0,.01), vector3(.01,0,-.01), vector3(-.01,0,.01), vector3(-.01,0,-.01), vector3(0,.01,.01), vector3(0,.01,-.01), vector3(0,-.01,.01), vector3(0,-.01,-.01), vector3(.01,.01,.01), vector3(-.01,.01,.01), vector3(.01,-.01,.01), vector3(-.01,-.01,.01), vector3(.01,.01,-.01), vector3(-.01,.01,-.01), vector3(.01,-.01,-.01), vector3(-.01,-.01,-.01)};
+	const vector3 equilibrium[3][3][3] = 
+		{{{vector3(-.01,-.01,-.01), vector3(-.01,-.01,0), vector3(-.01,-.01,.01)}, {vector3(-.01,0,-.01), vector3(-.01,0,0), vector3(-.01,0,.01)}, {vector3(-.01,.01,-.01), vector3(-.01,.01,0), vector3(-.01,.01,.01)}}, 
+		{{vector3(0,-.01,-.01), vector3(0,-.01,0), vector3(0,-.01,.01)}, {vector3(0,0,-.01), vector3(0,0,0), vector3(0,0,.01)}, {vector3(0,.01,-.01), vector3(0,.01,0), vector3(0,.01,.01)}}, 
+		{{vector3(.01,-.01,-.01), vector3(.01,-.01,0), vector3(.01,-.01,.01)}, {vector3(.01,0,-.01), vector3(.01,0,0), vector3(.01,0,.01)}, {vector3(.01,.01,-.01), vector3(.01,.01,0), vector3(.01,.01,.01)}}};
 	vector3	Force(0,0,0);
 	vector3 Acceleration;
 
-	for(int i = 0; i < 26; i++)
-		if(Voxel::PermNeighbors[i] != nullptr)
-			Force += spring_constant*((Voxel::Position()-Voxel::PermNeighbors[i]->Voxel::Position()).normalize())*((Voxel::Position()-Voxel::PermNeighbors[i]->Voxel::Position()).length()-equilibrium[i].length());	//I should have a force vector pointing at the mass on the other end of spring whose equilibrium length is set by the initialization. The spring network will mostly hold voxels in place. When the spring network fails, voxels may intersect each other.
+	for(int i = 0; i < 3; i++)
+		for(int j = 0; j < 3; j++)
+			for(int k = 0; k < 3; k++)
+				if(Voxel::PermNeighbors[i][j][k] != nullptr && (i != 0 && j != 0 && k!= 0))
+					Force += spring_constant*((Voxel::Position()-Voxel::PermNeighbors[i][j][k]->Voxel::Position()).normalize())*((Voxel::Position()-Voxel::PermNeighbors[i][j][k]->Voxel::Position()).length()-equilibrium[i][j][k].length());	//I should have a force vector pointing at the mass on the other end of spring whose equilibrium length is set by the initialization. The spring network will mostly hold voxels in place. When the spring network fails, voxels may intersect each other.
 
 	//F=∬A​−∇P⋅ndA (int_area dA -\vec\grad P \cdot \hat{n} where \hat{n} is pointing out, unit check)
 
@@ -31,15 +36,17 @@ void Mass_Spring::Advance()
 
 bool Mass_Spring::Is_Surface()
 {
-	for(Voxel* Link: Voxel::PermNeighbors)
-		if(Link == nullptr)
-			return(true);
+	for(int i = 0; i < 3; i++)
+		for(int j = 0; j < 3; j++)
+			for(int k = 0; k < 3; k++)
+				if(Voxel::PermNeighbors[i][j][k] == nullptr)
+					return(true);
 	return(false);
 }
 
-void Mass_Spring::Store_Neighbor(Voxel* Neighbor, int i)
+void Mass_Spring::Store_Neighbor(Voxel* Neighbor, int i, int j, int k)
 {
-	Voxel::PermNeighbors[i] = Neighbor;
+	Voxel::PermNeighbors[i][j][k] = Neighbor;
 	return;
 }
 

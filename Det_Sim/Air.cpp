@@ -19,40 +19,126 @@ void Air::Advance()
 
 vector3 Air::Gradient(function<float(const Air&)> func)
 {
-	const vector3 direction[] = {vector3(1,0,0), vector3(-1,0,0), vector3(0,1,0), vector3(0,-1,0), vector3(0,0,1), vector3(0,0,-1), vector3(1,1,0), vector3(1,-1,0), vector3(-1,1,0), vector3(-1,-1,0), vector3(1,0,1), vector3(1,0,-1), vector3(-1,0,1), vector3(-1,0,-1), vector3(0,1,1), vector3(0,1,-1), vector3(0,-1,1), vector3(0,-1,-1), vector3(1,1,1), vector3(-1,1,1), vector3(1,-1,1), vector3(-1,-1,1), vector3(1,1,-1), vector3(-1,1,-1), vector3(1,-1,-1), vector3(-1,-1,-1)};
+	float Second_W[3] = {-.5,0,.5};
+	float First_W[2] = {-1,1};
 	vector3 ans(0,0,0);
-	vector3 Count(0,0,0);
+	int i,j;
+	int count;
 
-	for(int i = 0; i < 26; i++)	//Most gradients
+	count = 0;	//X dimension
+	if(Voxel::PermNeighbors[0][1][1] != nullptr && Voxel::PermNeighbors[2][1][1] != nullptr)	//Not an edge
 	{
-		for(int j = 0; j < 26; j++)
-		{
-			if(Voxel::PermNeighbors[i] != nullptr && Voxel::PermNeighbors[j] != nullptr && (direction[i]-direction[j]).length() < 1.1)
-			{
-				ans += (func(*dynamic_cast<Air*>(Voxel::PermNeighbors[i]))-func(*dynamic_cast<Air*>(Voxel::PermNeighbors[j])))/Voxel::deltaX*(direction[i]-direction[j]);
-				Count += (direction[i]-direction[j]).abs();
-			}
-		}
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[0][1+i][1+j] != nullptr && Voxel::PermNeighbors[2][1+i][1+j] != nullptr)
+				{
+					ans[0] += Second_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[0][1+i][1+j])))+Second_W[2]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[2][1+i][1+j])));
+					count++;
+				}
+		ans[0] /= count;
 	}
-	for(int i = 0; i < 6; i++)	//Gradient to center
+	else if(Voxel::PermNeighbors[2][1][1] != nullptr)	//High edge
 	{
-		if(Voxel::PermNeighbors[i] != nullptr)
-		{
-			ans += (func(*dynamic_cast<Air*>(Voxel::PermNeighbors[i]))-func(*this))/Voxel::deltaX*(-direction[i]);
-			Count += direction[i].abs();
-		}
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[2][1+i][1+j] != nullptr && Voxel::PermNeighbors[1][1+i][1+j] != nullptr)
+				{
+					ans[0] += First_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1][1+i][1+j])))+First_W[1]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[2][1+i][1+j])));
+					count++;
+				}
+		ans[0] /= count;
+	}
+	else	//Low edge
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[0][1+i][1+j] != nullptr && Voxel::PermNeighbors[1][1+i][1+j] != nullptr)
+				{
+					ans[0] += First_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[0][1+i][1+j])))+First_W[1]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1][1+i][1+j])));
+					count++;
+				}
+		ans[0] /= count;
 	}
 
-	ans[0] /= Count[0];
-	ans[1] /= Count[1];
-	ans[2] /= Count[2];
+
+	count = 0;	//Y direction
+	if(Voxel::PermNeighbors[1][0][1] != nullptr && Voxel::PermNeighbors[1][2][1] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[1+i][0][1+j] != nullptr && Voxel::PermNeighbors[1+i][2][1+j] != nullptr)
+				{
+					ans[1] += Second_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][0][1+j])))+Second_W[2]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][2][1+j])));
+					count++;
+				}
+		ans[1] /= count;
+	}
+	else if(Voxel::PermNeighbors[1][2][1] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[1+i][2][1+j] != nullptr && Voxel::PermNeighbors[1+i][1][1+j] != nullptr)
+				{
+					ans[1] += First_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1][1+j])))+First_W[1]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][2][1+j])));
+					count++;
+				}
+		ans[1] /= count;
+	}
+	else
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[1+i][0][1+j] != nullptr && Voxel::PermNeighbors[1+i][1][1+j] != nullptr)
+				{
+					ans[1] += First_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][0][1+j])))+First_W[1]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1][1+j])));
+					count++;
+				}
+		ans[1] /= count;
+	}
+
+
+	count = 0;	//Z direction
+	if(Voxel::PermNeighbors[1][1][0] != nullptr && Voxel::PermNeighbors[1][1][2] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[1+i][1+j][0] != nullptr && Voxel::PermNeighbors[1+i][1+j][2] != nullptr)
+				{
+					ans[2] += Second_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1+j][0])))+Second_W[2]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1+j][2])));
+					count++;
+				}
+		ans[2] /= count;
+	}
+	else if(Voxel::PermNeighbors[1][1][2] != nullptr)
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[1+i][1+j][2] != nullptr && Voxel::PermNeighbors[1+i][1+j][1] != nullptr)
+				{
+					ans[2] += First_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1+j][1])))+First_W[1]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1+j][2])));
+					count++;
+				}
+		ans[2] /= count;
+	}
+	else
+	{
+		for(i = -1; i <= 1; i++)
+			for(j = -1; j <= 1; j++)
+				if(Voxel::PermNeighbors[1+i][1+j][0] != nullptr && Voxel::PermNeighbors[1+i][1+j][1] != nullptr)
+				{
+					ans[2] += First_W[0]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1+j][0])))+First_W[1]*(func(*dynamic_cast<Air*>(Voxel::PermNeighbors[1+i][1+j][1])));
+					count++;
+				}
+		ans[2] /= count;
+	}
+	ans /= Voxel::deltaX;
 
 	return(ans);
 }
 
-void Air::Store_Neighbor(Voxel* Neighbor, int i)
+void Air::Store_Neighbor(Voxel* Neighbor, int i, int j, int k)
 {
-	Voxel::PermNeighbors[i] = Neighbor;
+	Voxel::PermNeighbors[i][j][k] = Neighbor;
 }
 
 bool Air::Store_Neighbor(Voxel* Neighbor)

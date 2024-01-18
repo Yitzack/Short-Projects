@@ -31,7 +31,7 @@ class Air : public Voxel
 			prev_pressure = pressure;
 			prev_temp = temp;
 		}
-		void Store_Neighbor(Voxel* Neighbor, int i) override;	//Store address of neighbors for reference, communication, and divergence calculation
+		void Store_Neighbor(Voxel* Neighbor, int, int, int) override;	//Store address of neighbors for reference, communication, and divergence calculation
 		bool Store_Neighbor(Voxel* Neighbor) override;	//Store address of neighbors for reference, communication, and divergence calculation
 		vector3 Gradient(function<float(const Air&)>);
 		float Num_of_Part() const{return(prev_pressure*Voxel::volume/(k*prev_temp));}	//PV/kT	(number)

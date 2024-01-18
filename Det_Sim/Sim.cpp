@@ -187,63 +187,67 @@ cout << "Link permanent neighbors (1200%+ CPU usage)" << endl;
 			{
 				if(i < 330 && j < 330 && k < 315 && Bunker[i][j][k] != nullptr)	//Don't over run the alloted indices or bother with null pointers
 				{//If no neighbor in that direction due to unavailble index, don't add the neighbor
-					if(i+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j][k],0);
-					if(i-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j][k],1);
-					if(j+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j+1][k],2);
-					if(j-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j-1][k],3);
-					if(k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j][k+1],4);
-					if(k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j][k-1],5);
+					if(i-1 >= 0 && j-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j-1][k-1],0,0,0);
+					if(i-1 >= 0 && j-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j-1][k],0,0,1);
+					if(i-1 >= 0 && j-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j-1][k+1],0,0,2);
+					if(i-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j][k-1],0,1,0);
+					if(i-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j][k],0,1,1);
+					if(i-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j][k+1],0,1,2);
+					if(i-1 >= 0 && j+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j+1][k-1],0,2,0);
+					if(i-1 >= 0 && j+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j+1][k],0,2,1);
+					if(i-1 >= 0 && j+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j+1][k+1],0,2,2);
 
-					if(i+1 < 330 && j+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j+1][k],6);
-					if(i+1 < 330 && j-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j-1][k],7);
-					if(i-1 >= 0 && j+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j+1][k],8);
-					if(i-1 >= 0 && j-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j-1][k],9);
-					if(i+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j][k+1],10);
-					if(i+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j][k-1],11);
-					if(i-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j][k+1],12);
-					if(i-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j][k-1],13);
-					if(j+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j+1][k+1],14);
-					if(j+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j+1][k-1],15);
-					if(j-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j-1][k+1],16);
-					if(j-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j-1][k-1],17);
+					if(j-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j-1][k-1],1,0,0);
+					if(j-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j-1][k],1,0,1);
+					if(j-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j-1][k+1],1,0,2);
+					if(k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j][k-1],1,1,0);
+					Bunker[i][j][k]->Store_Neighbor(Bunker[i][j][k],1,1,1);
+					if(k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j][k+1],1,1,2);
+					if(j+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j+1][k-1],1,2,0);
+					if(j+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j+1][k],1,2,1);
+					if(j+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i][j+1][k+1],1,2,2);
 
-					if(i+1 < 330 && j+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j+1][k+1],18);
-					if(i-1 >= 0 && j+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j+1][k+1],19);
-					if(i+1 < 330 && j-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j-1][k+1],20);
-					if(i-1 >= 0 && j-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j-1][k+1],21);
-					if(i+1 < 330 && j+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j+1][k-1],22);
-					if(i-1 >= 0 && j+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j+1][k-1],23);
-					if(i+1 < 330 && j-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j-1][k-1],24);
-					if(i-1 >= 0 && j-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i-1][j-1][k-1],25);
+					if(i+1 < 330 && j-1 >= 0 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j-1][k-1],2,0,0);
+					if(i+1 < 330 && j-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j-1][k],2,0,1);
+					if(i+1 < 330 && j-1 >= 0 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j-1][k+1],2,0,2);
+					if(i+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j][k-1],2,1,0);
+					if(i+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j][k],2,1,1);
+					if(i+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j][k+1],2,1,2);
+					if(i+1 < 330 && j+1 < 330 && k-1 >= 0) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j+1][k-1],2,2,0);
+					if(i+1 < 330 && j+1 < 330) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j+1][k],2,2,1);
+					if(i+1 < 330 && j+1 < 330 && k+1 < 315) Bunker[i][j][k]->Store_Neighbor(Bunker[i+1][j+1][k+1],2,2,2);
 				}
 
 				//Repeat for Atmo
-				if(i+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j][k],0);
-				if(i-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j][k],1);
-				if(j+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j+1][k],2);
-				if(j-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j-1][k],3);
-				if(k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j][k+1],4);
-				if(k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j][k-1],5);
-				if(i+1 < 400 && j+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j+1][k],6);
-				if(i+1 < 400 && j-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j-1][k],7);
-				if(i-1 >= 0 && j+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j+1][k],8);
-				if(i-1 >= 0 && j-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j-1][k],9);
-				if(i+1 < 400 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j][k+1],10);
-				if(i+1 < 400 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j][k-1],11);
-				if(i-1 >= 0 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j][k+1],12);
-				if(i-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j][k-1],13);
-				if(j+1 < 400 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j+1][k+1],14);
-				if(j+1 < 400 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j+1][k-1],15);
-				if(j-1 >= 0 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j-1][k+1],16);
-				if(j-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j-1][k-1],17);
-				if(i+1 < 400 && j+1 < 400 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j+1][k+1],18);
-				if(i-1 >= 0 && j+1 < 400 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j+1][k+1],19);
-				if(i+1 < 400 && j-1 >= 0 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j-1][k+1],20);
-				if(i-1 >= 0 && j-1 >= 0 && k+1 < 400) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j-1][k+1],21);
-				if(i+1 < 400 && j+1 < 400 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j+1][k-1],22);
-				if(i-1 >= 0 && j+1 < 400 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j+1][k-1],23);
-				if(i+1 < 400 && j-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j-1][k-1],24);
-				if(i-1 >= 0 && j-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j-1][k-1],25);
+				if(i-1 >= 0 && j-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j-1][k-1],0,0,0);
+				if(i-1 >= 0 && j-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j-1][k],0,0,1);
+				if(i-1 >= 0 && j-1 >= 0 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j-1][k+1],0,0,2);
+				if(i-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j][k-1],0,1,0);
+				if(i-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j][k],0,1,1);
+				if(i-1 >= 0 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j][k+1],0,1,2);
+				if(i-1 >= 0 && j+1 < 330 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j+1][k-1],0,2,0);
+				if(i-1 >= 0 && j+1 < 330) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j+1][k],0,2,1);
+				if(i-1 >= 0 && j+1 < 330 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i-1][j+1][k+1],0,2,2);
+
+				if(j-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j-1][k-1],1,0,0);
+				if(j-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j-1][k],1,0,1);
+				if(j-1 >= 0 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j-1][k+1],1,0,2);
+				if(k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j][k-1],1,1,0);
+				Atmo[i][j][k]->Store_Neighbor(Atmo[i][j][k],1,1,1);
+				if(k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j][k+1],1,1,2);
+				if(j+1 < 330 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j+1][k-1],1,2,0);
+				if(j+1 < 330) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j+1][k],1,2,1);
+				if(j+1 < 330 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i][j+1][k+1],1,2,2);
+
+				if(i+1 < 330 && j-1 >= 0 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j-1][k-1],2,0,0);
+				if(i+1 < 330 && j-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j-1][k],2,0,1);
+				if(i+1 < 330 && j-1 >= 0 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j-1][k+1],2,0,2);
+				if(i+1 < 330 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j][k-1],2,1,0);
+				if(i+1 < 330) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j][k],2,1,1);
+				if(i+1 < 330 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j][k+1],2,1,2);
+				if(i+1 < 330 && j+1 < 330 && k-1 >= 0) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j+1][k-1],2,2,0);
+				if(i+1 < 330 && j+1 < 330) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j+1][k],2,2,1);
+				if(i+1 < 330 && j+1 < 330 && k+1 < 315) Atmo[i][j][k]->Store_Neighbor(Atmo[i+1][j+1][k+1],2,2,2);
 			}
 		}
 	}

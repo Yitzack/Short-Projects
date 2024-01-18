@@ -16,12 +16,11 @@ class Voxel
 			prev_position[2] = position[2] = float(Index[2])/100.;
 			velocity[0] = velocity[1] = velocity[2] = 0;
 			prev_velocity[0] = prev_velocity[1] = prev_velocity[2] = 0;
-			for(int i = 0; i < 26; i++)
+			for(int i = 0; i < 27; i++)
 			{
-				PermNeighbors[i] = nullptr;
+				PermNeighbors[i/9][(i%9)/3][i%3] = nullptr;
 				TempNeighbors[i] = nullptr;
 			}
-			TempNeighbors[26] = 0;
 		}
 		virtual void Advance() = 0;	//Take the next time step
 		virtual void Update_Prev()	//Update previous data to match current data for the next step
@@ -34,7 +33,7 @@ class Voxel
 			os << int(position[0]*100) << "," << int(position[1]*100) << "," << int(position[2]);
 			return(os);
 		}
-		virtual void Store_Neighbor(Voxel*, int) = 0;	//Store address of neighbors for reference, communication, and divergence calculation.
+		virtual void Store_Neighbor(Voxel*, int, int, int) = 0;	//Store address of neighbors for reference, communication, and divergence calculation.
 		virtual bool Store_Neighbor(Voxel*) = 0;	//Store address of neighbors for reference, communication, and divergence calculation. Returns if Neighbor was added
 		void Position(float[3]);
 		vector3 Position();
@@ -45,7 +44,7 @@ class Voxel
 		vector3 velocity;		//m/s
 		vector3 prev_position;		//{0,0,0} is the origin at lower, left, back corner, position (meters)
 		vector3 prev_velocity;		//m/s
-		Voxel* PermNeighbors[26];	//Addresses of 26 nearest permanent (same type) neighbors (6 face-to-face, 12 edge-to-edge, 8 vertex-to-vertex)
+		Voxel* PermNeighbors[3][3][3];	//Addresses of 26 nearest permanent (same type) neighbors (6 face-to-face, 12 edge-to-edge, 8 vertex-to-vertex) and self
 		Voxel* TempNeighbors[27];	//Addresses of 27 nearest temporary (different type) neighbors (6 face-to-face, 12 edge-to-edge, 8 vertex-to-vertex, and one centered on self)
 		//static constants are part of the code included with a class. As such they don't get copied to every instance of the object.
 		static constexpr float deltaX = .01;	//Voxel side length (1 cm)
