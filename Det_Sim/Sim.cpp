@@ -26,7 +26,7 @@ int main()
 
 	for(int i = 0; i <= 10; i++)
 	{
-		if(i%10 == 0) Print(Atmo, Bunker, i);	//Print data every .01 seconds before advancing
+		if(true || i%10 == 0) Print(Atmo, Bunker, i);	//Print data every .01 seconds before advancing
 		cout << "Advance a time step (2300%+ CPU usage)" << endl;
 		Advance(Atmo, Bunker);		//Advance the simulation one time step
 		cout << "Relink temporary neighbors" << endl;
@@ -121,17 +121,18 @@ cout << File << endl;
 			}
 		}
 	}
-	/*for(i = 0; i < 400; i++)	//print all data
+	fout << endl;
+	for(i = 0; i < 400; i++)	//print all data
 	{
 		for(j = 0; j < 400; j++)
 		{
 			for(k = 0; k < 400; k++)
 			{
-				if((Atmo[i][j][k]->Gradient(bind(&Air::Pressure,placeholders::_1))).length() > 101325./.01/2.)	//If the gradient is greater than .5 atm per voxel length
-					fout << *Atmo[i][j][k] << endl;
+				//if((Atmo[i][j][k]->Gradient(bind(&Air::Pressure,placeholders::_1))).length() > 101325./.01/2.)	//If the gradient is greater than .5 atm per voxel length
+					fout << *Atmo[i][j][k] << "," << (Atmo[i][j][k]->Gradient(bind(&Air::Pressure,placeholders::_1))).length() << endl;
 			}
 		}
-	}*/
+	}
 }
 
 void Init(Air**** Atmo, Mass_Spring**** Bunker)

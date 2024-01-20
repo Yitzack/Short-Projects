@@ -30,7 +30,7 @@ class Voxel
 		}
 		virtual ostream& print(ostream& os) const
 		{
-			os << int(position[0]*100) << "," << int(position[1]*100) << "," << int(position[2]);
+			os << position[0] << "," << position[1] << "," << position[2];
 			return(os);
 		}
 		virtual void Store_Neighbor(Voxel*, int, int, int) = 0;	//Store address of neighbors for reference, communication, and divergence calculation.
