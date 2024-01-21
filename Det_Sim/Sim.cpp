@@ -21,15 +21,13 @@ int main()
 	Mass_Spring**** Bunker = new Mass_Spring***[330];
 
 	Init(Atmo, Bunker);
-	cout << "Link first temporary neighbors (1200%+ CPU usage)" << endl;
 	TempNeighbors(Atmo, Bunker);
 
-	for(int i = 0; i <= 10; i++)
+	for(int i = 0; i <= 10000; i++)
 	{
-		if(true || i%10 == 0) Print(Atmo, Bunker, i);	//Print data every .01 seconds before advancing
-		cout << "Advance a time step (2300%+ CPU usage)" << endl;
+		if(i%1000 == 0) Print(Atmo, Bunker, i/1000);	//Print data every .01 seconds before advancing
+		cout << "Advance to time step " << i << endl;
 		Advance(Atmo, Bunker);		//Advance the simulation one time step
-		cout << "Relink temporary neighbors" << endl;
 		TempNeighbors(Atmo, Bunker);	//Remove temp neighbors that are too far away, add new temp neighbors that are close enough
 	}
 
@@ -138,7 +136,7 @@ cout << File << endl;
 void Init(Air**** Atmo, Mass_Spring**** Bunker)
 {
 	int i;
-cout << "Allocate Memory (~225% CPU usage)" << endl;
+
 	#pragma omp parallel for
 	for(i = 0; i < 400; i++)	//Instantiate all voxels in the same loops
 	{
@@ -177,7 +175,7 @@ cout << "Allocate Memory (~225% CPU usage)" << endl;
 			}
 		}
 	}
-cout << "Link permanent neighbors (1200%+ CPU usage)" << endl;
+
 	int j, k;
 	#pragma omp parallel for collapse(3)
 	for(i = 0; i < 400; i++)	//Find all neighbors

@@ -18,10 +18,10 @@ void Mass_Spring::Advance()
 				if(Voxel::PermNeighbors[i][j][k] != nullptr && (i != 0 && j != 0 && k!= 0))
 					Force += spring_constant*((Voxel::Position()-Voxel::PermNeighbors[i][j][k]->Voxel::Position()).normalize())*((Voxel::Position()-Voxel::PermNeighbors[i][j][k]->Voxel::Position()).length()-equilibrium[i][j][k].length());	//I should have a force vector pointing at the mass on the other end of spring whose equilibrium length is set by the initialization. The spring network will mostly hold voxels in place. When the spring network fails, voxels may intersect each other.
 
-	//F=∬A​−∇P⋅ndA (int_area dA -\vec\grad P \cdot \hat{n} where \hat{n} is pointing out, unit check)
+	Force += Air_Pressure();
 
-	Acceleration /= mass;
-	Acceleration += vector3(0,0,9.8);	//Add in force of gravity
+	Acceleration = Force/mass;
+	Acceleration += vector3(0,0,-9.80665);	//Add in force of gravity
 	Voxel::velocity = Voxel::prev_velocity + Acceleration*Voxel::deltaT;
 	Voxel::position = Voxel::prev_position + Voxel::prev_velocity*Voxel::deltaT + Acceleration*pow(Voxel::deltaT,2)/2.;
 
@@ -34,7 +34,26 @@ void Mass_Spring::Advance()
 	return;
 }
 
-bool Mass_Spring::Is_Surface()
+vector3 Mass_Spring::Air_Pressure() const
+{
+	vector3 Pressure_Gradient(0,0,0);
+	Pressure = 101325.*pow((288.15-Voxel::position[2]*.0065)/288.15,5.2558);
+
+	if(Voxel::PermNeighbors[0][1][1] == nullptr)
+		Pressure_Gradient[0] += Elevation_Pressure*.0001;
+	if(Voxel::PermNeighbors[2][1][1] == nullptr)
+		Pressure_Gradient[0] -= Elevation_Pressure*.0001;
+	if(Voxel::PermNeighbors[1][0][1] == nullptr)
+		Pressure_Gradient[1] += Elevation_Pressure*.0001;
+	if(Voxel::PermNeighbors[1][2][1] == nullptr)
+		Pressure_Gradient[1] -= Elevation_Pressure*.0001;
+	if(Voxel::PermNeighbors[1][1][0] == nullptr)
+		Pressure_Gradient[2] += Elevation_Pressure*.0001;
+	if(Voxel::PermNeighbors[1][1][2] == nullptr)
+		Pressure_Gradient[2] -= Elevation_Pressure*.0001;
+}
+
+bool Mass_Spring::Is_Surface() const
 {
 	for(int i = 0; i < 3; i++)
 		for(int j = 0; j < 3; j++)

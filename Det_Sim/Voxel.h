@@ -49,7 +49,7 @@ class Voxel
 		//static constants are part of the code included with a class. As such they don't get copied to every instance of the object.
 		static constexpr float deltaX = .01;	//Voxel side length (1 cm)
 		static constexpr float volume = 1e-6;	//1e-6 is 1cc or 1mL
-		static constexpr float deltaT = .001;	//1 ms
+		static constexpr float deltaT = .00001;	//1 ms
 };
 
 /*inline ostream& operator<<(ostream& os, const Voxel& A)

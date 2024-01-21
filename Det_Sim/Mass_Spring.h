@@ -27,7 +27,8 @@ class Mass_Spring : public Voxel
 			Voxel::Update_Prev();
 			prev_thermal_energy = thermal_energy;
 		}
-		bool Is_Surface();	//Returns true if one or more PermNeighbors is missing, indicating it is part of the surface of a parent object.
+		bool Is_Surface() const;	//Returns true if one or more PermNeighbors is missing, indicating it is part of the surface of a parent object.
+		vector3 Air_Pressure() const;	//Returns force due to air pressure
 		float energy() const{return(mass*(pow(Voxel::velocity[0],2)+pow(Voxel::velocity[1],2)+pow(Voxel::velocity[2],2))/2.);}
 		float temp() const{return(thermal_energy/(specific_heat*mass));}	//kelvin
 	private:
