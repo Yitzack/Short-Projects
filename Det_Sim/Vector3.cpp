@@ -3,7 +3,7 @@
 #include"Vector3.h"
 using namespace std;
 
-inline vector3 vector3::operator=(const vector3 A)
+vector3 vector3::operator=(const vector3 A)
 {
 	data[0] = A.data[0];
 	data[1] = A.data[1];
@@ -11,7 +11,7 @@ inline vector3 vector3::operator=(const vector3 A)
 	return(*this);
 }
 
-inline vector3 vector3::operator+(const vector3 A) const
+vector3 vector3::operator+(const vector3 A) const
 {
 	vector3 B;
 	B.data[0] = data[0] + A.data[0];
@@ -20,7 +20,7 @@ inline vector3 vector3::operator+(const vector3 A) const
 	return(B);
 }
 
-inline vector3 vector3::operator+=(const vector3 A)
+vector3 vector3::operator+=(const vector3 A)
 {
 	data[0] += A.data[0];
 	data[1] += A.data[1];
@@ -28,7 +28,7 @@ inline vector3 vector3::operator+=(const vector3 A)
 	return(*this);
 }
 
-inline vector3 vector3::operator-(const vector3 A) const
+vector3 vector3::operator-(const vector3 A) const
 {
 	vector3 B;
 	B.data[0] = data[0] - A.data[0];
@@ -37,7 +37,7 @@ inline vector3 vector3::operator-(const vector3 A) const
 	return(B);
 }
 
-inline vector3 vector3::operator-() const
+vector3 vector3::operator-() const
 {
 	vector3 B;
 	B.data[0] = -data[0];
@@ -46,7 +46,7 @@ inline vector3 vector3::operator-() const
 	return(B);
 }
 
-inline vector3 vector3::operator-=(const vector3 A)
+vector3 vector3::operator-=(const vector3 A)
 {
 	data[0] -= A.data[0];
 	data[1] -= A.data[1];
@@ -54,7 +54,7 @@ inline vector3 vector3::operator-=(const vector3 A)
 	return(*this);
 }
 
-inline vector3 vector3::operator*(const float A) const
+vector3 vector3::operator*(const float A) const
 {
 	vector3 B;
 	B.data[0] = data[0] * A;
@@ -63,12 +63,7 @@ inline vector3 vector3::operator*(const float A) const
 	return(B);
 }
 
-inline vector3 operator*(float A, const vector3& B)
-{
-	return(B*A);
-}
-
-inline vector3 vector3::operator*=(const float A)
+vector3 vector3::operator*=(const float A)
 {
 	data[0] *= A;
 	data[1] *= A;
@@ -76,7 +71,7 @@ inline vector3 vector3::operator*=(const float A)
 	return(*this);
 }
 
-inline vector3 vector3::operator/(const float A) const
+vector3 vector3::operator/(const float A) const
 {
 	vector3 B;
 	B.data[0] = data[0] / A;
@@ -85,7 +80,7 @@ inline vector3 vector3::operator/(const float A) const
 	return(B);
 }
 
-inline vector3 vector3::operator/=(const float A)
+vector3 vector3::operator/=(const float A)
 {
 	data[0] /= A;
 	data[1] /= A;
@@ -93,17 +88,17 @@ inline vector3 vector3::operator/=(const float A)
 	return(*this);
 }
 
-inline float vector3::operator[](const int index) const
+float vector3::operator[](const int index) const
 {
 	return(data[index]);
 }
 
-inline float& vector3::operator[](const int index)
+float& vector3::operator[](const int index)
 {
 	return(data[index]);
 }
 
-inline float vector3::dot_product(const vector3 A) const
+float vector3::dot_product(const vector3 A) const
 {
 	float ans = data[0] * A.data[0];
 	ans += data[1] * A.data[1];
@@ -111,12 +106,12 @@ inline float vector3::dot_product(const vector3 A) const
 	return(ans);
 }
 
-inline float vector3::scalar_product(const vector3 A) const
+float vector3::scalar_product(const vector3 A) const
 {
 	return(dot_product(A));
 }
 
-inline vector3 vector3::vector_product(const vector3 A) const
+vector3 vector3::vector_product(const vector3 A) const
 {
 	vector3 B;
 	B.data[0] = data[1]*A.data[2] - data[2]*A.data[1];
@@ -125,12 +120,12 @@ inline vector3 vector3::vector_product(const vector3 A) const
 	return(B);
 }
 
-inline vector3 vector3::cross_product(const vector3 A) const
+vector3 vector3::cross_product(const vector3 A) const
 {
 	return(vector_product(A));
 }
 
-inline float vector3::length() const
+float vector3::length() const
 {
 	float ans = pow(data[0],2);
 	ans += pow(data[1],2);
@@ -138,12 +133,12 @@ inline float vector3::length() const
 	return(sqrt(ans));
 }
 
-inline vector3 vector3::normalize() const
+vector3 vector3::normalize() const
 {
 	return(*this/this->length());
 }
 
-inline vector3 vector3::abs() const
+vector3 vector3::abs() const
 {
 	vector3 ans;
 	ans.data[0] = std::abs(data[0]);

@@ -29,27 +29,32 @@ class vector3
 			data[1] = A.data[1];
 			data[2] = A.data[2];
 		}
-		inline vector3 operator=(const vector3);
-		inline vector3 operator+(const vector3) const;
-		inline vector3 operator+=(const vector3);
-		inline vector3 operator-(const vector3) const;
-		inline vector3 operator-() const;
-		inline vector3 operator-=(const vector3);
-		inline vector3 operator*(const float) const;
-		inline vector3 operator*=(const float);
-		inline vector3 operator/(const float) const;
-		inline vector3 operator/=(const float);
-		inline float operator[](const int) const;
-		inline float& operator[](const int);
-		inline float dot_product(const vector3) const;
-		inline float scalar_product(const vector3) const;
-		inline vector3 vector_product(const vector3) const;
-		inline vector3 cross_product(const vector3) const;
-		inline float length() const;
-		inline vector3 normalize() const;
-		inline vector3 abs() const;	//takes the abs of each element
+		vector3 operator=(const vector3);
+		vector3 operator+(const vector3) const;
+		vector3 operator+=(const vector3);
+		vector3 operator-(const vector3) const;
+		vector3 operator-() const;
+		vector3 operator-=(const vector3);
+		vector3 operator*(const float) const;
+		vector3 operator*=(const float);
+		vector3 operator/(const float) const;
+		vector3 operator/=(const float);
+		float operator[](const int) const;
+		float& operator[](const int);
+		float dot_product(const vector3) const;
+		float scalar_product(const vector3) const;
+		vector3 vector_product(const vector3) const;
+		vector3 cross_product(const vector3) const;
+		float length() const;
+		vector3 normalize() const;
+		vector3 abs() const;	//takes the abs of each element
 	private:
 		array<float,3> data;
 };
+
+inline vector3 operator*(float A, const vector3& B)
+{
+	return(B*A);
+}
 
 #endif

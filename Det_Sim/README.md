@@ -1,9 +1,11 @@
 # Detination Simulation
 
-I'm going to try to make a fluid simulation of an amount of TNT going off in a small concrete box.  The air is going to be a fluid simulation with Euler Equations for compressible fluid. The concrete is going to be masses on springs that will break of they get too long. Accuracy is not gurenteed. It is likely to be quite hilarous when animated.
+I was going to try to make a fluid simulation of an amount of TNT going off in a small concrete box.  Turns out that doing air is hard without an outside library. I'm going to substitute an analytic approximation of a blast wave from [literature](https://academic.oup.com/mnras/article/424/4/2522/1055350). This blast wave is technically intended for super nova. But I didn't see an assumption in the paper indicating that it can only be used in for astronomical phenomena. So I'll appropriate it into this simulation.
 
-The simulation volume is going to be a cube 4 meters on a side. The concrete box is going to be 3 meters on all interior edges and 15 cm thick and resting on the ground. I'm going to put a simulated 1 kg TNT detenation at the center. And then the simulation will roll.
+The concrete is going to be masses on springs that will break of they get too long. Accuracy is not guaranteed. It is likely to be quite hilarious when animated.
+
+The concrete box is going to be 3 meters on all interior edges and 15 cm thick and resting on the ground. I'm going to put a simulated 1 kg TNT detention at the center. And then the simulation will roll.
 
 ## Compile directions for g++
 
-g++ Sim.cpp Mass_Spring.cpp Air.cpp Voxel.cpp Vector3.cpp -O3 -fopenmp
+g++ Sim.cpp Mass_Spring.cpp Vector3.cpp -O3 -fopenmp
