@@ -54,7 +54,7 @@ vector3 vector3::operator-=(const vector3 A)
 	return(*this);
 }
 
-vector3 vector3::operator*(const float A) const
+vector3 vector3::operator*(const double A) const
 {
 	vector3 B;
 	B.data[0] = data[0] * A;
@@ -63,7 +63,7 @@ vector3 vector3::operator*(const float A) const
 	return(B);
 }
 
-vector3 vector3::operator*=(const float A)
+vector3 vector3::operator*=(const double A)
 {
 	data[0] *= A;
 	data[1] *= A;
@@ -71,7 +71,7 @@ vector3 vector3::operator*=(const float A)
 	return(*this);
 }
 
-vector3 vector3::operator/(const float A) const
+vector3 vector3::operator/(const double A) const
 {
 	vector3 B;
 	B.data[0] = data[0] / A;
@@ -80,7 +80,7 @@ vector3 vector3::operator/(const float A) const
 	return(B);
 }
 
-vector3 vector3::operator/=(const float A)
+vector3 vector3::operator/=(const double A)
 {
 	data[0] /= A;
 	data[1] /= A;
@@ -88,25 +88,25 @@ vector3 vector3::operator/=(const float A)
 	return(*this);
 }
 
-float vector3::operator[](const int index) const
+double vector3::operator[](const int index) const
 {
 	return(data[index]);
 }
 
-float& vector3::operator[](const int index)
+double& vector3::operator[](const int index)
 {
 	return(data[index]);
 }
 
-float vector3::dot_product(const vector3 A) const
+double vector3::dot_product(const vector3 A) const
 {
-	float ans = data[0] * A.data[0];
+	double ans = data[0] * A.data[0];
 	ans += data[1] * A.data[1];
 	ans += data[2] * A.data[2];
 	return(ans);
 }
 
-float vector3::scalar_product(const vector3 A) const
+double vector3::scalar_product(const vector3 A) const
 {
 	return(dot_product(A));
 }
@@ -125,12 +125,27 @@ vector3 vector3::cross_product(const vector3 A) const
 	return(vector_product(A));
 }
 
-float vector3::length() const
+double vector3::length() const
 {
-	float ans = pow(data[0],2);
+	double ans = pow(data[0],2);
 	ans += pow(data[1],2);
 	ans += pow(data[2],2);
 	return(sqrt(ans));
+}
+
+double vector3::one_norm() const
+{
+	return(std::abs(data[0])+std::abs(data[1])+std::abs(data[2]));
+}
+
+double vector3::inf_norm() const
+{
+	if(data[0] > data[1] && data[0] > data[2])
+		return(data[0]);
+	else if(data[1] > data[0] && data[1] > data[2])
+		return(data[1]);
+	else
+		return(data[2]);
 }
 
 vector3 vector3::normalize() const

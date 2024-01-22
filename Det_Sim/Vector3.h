@@ -11,13 +11,13 @@ class vector3
 		{
 			data[0] = data[1] = data[2] = 0;
 		}
-		vector3(const float A, const float B, const float C)
+		vector3(const double A, const double B, const double C)
 		{
 			data[0] = A;
 			data[1] = B;
 			data[2] = C;
 		}
-		vector3(const float A[3])
+		vector3(const double A[3])
 		{
 			data[0] = A[0];
 			data[1] = A[1];
@@ -35,24 +35,26 @@ class vector3
 		vector3 operator-(const vector3) const;
 		vector3 operator-() const;
 		vector3 operator-=(const vector3);
-		vector3 operator*(const float) const;
-		vector3 operator*=(const float);
-		vector3 operator/(const float) const;
-		vector3 operator/=(const float);
-		float operator[](const int) const;
-		float& operator[](const int);
-		float dot_product(const vector3) const;
-		float scalar_product(const vector3) const;
+		vector3 operator*(const double) const;
+		vector3 operator*=(const double);
+		vector3 operator/(const double) const;
+		vector3 operator/=(const double);
+		double operator[](const int) const;
+		double& operator[](const int);
+		double dot_product(const vector3) const;
+		double scalar_product(const vector3) const;
 		vector3 vector_product(const vector3) const;
 		vector3 cross_product(const vector3) const;
-		float length() const;
+		double length() const;		//Euclidean or 2-norm
+		double inf_norm() const;	//Infinity-norm
+		double one_norm() const;	//one-norm, taxicab norm, or manhattan norm
 		vector3 normalize() const;
 		vector3 abs() const;	//takes the abs of each element
 	private:
-		array<float,3> data;
+		array<double,3> data;
 };
 
-inline vector3 operator*(float A, const vector3& B)
+inline vector3 operator*(double A, const vector3& B)
 {
 	return(B*A);
 }

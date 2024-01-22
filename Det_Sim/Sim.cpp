@@ -20,8 +20,10 @@ int main()
 
 	for(int i = 0; i <= 10000; i++)
 	{
-		if(i%1000 == 0) Print(Bunker, i/1000);	//Print data every .01 seconds before advancing
-		cout << "Advance to time step " << i << endl;
+		if(true || i%100 == 0) Print(Bunker, i);	//Print data every .01 seconds before advancing
+		cout << "Advance to time step " << i+1 << endl;
+		//cout << "Hot Bubble Radius: " << Bunker[0][0][0]->Hot_Bubble_Radius() << endl;
+		//cout << "Shock Radius: " << Bunker[0][0][0]->Shock_Radius() << endl;
 		Advance(Bunker);	//Advance the simulation one time step
 	}
 
@@ -36,13 +38,13 @@ void Advance(Mass_Spring**** Bunker)
 	for(i = 0; i < 330; i++)
 		for(j = 0; j < 330; j++)
 			for(k = 0; k < 315; k++)
-				Bunker[i][j][k]->Advance();
+				if(Bunker[i][j][k] != nullptr) Bunker[i][j][k]->Advance();
 
 	#pragma omp parallel for collapse(3)
 	for(i = 0; i < 330; i++)
 		for(j = 0; j < 330; j++)
 			for(k = 0; k < 315; k++)
-				Bunker[i][j][k]->Update_Prev();
+				if(Bunker[i][j][k] != nullptr) Bunker[i][j][k]->Update_Prev();
 }
 
 void Print(Mass_Spring**** Bunker, int Frame)
@@ -99,7 +101,7 @@ void Init(Mass_Spring**** Bunker)
 	{
 		for(j = 0; j < 330; j++)
 		{
-			for(k = 0; k < 330; k++)
+			for(k = 0; k < 315; k++)
 			{
 				if(Bunker[i][j][k] != nullptr)	//Don't over run the alloted indices or bother with null pointers
 				{
