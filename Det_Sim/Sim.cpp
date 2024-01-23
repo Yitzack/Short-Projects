@@ -20,11 +20,11 @@ int main()
 
 	for(int i = 0; i <= 10000; i++)
 	{
-		if(true || i%100 == 0) Print(Bunker, i);	//Print data every .01 seconds before advancing
+		if(i%2000 == 0) Print(Bunker, i/2000);	//Print data every 100 microseconds before advancing
 		cout << "Advance to time step " << i+1 << endl;
 		//cout << "Hot Bubble Radius: " << Bunker[0][0][0]->Hot_Bubble_Radius() << endl;
 		//cout << "Shock Radius: " << Bunker[0][0][0]->Shock_Radius() << endl;
-		Advance(Bunker);	//Advance the simulation one time step
+		Advance(Bunker);	//Advance the simulation one time step (50 ns)
 	}
 
 	return(0);
@@ -34,7 +34,7 @@ void Advance(Mass_Spring**** Bunker)
 {
 	int i,j,k;
 
-	#pragma omp parallel for collapse(3)
+	/*#pragma omp parallel for collapse(3)
 	for(i = 0; i < 330; i++)
 		for(j = 0; j < 330; j++)
 			for(k = 0; k < 315; k++)
@@ -44,7 +44,23 @@ void Advance(Mass_Spring**** Bunker)
 	for(i = 0; i < 330; i++)
 		for(j = 0; j < 330; j++)
 			for(k = 0; k < 315; k++)
-				if(Bunker[i][j][k] != nullptr) Bunker[i][j][k]->Update_Prev();
+				if(Bunker[i][j][k] != nullptr) Bunker[i][j][k]->Update_Prev();*/
+
+	#pragma omp parallel for
+	for(i = 0; i < 34303500; i++)
+		if(Bunker[i/103950][(i/315)%330][i%315] != nullptr) Bunker[i/103950][(i/315)%330][i%315]->Advance0();
+
+	#pragma omp parallel for
+	for(i = 0; i < 34303500; i++)
+		if(Bunker[i/103950][(i/315)%330][i%315] != nullptr) Bunker[i/103950][(i/315)%330][i%315]->Advance1();
+
+	#pragma omp parallel for
+	for(i = 0; i < 34303500; i++)
+		if(Bunker[i/103950][(i/315)%330][i%315] != nullptr) Bunker[i/103950][(i/315)%330][i%315]->Advance2();
+
+	#pragma omp parallel for
+	for(i = 0; i < 34303500; i++)
+		if(Bunker[i/103950][(i/315)%330][i%315] != nullptr) Bunker[i/103950][(i/315)%330][i%315]->Update_Prev();
 }
 
 void Print(Mass_Spring**** Bunker, int Frame)
