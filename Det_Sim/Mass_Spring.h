@@ -17,7 +17,7 @@ class Mass_Spring
 				position[i][1] = double(Index[1])/100.;
 				position[i][2] = double(Index[2])/100.;
 				velocity[i][0] = velocity[i][1] = velocity[i][2] = 0;
-				time[i] = 0;
+				time[i] = T_0;
 			}
 			for(int i = 0; i < 27; i++)
 				Neighbors[i/9][(i%9)/3][i%3] = nullptr;
@@ -40,11 +40,13 @@ class Mass_Spring
 		double Air_Pressure(vector3, double) const;	//Returns air pressure
 		vector3 Position(int) const;
 		void Get_Position(double pos[3]);
-		double energy() const{return(mass*(pow(velocity[0][0],2)+pow(velocity[0][1],2)+pow(velocity[0][2],2))/2.);}
+		double energy() const;
 		double temp() const{return(thermal_energy/(specific_heat*mass));}	//kelvin
+		double Time() const;
 		double Distance(Mass_Spring*) const;
 		double Hot_Bubble_Radius(double) const;
 		double Shock_Radius(double) const;
+		static constexpr double T_0 = .000165;	//165 us after T=0, shockwave radius is 1.49417 m, and 250 ns short of destruction
 	private:
 		double thermal_energy;		//J
 		double prev_thermal_energy;	//J
@@ -66,7 +68,7 @@ class Mass_Spring
 		static constexpr double Gamma = 8.*M_PI/3.*gamma/(pow(gamma,2)-1.);
 		static constexpr double rho_0 = 1.205;		//Density of air (kg/m^3)
 		static constexpr double c_0 = sqrt(gamma*8.314*293.15/.02896);	//adiabatic sound speed (m/s)
-		static constexpr double Energy = 64160928.45;	//Energy in detination of 1kg of TNT and 973.4g of H2O2
+		static constexpr double Energy = 64160928.45*2;	//Energy in detination of 1kg of TNT and 973.4g of H2O2
 		static constexpr double Rf = pow(gamma*Energy/(Gamma*rho_0*pow(c_0,2)),1./3.);
 		const vector3 Center = vector3(1.65,1.65,0);
 };

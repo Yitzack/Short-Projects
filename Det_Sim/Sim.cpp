@@ -1,4 +1,5 @@
 #include<iostream>
+#include<iomanip>
 #include<fstream>
 #include<cstdio>
 #include<cmath>
@@ -15,16 +16,31 @@ void Advance(Mass_Spring****);
 int main()
 {
 	Mass_Spring**** Bunker = new Mass_Spring***[330];
-
+	//double Energy = 0;
 	Init(Bunker);
 
-	for(int i = 0; i <= 10000; i++)
+	//cerr << "Hot Bubble Radius: " << Bunker[0][0][0]->Hot_Bubble_Radius(Bunker[0][0][0]->Time()) << endl;
+	cerr << "Shock Radius: " << Bunker[0][0][0]->Shock_Radius(Bunker[0][0][0]->Time()) << endl;
+
+	for(int i = 0; i <= 396700; i++)
 	{
-		if(i%2000 == 0) Print(Bunker, i/2000);	//Print data every 100 microseconds before advancing
-		cout << "Advance to time step " << i+1 << endl;
-		//cout << "Hot Bubble Radius: " << Bunker[0][0][0]->Hot_Bubble_Radius() << endl;
-		//cout << "Shock Radius: " << Bunker[0][0][0]->Shock_Radius() << endl;
+		if(i%20 == 0) Print(Bunker, i/20+165);	//Print data every 1 microsecond (20 steps) before advancing
+		cerr << "Advance to time step " << i+1 << endl;
 		Advance(Bunker);	//Advance the simulation one time step (50 ns)
+
+		/*Energy = 0;
+		#pragma omp parallel for
+		for(int j = 0; j < 34303500; j++)
+		{
+			double voxel_energy = 0;
+			if(Bunker[j/103950][(j/315)%330][j%315] != nullptr)
+				voxel_energy = Bunker[j/103950][(j/315)%330][j%315]->energy();
+			#pragma omp atomic
+			Energy += voxel_energy;
+		}
+		cerr << "Hot Bubble Radius: " << Bunker[0][0][0]->Hot_Bubble_Radius(Bunker[0][0][0]->Time()) << endl;*/
+		cerr << "Shock Radius: " << Bunker[0][0][0]->Shock_Radius(Bunker[0][0][0]->Time()) << endl;
+		//cerr << "Energy: " << Energy << endl;//*/
 	}
 
 	return(0);
@@ -33,18 +49,7 @@ int main()
 void Advance(Mass_Spring**** Bunker)
 {
 	int i,j,k;
-
-	/*#pragma omp parallel for collapse(3)
-	for(i = 0; i < 330; i++)
-		for(j = 0; j < 330; j++)
-			for(k = 0; k < 315; k++)
-				if(Bunker[i][j][k] != nullptr) Bunker[i][j][k]->Advance();
-
-	#pragma omp parallel for collapse(3)
-	for(i = 0; i < 330; i++)
-		for(j = 0; j < 330; j++)
-			for(k = 0; k < 315; k++)
-				if(Bunker[i][j][k] != nullptr) Bunker[i][j][k]->Update_Prev();*/
+	static double Energy[2] = {0,0};
 
 	#pragma omp parallel for
 	for(i = 0; i < 34303500; i++)
@@ -71,7 +76,7 @@ void Print(Mass_Spring**** Bunker, int Frame)
 	sprintf(Number, "%d", Frame);
 	strcat(File, Number);
 	strcat(File, ".csv");
-cout << File << endl;
+	cerr << File << endl;
 	ofstream fout(File);
 
 	for(i = 0; i < 330; i++)	//print all data
@@ -85,6 +90,16 @@ cout << File << endl;
 			}
 		}
 	}
+
+	cout << "set datafile separator \",\"\n";
+	cout << "set terminal pngcairo size 640,480\n";
+	cout << "set output './Frames/Frame" << Frame << ".png'\n";
+	cout << "set view 45,315\n";
+	cout << "set xrange[-1:4];set yrange[-1:4];set zrange[0:4]\n";
+	cout << "unset key;unset border;unset xtics;unset ytics;unset ztics\n";
+	cout << "set title \"t = " << int(Bunker[0][0][0]->Time()*1000000.) << " μs, Blastwave radius = " << setprecision(3) << Bunker[0][0][0]->Shock_Radius(Bunker[0][0][0]->Time()) << " m\"\n";
+	cout << "splot \"" << File << "\" using 1:2:3 every 101:::0::0 with dots, sqrt(" << setprecision(18) << Bunker[0][0][0]->Shock_Radius(Bunker[0][0][0]->Time()) << "**2-(x-1.65)**2-(y-1.65)**2)\n";
+
 }
 
 void Init(Mass_Spring**** Bunker)
