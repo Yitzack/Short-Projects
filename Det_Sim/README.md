@@ -8,4 +8,12 @@ The concrete box is going to be 3 meters on all interior edges and 15 cm thick a
 
 ## Compile directions for g++
 
-g++ Sim.cpp Mass_Spring.cpp Vector3.cpp -O3 -fopenmp
+g++ Sim.cpp Mass_Spring.cpp Vector3.cpp -O3 -fopenmp -o Sim 
+g++ Replot.cpp -O3 -o Replot
+
+## Run directions
+
+Requires gnuplot to be installed. Otherwise, a gnuplot script will be written to the terminal with nowhere to go.
+
+./Sim | gnuplot 
+./Replot | gnuplot

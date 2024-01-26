@@ -61,7 +61,7 @@ class Mass_Spring
 		static constexpr double deltaT = .00000005;	//50 ns
 		static constexpr double density = 2400;		//mass/volume (kg/m^3)
 		static constexpr double spring_constant = 4e8;	//k=E*A/L (elastic modulus(40GPa)*area/length) (Pa*m)
-		static constexpr double spring_break = 6e-6;	//The distance a spring can streach before it yeilds. (Yeild_strength(24 MPa)*voxel_area/spring_constant)
+		static constexpr double spring_break = 5e-2;	//The distance a spring can streach before it yeilds. (Yeild_strength(24 MPa)*voxel_area/spring_constant)
 		static constexpr double specific_heat = 1005;	//specific heat of concrete
 		static constexpr double mass = density*volume;	//kg
 		static constexpr double gamma = 5./3.;		//Specific heat ratio
