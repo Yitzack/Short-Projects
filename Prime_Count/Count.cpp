@@ -30,11 +30,11 @@ int main()
 	duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
 	cout << "Time taken to find " << count << " primes less than 10000000 using Sieve of Eratosthenes: " << duration.count() << " ms" << endl;
 
-	start_time = chrono::high_resolution_clock::now();
+	/*start_time = chrono::high_resolution_clock::now();
 	count = AKS_Prime_Count(10000000);
 	end_time = chrono::high_resolution_clock::now();
 	duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
-	cout << "Time taken to find " << count << " primes less than 10000000 using Agrawal–Kayal–Saxena: " << duration.count() << " ms" << endl;
+	cout << "Time taken to find " << count << " primes less than 10000000 using Agrawal–Kayal–Saxena: " << duration.count() << " ms" << endl;*/
 
 	return(0);
 }
