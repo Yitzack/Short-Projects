@@ -42,7 +42,7 @@ double stddev(double array[], int N)
 	return(sqrt(answer/double(N)-pow(mean(array, N),2)));
 }
 
-int Samples_in_Sphere(double Sample[10], int N)
+int Samples_in_Sphere(double Sample[2520], int N)
 {
 	int In = 0;
 	double distance;
