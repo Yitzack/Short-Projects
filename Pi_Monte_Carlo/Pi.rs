@@ -16,13 +16,10 @@ struct ThreadData
 	Samples_Used: Vec<u64>,
 }
 
-fn worker_thread(thread_id: usize, Data: &mut Vec<ThreadData>) -> ()
+fn worker_thread(thread_id: usize, Data: &mut Vec<ThreadData>, &mut Mersenne_Twist) -> ()
 {
 	let mut Sample: Vec<f64> = Vec::with_capacity(2520);
 	let Sub_Samples: Vec<u16> = vec![1260,840,630,504,420,360,315,280,252];
-
-	let mut RNG: Mersenne_Twist = Mersenne_Twist::new();
-	RNG.srand(SystemTime::now().duration_since(UNIX_EPOCH).expect("System Error").as_secs() + (thread_id as u64));
 
 	for _ in 0..2520
 	{
@@ -42,12 +39,18 @@ fn main()
 	let mut pi: Vec<Vec<f64>> = vec![vec![0.0f64; NUM_THREADS]; 9];
 	let mut Mean: Vec<f64> = vec![0.0f64;10];
 	let mut StdDev: Vec<f64> = vec![0.0f64;10];
+	let mut RNG: Vec<Mersenne_Twist> = vec![Mersenne_Twist::new(); NUM_THREADS];
+
+	for i in 0..24
+	{
+		RNG[i].srand(SystemTime::now().duration_since(UNIX_EPOCH).expect("System Error").as_secs() + (i as u64));
+	}
 
 	loop
 	{
 		for thread_id in 0..NUM_THREADS
 		{
-			worker_thread(thread_id, &mut Data);
+			worker_thread(thread_id, &mut Data, &mut RNG[thread_id]);
 		}
 
 		if((Data[0].Samples_Used[8]/252)%1000==999)
