@@ -16,7 +16,7 @@ struct ThreadData
 	Samples_Used: Vec<u64>,
 }
 
-fn worker_thread(thread_id: usize, Data: &mut Vec<ThreadData>, &mut Mersenne_Twist) -> ()
+fn worker_thread(thread_id: usize, Data: &mut Vec<ThreadData>, RNG: &mut Mersenne_Twist) -> ()
 {
 	let mut Sample: Vec<f64> = Vec::with_capacity(2520);
 	let Sub_Samples: Vec<u16> = vec![1260,840,630,504,420,360,315,280,252];
@@ -99,6 +99,7 @@ fn Uniform(rand: u64) -> f64
 	(rand as f64)/(u64::MAX as f64)*2.0f64-1.0f64
 }
 
+#[derive(Clone)]
 struct Mersenne_Twist
 {
 	MT: Vec<u64>,
