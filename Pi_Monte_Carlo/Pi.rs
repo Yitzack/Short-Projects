@@ -7,60 +7,79 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::f64::consts::PI;
 
-fn main()
+const NUM_THREADS: usize = 24;
+
+#[derive(Clone)]
+struct ThreadData
 {
-	let mut Samples_Used: Vec<u64> = Vec::with_capacity(9);
-	let mut Points_in_Sphere: Vec<u64> = Vec::with_capacity(9);
+	Points_in_Sphere: Vec<u64>,
+	Samples_Used: Vec<u64>,
+}
+
+fn worker_thread(thread_id: usize, Data: &mut Vec<ThreadData>) -> ()
+{
 	let mut Sample: Vec<f64> = Vec::with_capacity(2520);
 	let Sub_Samples: Vec<u16> = vec![1260,840,630,504,420,360,315,280,252];
-	let mut pi: Vec<f64> = vec![0.0f64; 9];
-	let mut Mean: f64;
-	let mut StdDev: f64;
 
 	let mut RNG: Mersenne_Twist = Mersenne_Twist::new();
-	RNG.srand(SystemTime::now().duration_since(UNIX_EPOCH).expect("System Error").as_secs());
-
-	for _ in 0..9
-	{
-		Samples_Used.push(0);
-		Points_in_Sphere.push(0);
-	}
+	RNG.srand(SystemTime::now().duration_since(UNIX_EPOCH).expect("System Error").as_secs() + (thread_id as u64));
 
 	for _ in 0..2520
 	{
 		Sample.push(Uniform(RNG.rand().expect("Unseeded RNG")));
 	}
 
+	for N in 2..=10
+	{
+		Data[thread_id].Points_in_Sphere[N-2] += Samples_in_Sphere(&Sample, N as u64);
+		Data[thread_id].Samples_Used[N-2] += Sub_Samples[N-2] as u64;
+	}
+}
+
+fn main()
+{
+	let mut Data: Vec<ThreadData> = vec![ThreadData{Points_in_Sphere: vec![0;9], Samples_Used: vec![0;9]}; NUM_THREADS];
+	let mut pi: Vec<Vec<f64>> = vec![vec![0.0f64; NUM_THREADS]; 9];
+	let mut Mean: Vec<f64> = vec![0.0f64;10];
+	let mut StdDev: Vec<f64> = vec![0.0f64;10];
+
 	loop
 	{
-		for N in 2..=10
+		for thread_id in 0..NUM_THREADS
 		{
-			Points_in_Sphere[N-2] += Samples_in_Sphere(&Sample, N as u64);
-			Samples_Used[N-2] += Sub_Samples[N-2] as u64;
+			worker_thread(thread_id, &mut Data);
 		}
 
-		if((Samples_Used[8]/252)%1000==999)
+		if((Data[0].Samples_Used[8]/252)%1000==999)
 		{
-			pi[0] = 4.0f64*(Points_in_Sphere[0] as f64)/(Samples_Used[0] as f64);
-			pi[1] = 6.0f64*(Points_in_Sphere[1] as f64)/(Samples_Used[1] as f64);
-			pi[2] = 4.0f64*(2.0f64*(Points_in_Sphere[2] as f64)/(Samples_Used[2] as f64)).sqrt();
-			pi[3] = 2.0f64*(15.0f64*(Points_in_Sphere[3] as f64)/(Samples_Used[3] as f64)).sqrt();
-			pi[4] = 4.0f64*(6.0f64*(Points_in_Sphere[4] as f64)/(Samples_Used[4] as f64)).powf(1.0f64/3.0f64);
-			pi[5] = 2.0f64*(105.0f64*(Points_in_Sphere[5] as f64)/(Samples_Used[5] as f64)).powf(1.0f64/3.0f64);
-			pi[6] = 4.0f64*(24.0f64*(Points_in_Sphere[6] as f64)/(Samples_Used[6] as f64)).powf(0.25f64);
-			pi[7] = 2.0f64*(945.0f64*(Points_in_Sphere[7] as f64)/(Samples_Used[7] as f64)).powf(0.25f64);
-			pi[8] = 4.0f64*(120.0f64*(Points_in_Sphere[8] as f64)/(Samples_Used[8] as f64)).powf(0.2f64);
+			for i in 0..NUM_THREADS
+			{
+				pi[0][i] = 4.0f64*(Data[i].Points_in_Sphere[0] as f64)/(Data[i].Samples_Used[0] as f64);
+				pi[1][i] = 6.0f64*(Data[i].Points_in_Sphere[1] as f64)/(Data[i].Samples_Used[1] as f64);
+				pi[2][i] = 4.0f64*(2.0f64*(Data[i].Points_in_Sphere[2] as f64)/(Data[i].Samples_Used[2] as f64)).sqrt();
+				pi[3][i] = 2.0f64*(15.0f64*(Data[i].Points_in_Sphere[3] as f64)/(Data[i].Samples_Used[3] as f64)).sqrt();
+				pi[4][i] = 4.0f64*(6.0f64*(Data[i].Points_in_Sphere[4] as f64)/(Data[i].Samples_Used[4] as f64)).powf(1.0f64/3.0f64);
+				pi[5][i] = 2.0f64*(105.0f64*(Data[i].Points_in_Sphere[5] as f64)/(Data[i].Samples_Used[5] as f64)).powf(1.0f64/3.0f64);
+				pi[6][i] = 4.0f64*(24.0f64*(Data[i].Points_in_Sphere[6] as f64)/(Data[i].Samples_Used[6] as f64)).powf(0.25f64);
+				pi[7][i] = 2.0f64*(945.0f64*(Data[i].Points_in_Sphere[7] as f64)/(Data[i].Samples_Used[7] as f64)).powf(0.25f64);
+				pi[8][i] = 4.0f64*(120.0f64*(Data[i].Points_in_Sphere[8] as f64)/(Data[i].Samples_Used[8] as f64)).powf(0.2f64);
+			}
 
-			Mean = mean(&pi).expect("Insufficent data");
-			StdDev = stddev(&pi).expect("Insufficent data");
+			for i in 0..9
+			{
+				Mean[i] = mean(&pi[i], NUM_THREADS).expect("Insufficent data");
+				StdDev[i] = stddev(&pi[i], NUM_THREADS).expect("Insufficent data");
+			}
+			Mean[9] = mean(&Mean, 9 as usize).expect("Insufficent data");
+			StdDev[9] = meanDev(&StdDev, 9 as usize).expect("Insufficent data");
 
-			print!("{},{},{},{},{},{},{},{},{},{},Around[{},{}],",Samples_Used[8]+1,pi[0],pi[1],pi[2],pi[3],pi[4],pi[5],pi[6],pi[7],pi[8],Mean,StdDev);
+			print!("{},{},{},{},{},{},{},{},{},{},Around[{},{}],",Data[0].Samples_Used[8]+1, Mean[0], Mean[1], Mean[2], Mean[3], Mean[4], Mean[5], Mean[6], Mean[7], Mean[8], Mean[9], StdDev[9]);
 
-			if(Mean-StdDev < PI && Mean+StdDev > PI)
+			if(Mean[9]-StdDev[9] < PI && Mean[9]+StdDev[9] > PI)
 			{
 				println!("Success");
 			}
-			else if(!StdDev.is_nan())
+			else if(!StdDev[9].is_nan())
 			{
 				println!("Fail");
 			}
@@ -68,11 +87,6 @@ fn main()
 			{
 				println!("Indeterminate");
 			}
-		}
-
-		for element in Sample.iter_mut()
-		{
-			*element = Uniform(RNG.rand().expect("Unseeded RNG"));
 		}
 	}
 }
@@ -167,33 +181,33 @@ impl Mersenne_Twist
 	}
 }
 
-fn mean(array: &Vec<f64>) -> Option<f64>
+fn mean(array: &Vec<f64>, N: usize) -> Option<f64>
 {
-	if(array.len() == 0)
+	if(array.len() == 0 || array.len() < N)
 	{
 		return(None);
 	}
-	Some(array.iter().sum::<f64>()/(array.len() as f64))
+	Some(array.iter().sum::<f64>()/(N as f64))
 }
 
-fn stddev(array: &Vec<f64>) -> Option<f64>
+fn stddev(array: &Vec<f64>, N: usize) -> Option<f64>
 {
-	if(array.len() <= 1)
+	if(array.len() <= 1 || array.len() < N)
 	{
 		return(None);
 	}
 	let square_array_sum: f64 = array.iter().map(|&x| x.powi(2)).sum::<f64>();
-	let square_mean = mean(array).expect("How? This should have returned None before you got here.").powi(2);
-	Some((square_array_sum/(array.len() as f64)-square_mean).sqrt())
+	let square_mean = mean(array, N).expect("How? This should have returned None before you got here.").powi(2);
+	Some((square_array_sum/(N as f64)-square_mean).sqrt())
 }
 
-fn meanDev(array: &Vec<f64>) -> Option<f64>
+fn meanDev(array: &Vec<f64>, N: usize) -> Option<f64>
 {
-	if(array.len() == 0)
+	if(array.len() == 0 || array.len() < N)
 	{
 		return(None);
 	}
-	Some(array.iter().map(|&x| x.powi(2)).sum::<f64>().sqrt()/(array.len() as f64))
+	Some(array.iter().map(|&x| x.powi(2)).sum::<f64>().sqrt()/(N as f64))
 }
 
 fn Samples_in_Sphere(array: &Vec<f64>, N: u64) -> u64
@@ -219,7 +233,7 @@ mod tests {
 	fn test_mean_non_empty_vector()
 	{
 		let input: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
-		let result: Option<f64> = mean(&input);
+		let result: Option<f64> = mean(&input, input.len());
 		assert_eq!(result, Some(2.5));
 	}
 
@@ -227,7 +241,15 @@ mod tests {
 	fn test_mean_empty_vector()
 	{
 		let input: Vec<f64> = Vec::new();
-		let result = mean(&input);
+		let result = mean(&input, input.len());
+		assert_eq!(result, None);
+	}
+
+	#[test]
+	fn test_mean_more_elements_claimed_than_vector()
+	{
+		let input: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
+		let result = mean(&input, input.len()+1);
 		assert_eq!(result, None);
 	}
 
@@ -244,6 +266,14 @@ mod tests {
 	{
 		let input: Vec<f64> = vec![1.0];
 		let result = stddev(&input);
+		assert_eq!(result, None);
+	}
+
+	#[test]
+	fn test_stddev_more_elements_claimed_than_vector()
+	{
+		let input: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
+		let result = stddev(&input, input.len()+1);
 		assert_eq!(result, None);
 	}
 
@@ -268,6 +298,14 @@ mod tests {
 	{
 		let input: Vec<f64> = Vec::new();
 		let result = meanDev(&input);
+		assert_eq!(result, None);
+	}
+
+	#[test]
+	fn test_meanDev_more_elements_claimed_than_vector()
+	{
+		let input: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0];
+		let result = meanDev(&input, input.len()+1);
 		assert_eq!(result, None);
 	}
 
