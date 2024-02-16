@@ -174,6 +174,39 @@ impl Puzzle
 
 	fn Hidden_Singles_Houses(&mut self) -> ()
 	{
+		for i in 0..9	//Houses
+		{
+			for j in 0..9	//Numbers
+			{
+				let bitmask: u16 = 1 << j;
+				let mut First: bool = false;
+				let mut Second: bool = false;
+				let mut Position: usize = 0;
+
+				for k in 0..9	//Cells
+				{
+					if(!First && (bitmask & self.data[i/3 as usize][i%3][k/3 as usize][k%3]) != 0)
+					{
+						First = true;
+						Position = k;
+					}
+					else if(First && (bitmask & self.data[i/3 as usize][i%3][k/3 as usize][k%3]) != 0)
+					{
+						Second = true;
+						break;
+					}
+				}
+
+				if(First != Second)	//Hidden Single found, may be naked
+				{
+					for k in 0..9
+					{
+						self.data[i/3 as usize][i%3][k/3 as usize][k%3] = self.data[i/3 as usize][i%3][k/3 as usize][k%3] & !bitmask;
+					}
+					self.data[i/3 as usize][i%3][Position/3 as usize][Position%3] = bitmask;
+				}
+			}
+		}
 	}
 
 	fn Grid(&self) -> [[u8; 9]; 9]
