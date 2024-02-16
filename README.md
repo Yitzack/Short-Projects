@@ -20,11 +20,15 @@ Plot the Mandelbrot set using C++, Java, and Python.
 
 ## Pi_Monte_Carlo
 
-Calculate pi using Monte Carlo methods by throwing points into a unit N-cube and seeing how many land in the inscribed unit N-ball.
+Calculate pi using Monte Carlo methods by throwing points into a unit N-cube and seeing how many land in the inscribed unit N-ball. Written in C++ and Rust.
 
 ## Prime_Count
 
 Count the number of primes up to some limit in several ways and which is faster.
+
+## Sudoku
+
+Simple Sudoku solver. Written in Rust.
 
 ## Skydweller
 
