@@ -36,16 +36,73 @@ impl Puzzle
 		let mut Previous_Step: Puzzle = self.clone();
 		loop
 		{
-			Self::Naked_Singles(self);
-			Self::Hidden_Singles_Rows(self);
-			Self::Hidden_Singles_Columns(self);
-			Self::Hidden_Singles_Houses(self);
+			self.Naked_Singles();
+			self.Hidden_Singles_Rows();
+			self.Hidden_Singles_Columns();
+			self.Hidden_Singles_Houses();
 			if(self.data == Previous_Step.data)
 			{
 				break;
 			}
 			Previous_Step = self.clone();
 		}
+		Previous_Step = self.Thesus();
+	}
+	
+	fn Thesus(&self) -> Puzzle
+	{
+		let Singles: [u16; 9] = [1,2,4,8,16,32,64,128,256];
+		for i in 0..3	//Puzzle row
+		{
+			for j in 0..3	//Puzzle column
+			{
+				for k in 0..3	//House row
+				{
+					for l in 0..3	//House column
+					{
+						if(!Singles.contains(&self.data[i][j][k][l]))
+						{
+							for num in 0..9
+							{
+								let bitmask: u16 = 1 << num;
+								if(bitmask & self.data[i][j][k][l] != 0)
+								{
+									let mut Next_Step: Puzzle = self.clone();
+									Next_Step.data[i][j][k][l] = bitmask;
+									Next_Step.Solve();
+									if(!Next_Step.Puzzle_Broke())
+									{
+										return(Next_Step);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return(self.clone());
+	}
+
+	fn Puzzle_Broke(&self) -> bool
+	{
+		for i in 0..3
+		{
+			for j in 0..3
+			{
+				for k in 0..3
+				{
+					for l in 0..3
+					{
+						if(self.data[i][j][k][l] == 0)
+						{
+							return(true);
+						}
+					}
+				}
+			}
+		}
+		false
 	}
 
 	fn Naked_Singles(&mut self) -> ()
