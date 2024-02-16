@@ -26,10 +26,10 @@ Calculate pi using Monte Carlo methods by throwing points into a unit N-cube and
 
 Count the number of primes up to some limit in several ways and which is faster.
 
-## Sudoku
-
-Simple Sudoku solver. Written in Rust.
-
 ## Skydweller
 
 Technical interview questions for a job at Skydweller. They are looking to unman a solar powered airplane to keep it flying so long as the parts don't fail. One task is to simulate an airplane taking off and how it would appear on sensors on a wheel. The other is to pack and unpack a speed package under the ARINC standard.
+
+## Sudoku
+
+Simple Sudoku solver. Written in Rust.

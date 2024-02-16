@@ -8,6 +8,6 @@ Basic sudoku solver.
 
 ## Details of operation
 
-Find the naked singles, the hidden singles, and then recersively make a guess. Repeat until puzzle is broken. Backtrack and try again until solved.
+Finds the naked singles, the hidden singles, and then recersively makes a guess. Repeats until puzzle is broken. Backtrack and try again until solved.
 
 Program comes with an unsolved puzzle and its solution.
