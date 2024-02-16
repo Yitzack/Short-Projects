@@ -4,6 +4,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
+#[derive(Clone,Debug)]
 struct Puzzle
 {
 	data: [[[[u16; 3]; 3]; 3]; 3],
@@ -28,6 +29,98 @@ impl Puzzle
 				self.data[i/3 as usize][j/3 as usize][i%3][j%3] = Self::Data_Encode(Init[i][j]);
 			}
 		}
+	}
+
+	fn Solve(&mut self) -> ()
+	{
+		let mut Previous_Step: Puzzle = self.clone();
+		loop
+		{
+			Self::Naked_Singles(self);
+			Self::Hidden_Singles_Rows(self);
+			Self::Hidden_Singles_Columns(self);
+			Self::Hidden_Singles_Houses(self);
+			if(self.data == Previous_Step.data)
+			{
+				break;
+			}
+			Previous_Step = self.clone();
+		}
+	}
+
+	fn Naked_Singles(&mut self) -> ()
+	{
+		let Singles: [u16; 9] = [1,2,4,8,16,32,64,128,256];
+		for i in 0..3	//Puzzle row
+		{
+			for j in 0..3	//Puzzle column
+			{
+				for k in 0..3	//House row
+				{
+					for l in 0..3	//House column
+					{
+						if(Singles.contains(&self.data[i][j][k][l]))
+						{
+		for ip in 0..3	//Row navigation
+		{
+			for kp in 0..3
+			{
+				if(i != ip || k != kp)
+				{
+					self.data[ip][j][kp][l] = self.data[ip][j][kp][l] & !self.data[i][j][k][l];
+				}
+			}
+		}
+		for jp in 0..3	//Column navigation
+		{
+			for lp in 0..3
+			{
+				if(j != jp || l != lp)
+				{
+					self.data[i][jp][k][lp] = self.data[i][jp][k][lp] & !self.data[i][j][k][l];
+				}
+			}
+		}
+		for kp in 0..3	//House navigation
+		{
+			for lp in 0..3
+			{
+				if(k != kp || l != lp)
+				{
+					self.data[i][j][kp][lp] = self.data[i][j][kp][lp] & !self.data[i][j][k][l];
+				}
+			}
+		}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	fn Hidden_Singles_Rows(&mut self) -> ()
+	{
+	}
+
+	fn Hidden_Singles_Columns(&mut self) -> ()
+	{
+	}
+
+	fn Hidden_Singles_Houses(&mut self) -> ()
+	{
+	}
+
+	fn Grid(&self) -> [[u8; 9]; 9]
+	{
+		let mut Answer: [[u8; 9]; 9] = [[0u8; 9]; 9];
+		for i in 0..9
+		{
+			for j in 0..9
+			{
+				Answer[i][j] = Puzzle::Data_Decode(self.data[i/3 as usize][j/3 as usize][i%3][j%3]);
+			}
+		}
+		return(Answer);
 	}
 
 	fn Mix_Numbers(Row: &[u8; 9]) -> String
@@ -94,6 +187,9 @@ fn main()
 
 	let mut Current_Puzzle: Puzzle = Puzzle::new();
 	Current_Puzzle.Initialize(Initial_Puzzle);
+	Current_Puzzle.Solve();
+
+	let Final_Puzzle: [[u8; 9]; 9] = Current_Puzzle.Grid();
 
 	let Solution: [[u8; 9]; 9] = [[4,2,7,1,8,6,3,5,9],
 				      [8,9,5,2,4,3,6,7,1],
@@ -107,7 +203,16 @@ fn main()
 
 	Print_Puzzle(&Initial_Puzzle);
 	Print_Puzzle(&Solution);
-	println!("{}", Current_Puzzle);
+	Print_Puzzle(&Final_Puzzle);
+	if(Final_Puzzle == Solution)
+	{
+		println!("The solving algorithm has found the solution.");
+	}
+	else
+	{
+		println!("The solving algorithm has not found the solution.");
+	}
+
 }
 
 fn Print_Puzzle(Puzzle: &[[u8; 9]; 9]) -> ()
