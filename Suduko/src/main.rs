@@ -137,6 +137,39 @@ impl Puzzle
 
 	fn Hidden_Singles_Columns(&mut self) -> ()
 	{
+		for i in 0..9	//Columns
+		{
+			for j in 0..9	//Numbers
+			{
+				let bitmask: u16 = 1 << j;
+				let mut First: bool = false;
+				let mut Second: bool = false;
+				let mut Position: usize = 0;
+
+				for k in 0..9	//Rows
+				{
+					if(!First && (bitmask & self.data[k/3 as usize][i/3 as usize][k%3][i%3]) != 0)
+					{
+						First = true;
+						Position = k;
+					}
+					else if(First && (bitmask & self.data[k/3 as usize][i/3 as usize][k%3][i%3]) != 0)
+					{
+						Second = true;
+						break;
+					}
+				}
+
+				if(First != Second)	//Hidden Single found, may be naked
+				{
+					for k in 0..9
+					{
+						self.data[k/3 as usize][i/3 as usize][k%3][i%3] = self.data[k/3 as usize][i/3 as usize][k%3][i%3] & !bitmask;
+					}
+					self.data[Position/3 as usize][i/3 as usize][Position%3][i%3] = bitmask;
+				}
+			}
+		}
 	}
 
 	fn Hidden_Singles_Houses(&mut self) -> ()
