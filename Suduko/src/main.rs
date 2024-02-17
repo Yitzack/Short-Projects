@@ -31,7 +31,7 @@ impl Puzzle
 		}
 	}
 
-	fn Solve(&mut self) -> ()
+	fn Solve(&mut self, Depth: u64) -> ()
 	{
 		let mut Previous_Step: Puzzle = self.clone();
 		loop
@@ -46,10 +46,10 @@ impl Puzzle
 			}
 			Previous_Step = self.clone();
 		}
-		Previous_Step = self.Thesus();
+		Previous_Step = self.Thesus(Depth+1);
 	}
 	
-	fn Thesus(&self) -> Puzzle
+	fn Thesus(&self, Depth: u64) -> Puzzle
 	{
 		let Singles: [u16; 9] = [1,2,4,8,16,32,64,128,256];
 		for i in 0..3	//Puzzle row
@@ -62,19 +62,34 @@ impl Puzzle
 					{
 						if(!Singles.contains(&self.data[i][j][k][l]))
 						{
+							//I'm going to have to try this again because this didn't work
+							let mut attempt: u16 = 0;
 							for num in 0..9
 							{
 								let bitmask: u16 = 1 << num;
 								if(bitmask & self.data[i][j][k][l] != 0)
 								{
+println!("{},{},{},{},{},{}",Depth,i,j,k,l,num);
 									let mut Next_Step: Puzzle = self.clone();
+println!("Clone, {}: {:?}",Depth,Next_Step.data);
 									Next_Step.data[i][j][k][l] = bitmask;
-									Next_Step.Solve();
+println!("Apply Bitmask, {}: {:?}",Depth,Next_Step.data);
+									Next_Step.Solve(Depth);
+println!("Solve, {}: {:?}",Depth,Next_Step.data);
+println!("{},{}",Depth,Next_Step.Puzzle_Broke());
 									if(!Next_Step.Puzzle_Broke())
 									{
 										return(Next_Step);
 									}
+									else
+									{
+										attempt = attempt | bitmask;
+									}
 								}
+							}
+							if(attempt == self.data[i][j][k][l])	//All values in cell attempted and none worked
+							{
+								return(self.clone());
 							}
 						}
 					}
@@ -343,7 +358,7 @@ fn main()
 
 	let mut Current_Puzzle: Puzzle = Puzzle::new();
 	Current_Puzzle.Initialize(Initial_Puzzle);
-	Current_Puzzle.Solve();
+	Current_Puzzle.Solve(0);
 
 	let Final_Puzzle: [[u8; 9]; 9] = Current_Puzzle.Grid();
 
