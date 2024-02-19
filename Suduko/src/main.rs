@@ -359,33 +359,7 @@ impl Puzzle
 
 fn main()
 {
-	/*let Initial_Puzzle: [[u8; 9]; 9] = [[0,2,7,0,8,0,0,0,0],
-					   [0,0,0,0,0,0,6,0,1],
-					   [0,0,0,0,0,0,0,0,0],
-					   [6,0,0,5,0,1,0,0,0],
-					   [0,0,3,0,0,0,0,8,0],
-					   [0,0,0,0,0,0,0,0,0],
-					   [0,0,0,3,7,0,0,2,0],
-					   [9,1,0,0,0,0,4,0,0],
-					   [0,0,0,8,0,0,0,0,0]];*/
-	let Initial_Puzzle: [[u8; 9]; 9] = [[8,0,0,0,0,0,0,0,0],
-					   [0,0,3,6,0,0,0,0,0],
-					   [0,7,0,0,9,0,2,0,0],
-					   [0,5,0,0,0,7,0,0,0],
-					   [0,0,0,0,4,5,7,0,0],
-					   [0,0,0,1,0,0,0,3,0],
-					   [0,0,1,0,0,0,0,6,8],
-					   [0,0,8,5,0,0,0,1,0],
-					   [0,9,0,0,0,0,4,0,0]];
-	/*let Initial_Puzzle: [[u8; 9]; 9] = [[5,3,0,0,7,0,0,0,0],
-					   [6,0,0,1,9,5,0,0,0],
-					   [0,9,8,0,0,0,0,6,0],
-					   [8,0,0,0,6,0,0,0,3],
-					   [4,0,0,8,0,3,0,0,1],
-					   [7,0,0,0,2,0,0,0,6],
-					   [0,6,0,0,0,0,2,8,0],
-					   [0,0,0,4,1,9,0,0,5],
-					   [0,0,0,0,8,0,0,7,9]];*/
+	let mut Initial_Puzzle: [[u8; 9]; 9];
 
 	let mut Current_Puzzle: Puzzle = Puzzle::new();
 	Current_Puzzle.Initialize(Initial_Puzzle);
@@ -397,30 +371,7 @@ fn main()
 		_ => Some(Possible_Solution.clone().unwrap().Grid()),
 	};
 
-	let Solution: [[u8; 9]; 9] = [[4,2,7,1,8,6,3,5,9],
-				      [8,9,5,2,4,3,6,7,1],
-				      [3,6,1,7,9,5,8,4,2],
-				      [6,8,4,5,2,1,7,9,3],
-				      [1,5,3,9,6,7,2,8,4],
-				      [2,7,9,4,3,8,5,1,6],
-				      [5,4,6,3,7,9,1,2,8],
-				      [9,1,8,6,5,2,4,3,7],
-				      [7,3,2,8,1,4,9,6,5]];
-
 	Print_Puzzle(&Initial_Puzzle);
-	//Print_Puzzle(&Solution);
-	match Final_Puzzle
-	{
-		None => println!("No Solution found."),
-		_ =>
-		{
-			Print_Puzzle(&Final_Puzzle.unwrap());
-			if(Final_Puzzle.unwrap() == Solution)
-			{
-				println!("The solving algorithm has found the solution.");
-			}
-		},
-	};
 	if(Possible_Solution != None && Possible_Solution.unwrap().Puzzle_Finished() == true)
 	{
 		println!("The solving algorithm has found a solution.");
