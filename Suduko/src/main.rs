@@ -4,7 +4,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
-#[derive(Clone,Debug)]
+#[derive(Clone,PartialEq)]
 struct Puzzle
 {
 	data: [[[[u16; 3]; 3]; 3]; 3],
@@ -31,25 +31,30 @@ impl Puzzle
 		}
 	}
 
-	fn Solve(&mut self, Depth: u64) -> ()
+	fn Solve(&self, Depth: u64) -> Option<Puzzle>
 	{
 		let mut Previous_Step: Puzzle = self.clone();
+		let mut Step: Puzzle = self.clone();
 		loop
 		{
-			self.Naked_Singles();
-			self.Hidden_Singles_Rows();
-			self.Hidden_Singles_Columns();
-			self.Hidden_Singles_Houses();
-			if(self.data == Previous_Step.data)
+			Previous_Step.Naked_Singles();
+			Previous_Step.Hidden_Singles_Rows();
+			Previous_Step.Hidden_Singles_Columns();
+			Previous_Step.Hidden_Singles_Houses();
+			if(Step.data == Previous_Step.data)
 			{
 				break;
 			}
-			Previous_Step = self.clone();
+			Step.data = Previous_Step.data;
 		}
-		Previous_Step = self.Thesus(Depth+1);
+		if(Previous_Step.Puzzle_Finished())
+		{
+			return(Some(Previous_Step));
+		}
+		Previous_Step.Thesus(Depth+1)
 	}
 	
-	fn Thesus(&self, Depth: u64) -> Puzzle
+	fn Thesus(&self, Depth: u64) -> Option<Puzzle>
 	{
 		let Singles: [u16; 9] = [1,2,4,8,16,32,64,128,256];
 		for i in 0..3	//Puzzle row
@@ -62,41 +67,27 @@ impl Puzzle
 					{
 						if(!Singles.contains(&self.data[i][j][k][l]))
 						{
-							//I'm going to have to try this again because this didn't work
-							let mut attempt: u16 = 0;
-							for num in 0..9
+							for num in 0..9	//iterate over the numbers
 							{
 								let bitmask: u16 = 1 << num;
 								if(bitmask & self.data[i][j][k][l] != 0)
 								{
-println!("{},{},{},{},{},{}",Depth,i,j,k,l,num);
-									let mut Next_Step: Puzzle = self.clone();
-println!("Clone, {}: {:?}",Depth,Next_Step.data);
-									Next_Step.data[i][j][k][l] = bitmask;
-println!("Apply Bitmask, {}: {:?}",Depth,Next_Step.data);
-									Next_Step.Solve(Depth);
-println!("Solve, {}: {:?}",Depth,Next_Step.data);
-println!("{},{}",Depth,Next_Step.Puzzle_Broke());
-									if(!Next_Step.Puzzle_Broke())
+									let mut Previous_Step: Puzzle = self.clone();
+									Previous_Step.data[i][j][k][l] = bitmask;	//Set a possiblity
+									let Next_Step: Option<Puzzle> = Previous_Step.Solve(Depth);	//Attempt a solve
+									if(Next_Step != None && !Next_Step.clone().unwrap().Puzzle_Broke())	//return the solution if successful
 									{
 										return(Next_Step);
 									}
-									else
-									{
-										attempt = attempt | bitmask;
-									}
 								}
 							}
-							if(attempt == self.data[i][j][k][l])	//All values in cell attempted and none worked
-							{
-								return(self.clone());
-							}
+							return(None);	//return none if not successful
 						}
 					}
 				}
 			}
 		}
-		return(self.clone());
+		return(Some(self.clone()));
 	}
 
 	fn Puzzle_Broke(&self) -> bool
@@ -118,6 +109,28 @@ println!("{},{}",Depth,Next_Step.Puzzle_Broke());
 			}
 		}
 		false
+	}
+
+	fn Puzzle_Finished(&self) -> bool
+	{
+		for i in 0..3
+		{
+			for j in 0..3
+			{
+				for k in 0..3
+				{
+					for l in 0..3
+					{
+						match self.data[i][j][k][l]
+						{
+							1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 => continue,
+							_ => return(false),
+						}
+					}
+				}
+			}
+		}
+		true
 	}
 
 	fn Naked_Singles(&mut self) -> ()
@@ -346,7 +359,7 @@ println!("{},{}",Depth,Next_Step.Puzzle_Broke());
 
 fn main()
 {
-	let Initial_Puzzle: [[u8; 9]; 9] = [[0,2,7,0,8,0,0,0,0],
+	/*let Initial_Puzzle: [[u8; 9]; 9] = [[0,2,7,0,8,0,0,0,0],
 					   [0,0,0,0,0,0,6,0,1],
 					   [0,0,0,0,0,0,0,0,0],
 					   [6,0,0,5,0,1,0,0,0],
@@ -354,13 +367,35 @@ fn main()
 					   [0,0,0,0,0,0,0,0,0],
 					   [0,0,0,3,7,0,0,2,0],
 					   [9,1,0,0,0,0,4,0,0],
-					   [0,0,0,8,0,0,0,0,0]];
+					   [0,0,0,8,0,0,0,0,0]];*/
+	let Initial_Puzzle: [[u8; 9]; 9] = [[8,0,0,0,0,0,0,0,0],
+					   [0,0,3,6,0,0,0,0,0],
+					   [0,7,0,0,9,0,2,0,0],
+					   [0,5,0,0,0,7,0,0,0],
+					   [0,0,0,0,4,5,7,0,0],
+					   [0,0,0,1,0,0,0,3,0],
+					   [0,0,1,0,0,0,0,6,8],
+					   [0,0,8,5,0,0,0,1,0],
+					   [0,9,0,0,0,0,4,0,0]];
+	/*let Initial_Puzzle: [[u8; 9]; 9] = [[5,3,0,0,7,0,0,0,0],
+					   [6,0,0,1,9,5,0,0,0],
+					   [0,9,8,0,0,0,0,6,0],
+					   [8,0,0,0,6,0,0,0,3],
+					   [4,0,0,8,0,3,0,0,1],
+					   [7,0,0,0,2,0,0,0,6],
+					   [0,6,0,0,0,0,2,8,0],
+					   [0,0,0,4,1,9,0,0,5],
+					   [0,0,0,0,8,0,0,7,9]];*/
 
 	let mut Current_Puzzle: Puzzle = Puzzle::new();
 	Current_Puzzle.Initialize(Initial_Puzzle);
-	Current_Puzzle.Solve(0);
+	let Possible_Solution: Option<Puzzle> = Current_Puzzle.Solve(0);
 
-	let Final_Puzzle: [[u8; 9]; 9] = Current_Puzzle.Grid();
+	let Final_Puzzle: Option<[[u8; 9]; 9]> = match Possible_Solution
+	{
+		None => None,
+		_ => Some(Possible_Solution.clone().unwrap().Grid()),
+	};
 
 	let Solution: [[u8; 9]; 9] = [[4,2,7,1,8,6,3,5,9],
 				      [8,9,5,2,4,3,6,7,1],
@@ -373,11 +408,22 @@ fn main()
 				      [7,3,2,8,1,4,9,6,5]];
 
 	Print_Puzzle(&Initial_Puzzle);
-	Print_Puzzle(&Solution);
-	Print_Puzzle(&Final_Puzzle);
-	if(Final_Puzzle == Solution)
+	//Print_Puzzle(&Solution);
+	match Final_Puzzle
 	{
-		println!("The solving algorithm has found the solution.");
+		None => println!("No Solution found."),
+		_ =>
+		{
+			Print_Puzzle(&Final_Puzzle.unwrap());
+			if(Final_Puzzle.unwrap() == Solution)
+			{
+				println!("The solving algorithm has found the solution.");
+			}
+		},
+	};
+	if(Possible_Solution != None && Possible_Solution.unwrap().Puzzle_Finished() == true)
+	{
+		println!("The solving algorithm has found a solution.");
 	}
 	else
 	{
@@ -438,6 +484,26 @@ fn Mix_Numbers(Row: &[u8; 9]) -> String
 		}
 	}
 	Pipes.iter().filter_map(|&Pipes| std::char::from_u32(Pipes)).collect::<String>()
+}
+
+impl std::fmt::Debug for Puzzle
+{
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result
+	{
+		let mut Grid: [[u16; 9]; 9] = [[0u16; 9]; 9];
+		for i in 0..9
+		{
+			for j in 0..9
+			{
+				Grid[i][j] = self.data[i/3 as usize][j/3 as usize][i%3][j%3];
+			}
+		}
+		for i in 0..8
+		{
+			write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",Grid[i][0],Grid[i][1],Grid[i][2],Grid[i][3],Grid[i][4],Grid[i][5],Grid[i][6],Grid[i][7],Grid[i][8])?;
+		}
+		write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",Grid[8][0],Grid[8][1],Grid[8][2],Grid[8][3],Grid[8][4],Grid[8][5],Grid[8][6],Grid[8][7],Grid[8][8])
+	}
 }
 
 impl std::fmt::Display for Puzzle
