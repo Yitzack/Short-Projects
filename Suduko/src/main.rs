@@ -4,6 +4,112 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
+use std::io;
+
+fn User_Input() -> [[u8; 9]; 9]
+{
+	let mut Initial_Puzzle: [[u8; 9]; 9] = [[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0],
+						[0,0,0,0,0,0,0,0,0]];
+
+	loop
+	{
+		println!("Enter the 81 digits of an unsolved classic sudoku puzzle in 9 lines. 0 counts as no clue.");
+		for i in 0..9
+		{
+			let mut user_input: String = String::new();
+			match io::stdin().read_line(&mut user_input)
+			{
+				Ok(_) =>
+				{
+					user_input = user_input.trim().to_string();
+					for (j, character) in user_input.chars().take(9).enumerate()
+					{
+						match character.to_digit(10)
+						{
+							None => println!("Invalid character at position {}: {}. It will be treated as {}", j+1, character, Initial_Puzzle[i][j]),
+							Some(digit) => Initial_Puzzle[i][j] = digit as u8,
+						}
+					}
+				}
+				Err(error) =>
+				{
+					println!("Error reading input: {}", error);
+				}
+			}
+		}
+
+		println!("Is this your puzzle? (Y/N)");
+		Print_Puzzle(&Initial_Puzzle);
+		let mut user_input: String = String::new();
+		let mut Correct: bool = false;
+		match io::stdin().read_line(&mut user_input)
+		{
+			Ok(_) =>
+			{
+				if let Some(character) = user_input.chars().next()
+				{
+					match character
+					{
+						'Y' | 'y' | '1' => Correct = true,
+						_ => Correct = false,
+					}
+				}
+				else
+				{
+					println!("You should have errored to 5 lines down");
+				}
+			}
+			Err(error) =>
+			{
+				println!("Error reading input: {}", error);
+			}
+		}
+		if(Correct)
+		{
+			break;
+		}
+	}
+
+	return(Initial_Puzzle);
+}
+
+fn main()
+{
+	let Initial_Puzzle: [[u8; 9]; 9] = User_Input();
+
+	let mut Current_Puzzle: Puzzle = Puzzle::new();
+	Current_Puzzle.Initialize(Initial_Puzzle);
+	let Possible_Solution: Option<Puzzle> = Current_Puzzle.Solve(0);
+
+	let Final_Puzzle: Option<[[u8; 9]; 9]> = match Possible_Solution
+	{
+		None => None,
+		_ => Some(Possible_Solution.clone().unwrap().Grid()),
+	};
+
+	match Final_Puzzle
+	{
+		None => (),
+		_ => Print_Puzzle(&Final_Puzzle.unwrap()),
+	};
+	if(Possible_Solution != None && Possible_Solution.unwrap().Puzzle_Finished() == true)
+	{
+		println!("The solving algorithm has found a solution.");
+	}
+	else
+	{
+		println!("The solving algorithm has not found the solution.");
+	}
+
+}
+
 #[derive(Clone,PartialEq)]
 struct Puzzle
 {
@@ -355,32 +461,6 @@ impl Puzzle
 			_ => 0,
 		}
 	}
-}
-
-fn main()
-{
-	let mut Initial_Puzzle: [[u8; 9]; 9];
-
-	let mut Current_Puzzle: Puzzle = Puzzle::new();
-	Current_Puzzle.Initialize(Initial_Puzzle);
-	let Possible_Solution: Option<Puzzle> = Current_Puzzle.Solve(0);
-
-	let Final_Puzzle: Option<[[u8; 9]; 9]> = match Possible_Solution
-	{
-		None => None,
-		_ => Some(Possible_Solution.clone().unwrap().Grid()),
-	};
-
-	Print_Puzzle(&Initial_Puzzle);
-	if(Possible_Solution != None && Possible_Solution.unwrap().Puzzle_Finished() == true)
-	{
-		println!("The solving algorithm has found a solution.");
-	}
-	else
-	{
-		println!("The solving algorithm has not found the solution.");
-	}
-
 }
 
 fn Print_Puzzle(Puzzle: &[[u8; 9]; 9]) -> ()
