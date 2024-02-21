@@ -6,6 +6,10 @@ Repository of short exercise projects
 
 Networking experiment to implement public key encryption, symmetric key encryption, authentication, and communication between multiple clients and a server.
 
+## Audio
+
+Create a Wave file from sound sources and data processing.
+
 ## Det_Sim
 
 Detination simulation where I blow up a simulated concrete bunker with a simulated explosion.
