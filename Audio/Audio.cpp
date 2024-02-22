@@ -1,33 +1,26 @@
 #include<fstream>
-#include<cmath>
-#include<random>
+#include"Track.h"
 using namespace std;
 
 void Write_Num(ostream &, uint16_t);	//Writes data out littlendian instead of the default bigendian
 void Write_Num(ostream &, int16_t);
 void Write_Num(ostream &, uint32_t);
-void Write_WAV(int16_t*, int16_t*, uint32_t);
-
-#define SAMPLE_RATE 48000
+void Write_WAV(Track, Track);
 
 int main()
 {
-	int16_t* Left = new int16_t[SAMPLE_RATE];	//A second of data
-	int16_t* Right = new int16_t[SAMPLE_RATE];
+	Track Left;
+	Track Right;
+	
+	Left.Frequency(1., 440., 1.);
+	Right.Frequency(1., 440., 1.);
 
-	//Create the data (A sine wave of 440 Hz)
-	for(int i = 0; i < SAMPLE_RATE; i++)
-	{
-		Left[i] = sin(double(i)*440.*2.*M_PI/double(SAMPLE_RATE))*((1 << 15)-1);
-		Right[i] = sin(double(i)*440.*2.*M_PI/double(SAMPLE_RATE))*((1 << 15)-1);
-	}
-
-	Write_WAV(Left, Right, SAMPLE_RATE);
+	Write_WAV(Left, Right);
 
 	return(0);
 }
 
-void Write_WAV(int16_t* Left, int16_t* Right, uint32_t Length)
+void Write_WAV(Track Left, Track Right)
 {
 	//Constants for writting a Wave file
 	const char Chunk_descriptor_ID[5] = "RIFF";
@@ -41,7 +34,7 @@ void Write_WAV(int16_t* Left, int16_t* Right, uint32_t Length)
 	const char SubChunk2ID[5] = "data";
 
 	//Size for part of the Wave file format
-	uint32_t SubChunk2Size = 2*Length*BitsPerSample/8;
+	uint32_t SubChunk2Size = 2*Left.Length()*BitsPerSample/8;
 	uint32_t Chunk_Size = 32+SubChunk2Size;
 
 	//Write the header to file
@@ -61,7 +54,7 @@ void Write_WAV(int16_t* Left, int16_t* Right, uint32_t Length)
 	Write_Num(File, SubChunk2Size);
 
 	//Write the data to file
-	for(int i = 0; i < Length; i++)
+	for(int i = 0; i < Left.Length(); i++)
 	{
 		Write_Num(File, Left[i]);
 		Write_Num(File, Right[i]);
