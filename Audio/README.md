@@ -8,4 +8,4 @@ The wave file standard can be found [here](https://www.mcternan.me.uk/MCS/Downlo
 
 ## Compile directions for g++
 
-g++ Audio.cpp -O3
+g++ Audio.cpp Track.cpp -O3

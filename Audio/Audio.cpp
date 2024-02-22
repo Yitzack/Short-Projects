@@ -11,9 +11,9 @@ int main()
 {
 	Track Left;
 	Track Right;
-	
-	Left.Frequency(1., 440., 1.);
-	Right.Frequency(1., 440., 1.);
+
+	Left.Sawtooth(5., 440., ((1 << 14)-1), 0);
+	Right.Triangle(5., 440., ((1 << 14)-1), 0);
 
 	Write_WAV(Left, Right);
 
