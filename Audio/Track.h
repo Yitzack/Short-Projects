@@ -45,17 +45,16 @@ class Track
 	void Low_Cut(Track, float);
 	void Low_Cut(float, Track);
 	void Low_Cut(Track, Track);
-	void High_cut(float, float);
-	void High_cut(Track, float);
-	void High_cut(float, Track);
-	void High_cut(Track, Track);
+	void High_Cut(float, float);
+	void High_Cut(Track, float);
+	void High_Cut(float, Track);
+	void High_Cut(Track, Track);
 	void High_Shelf(float, float, float);
 	void High_Shelf(Track, float, float);
 	void High_Shelf(float, Track, float);
 	void High_Shelf(float, float, Track);
 	void High_Shelf(float, Track, Track);
-	void High_Shelf(float, float, Track);
-	void High_Shelf(Track, float, float);
+	void High_Shelf(Track, float, Track);
 	void High_Shelf(Track, Track, float);
 	void High_Shelf(Track, Track, Track);
 	void Low_Shelf(float, float, float);
@@ -63,8 +62,7 @@ class Track
 	void Low_Shelf(float, Track, float);
 	void Low_Shelf(float, float, Track);
 	void Low_Shelf(float, Track, Track);
-	void Low_Shelf(float, float, Track);
-	void Low_Shelf(Track, float, float);
+	void Low_Shelf(Track, float, Track);
 	void Low_Shelf(Track, Track, float);
 	void Low_Shelf(Track, Track, Track);
 	void Band_Amp(float, float, float);
@@ -72,8 +70,7 @@ class Track
 	void Band_Amp(float, Track, float);
 	void Band_Amp(float, float, Track);
 	void Band_Amp(float, Track, Track);
-	void Band_Amp(float, float, Track);
-	void Band_Amp(Track, float, float);
+	void Band_Amp(Track, float, Track);
 	void Band_Amp(Track, Track, float);
 	void Band_Amp(Track, Track, Track);
 	void Band_Pass(float, float);
@@ -81,14 +78,15 @@ class Track
 	void Band_Pass(float, Track);
 	void Band_Pass(Track, Track);
 
-	//Effects
-	void Delay(float, float);
-	void Delay(Track, float);
-	void Delay(float, Track);
-	void Delay(Track, Track);
-	void Reverb(float, float, float, float, float, float, float, float, float);
-	void Plate();
-	void Spring();
+	//Effects, effect returns are dry to be mixed at user's discretion.
+	Track Delay(float, float);
+	Track Delay(Track, float);
+	Track Delay(float, Track);
+	Track Delay(Track, Track);
+	Track Reverb(float, float, float, float, float, float, float, float, float, float);
+	Track Convolution(Track);
+	Track Plate();
+	Track Spring();
 
 	//Mixing functions
 	void Fader(float);
