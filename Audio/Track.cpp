@@ -172,6 +172,21 @@ void Track::Compressor(double ratio, double threashold, double attack, double su
 {
 }
 
+double Roll_off(double frequency, double threashold, double rolloff)
+{
+	return(0);
+}
+
+double Shelf(double frequency, double threashold, double rolloff, double shelf)	//This one might become Roll_off with shelf of -inf dB
+{
+	return(0);
+}
+
+double Peak(double frequency, double center, double width, double amplification)
+{
+	return(0);
+}
+
 void Track::High_Cut(double Threashold, double Roll_off)
 {
 }
@@ -424,11 +439,143 @@ Track Track::concat(double Silence_duration, Track Other)
 
 Track Track::FFT()
 {
-	return(*this);
+	int i, j;
+	vector<double> Packed(8192);
+	Track Fourier;
+
+	for(i = 0; i < Data.size()/8192; i++)	//While there exists N*8192 samples
+	{
+		for(j = 0; j < 4096; j++)
+		{
+			Packed[2*j] = Data[8192*i+j];
+			Packed[2*j+1] = Data[8192*i+j+4096];
+		}
+		Packed = FFT(Packed, 1);
+		for(double element: Packed)
+			Fourier.Data.push_back(element);
+	}
+
+	if(i*8192 != Data.size())	//There aren't enough samples to fill a full set.
+	{
+		for(j = 0; j < 4096; j++)
+		{
+			if(8192*i+j < Data.size())
+				Packed[2*j] = Data[8192*i+j];
+			else
+				Packed[2*j] = 0;
+
+			if(8192*i+j+4096 < Data.size())
+				Packed[2*j+1] = Data[8192*i+j+4096];
+			else
+				Packed[2*j+1] = 0;
+		}
+		Packed = FFT(Packed, 1);
+		for(double element: Packed)
+			Fourier.Data.push_back(element);
+	}
+
+	return(Fourier);
 }
 
 Track Track::IFFT()
 {
-	return(*this);
+	int i, j;
+	vector<double> Packed(8192);
+	Track Fourier;
+
+	for(i = 0; i < Data.size()/8192; i++)	//While there exists N*8192 samples
+	{
+		for(j = 0; j < 4096; j++)
+		{
+			Packed[2*j] = Data[8192*i+j];
+			Packed[2*j+1] = Data[8192*i+j+4096];
+		}
+		Packed = FFT(Packed, -1);
+		for(double element: Packed)
+			Fourier.Data.push_back(element/4096.);
+	}
+
+	if(i*8192 != Data.size())	//There aren't enough samples to fill a full set.
+	{
+		for(j = 0; j < 4096; j++)
+		{
+			if(8192*i+j < Data.size())
+				Packed[2*j] = Data[8192*i+j];
+			else
+				Packed[2*j] = 0;
+
+			if(8192*i+j+4096 < Data.size())
+				Packed[2*j+1] = Data[8192*i+j+4096];
+			else
+				Packed[2*j+1] = 0;
+		}
+		Packed = FFT(Packed, -1);
+		for(double element: Packed)
+			Fourier.Data.push_back(element/4096.);
+	}
+
+	while(Fourier.Data.back() == 0)
+		Fourier.Data.pop_back();
+
+	return(Fourier);
 }
 
+vector<double> Track::FFT(vector<double> data, const int8_t isign)
+{
+	int nn, mmax, m, i, j, istep;
+	double wtemp, wr, wpr, wpi, wi, theta, tempr, tempi;
+
+	nn = data.size() << 1;	//Reverse bits of position and resort positions, 0b001 and 0b100 trade places
+	j = 1;
+	for(i = 1; i < nn; i+=2)
+	{
+		if(j > i)
+		{
+			double temp;
+			temp = data[j-1];
+			data[j-1] = data[i-1];
+			data[i-1] = temp;
+			temp = data[j];
+			data[j] = data[i];
+			data[i] = temp;
+		}
+		m = data.size();
+		while( m >= 2 && j > m)
+		{
+			j -= m;
+			m >>= 1;
+		}
+		j += m;
+	}
+
+	mmax = 2;	//Danielson-Lanczos FFT algoritm
+	while(nn > mmax)
+	{
+		istep = mmax << 1;
+		theta = isign*2.*M_PI/mmax;
+		wtemp = sin(theta/2.);
+		wpr = -2.*pow(wtemp,2);
+		wpi = sin(theta);
+		wr = 1.;
+		wi = 0.;
+		for(m = 1; m < mmax; m += 2)
+		{
+			for(i = m; i < nn; i += istep)
+			{
+				j = i + mmax;
+				tempr = wr*data[j-1]-wi*data[j];
+				tempi = wr*data[j]+wi*data[j-1];
+				data[j-1] = data[i-1]-tempr;
+				data[j] = data[i]-tempi;
+				data[i-1] += tempr;
+				data[i] += tempi;
+			}
+			wtemp = wr;
+			wr = wtemp*wpr-wi*wpi+wr;
+			wi = wi*wpr+wtemp*wpi+wi;
+		}
+		mmax = istep;
+	}
+
+	return(data);
+}

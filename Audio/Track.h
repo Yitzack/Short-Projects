@@ -39,23 +39,15 @@ class Track
 	void Compressor(double, double, double, double, double);
 	void Gate();
 	void Duck();
-	void Low_Cut(double, double);
+	void Low_Cut(double, double);	//uses a dB/octave roll off to cut frequencies lower than a threashold
 	void Low_Cut(Track, double);
 	void Low_Cut(double, Track);
 	void Low_Cut(Track, Track);
-	void High_Cut(double, double);
+	void High_Cut(double, double);	//uses a dB/octave roll off to cut frequencies higher than a threashold
 	void High_Cut(Track, double);
 	void High_Cut(double, Track);
 	void High_Cut(Track, Track);
-	void High_Shelf(double, double, double);
-	void High_Shelf(Track, double, double);
-	void High_Shelf(double, Track, double);
-	void High_Shelf(double, double, Track);
-	void High_Shelf(double, Track, Track);
-	void High_Shelf(Track, double, Track);
-	void High_Shelf(Track, Track, double);
-	void High_Shelf(Track, Track, Track);
-	void Low_Shelf(double, double, double);
+	void Low_Shelf(double, double, double);	//uses a dB/octave roll off to cut frequencies lower than a threashold down to a shelf (may amplify the shelf)v
 	void Low_Shelf(Track, double, double);
 	void Low_Shelf(double, Track, double);
 	void Low_Shelf(double, double, Track);
@@ -63,7 +55,15 @@ class Track
 	void Low_Shelf(Track, double, Track);
 	void Low_Shelf(Track, Track, double);
 	void Low_Shelf(Track, Track, Track);
-	void Band_Amp(double, double, double);
+	void High_Shelf(double, double, double);	//uses a dB/octave roll off to cut frequencies higher than a threashold down to a shelf (may amplify the shelf)
+	void High_Shelf(Track, double, double);
+	void High_Shelf(double, Track, double);
+	void High_Shelf(double, double, Track);
+	void High_Shelf(double, Track, Track);
+	void High_Shelf(Track, double, Track);
+	void High_Shelf(Track, Track, double);
+	void High_Shelf(Track, Track, Track);
+	void Band_Amp(double, double, double);	//Amplifies (or attenuates) a peak frequency in a shape around it
 	void Band_Amp(Track, double, double);
 	void Band_Amp(double, Track, double);
 	void Band_Amp(double, double, Track);
@@ -71,7 +71,7 @@ class Track
 	void Band_Amp(Track, double, Track);
 	void Band_Amp(Track, Track, double);
 	void Band_Amp(Track, Track, Track);
-	void Band_Pass(double, double);
+	void Band_Pass(double, double);	//Uses a dB/octave roll off to cut frequencies above or below the named freqency which will uneffected
 	void Band_Pass(Track, double);
 	void Band_Pass(double, Track);
 	void Band_Pass(Track, Track);
@@ -108,6 +108,10 @@ class Track
 	int16_t Sign(int16_t x){ return(x==0?0:x/abs(x)); }
 	double Sawtooth(double theta){ return(2.*(theta/(2.*M_PI)-floor(.5+theta/(2.*M_PI)))); }
 	double Triangle(double theta){ return(1.-2.*abs(2.*((theta-M_PI/2.)/(2.*M_PI)-floor(.5+(theta-M_PI/2.)/(2.*M_PI))))); }
+	double Roll_off(double, double, double);
+	double Shelf(double, double, double, double);
+	double Peak(double, double, double, double);
+	vector<double> FFT(vector<double>, const int8_t);
 };
 
 #endif
