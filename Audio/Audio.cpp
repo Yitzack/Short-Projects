@@ -1,9 +1,10 @@
 #include<fstream>
+#include<climits>
 #include"Track.h"
 using namespace std;
 
 void Write_Num(ostream &, uint16_t);	//Writes data out littlendian instead of the default bigendian
-void Write_Num(ostream &, int16_t);
+void Write_Num(ostream &, double);
 void Write_Num(ostream &, uint32_t);
 void Write_WAV(Track, Track);
 
@@ -12,8 +13,8 @@ int main()
 	Track Left;
 	Track Right;
 
-	Left.Sawtooth(5., 440., ((1 << 14)-1), 0);
-	Right.Triangle(5., 440., ((1 << 14)-1), 0);
+	Left.Sawtooth(5., 440., .5, 0);
+	Right.Triangle(5., 440., .5, 0);
 
 	Write_WAV(Left, Right);
 
@@ -69,8 +70,17 @@ void Write_Num(ostream & out, uint16_t data)
 	out << uint8_t(data & 0x00FF) << uint8_t((data & 0xFF00) >> 8);
 }
 
-void Write_Num(ostream & out, int16_t data)
+void Write_Num(ostream & out, double in_data)	//track data is stored as double. It needs to discritized into int_16 form for writting to disk
 {
+	int16_t data;
+
+	if(in_data > 1)
+		data = SHRT_MAX;
+	else if(in_data < -1)
+		data = SHRT_MIN;
+	else
+		data = in_data*SHRT_MAX;
+
 	out << uint8_t(data & 0x00FF) << uint8_t((data & 0xFF00) >> 8);
 }
 
