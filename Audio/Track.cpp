@@ -189,6 +189,33 @@ double Peak(double frequency, double center, double width, double amplification)
 
 void Track::High_Cut(double Threashold, double Roll_off)
 {
+	double RC = 1./(2.*M_PI*Threashold);	//Threashold frequency is the frequency where there 3dB attenuation in the signal
+	vector<double> Result;
+	double Q[3];
+
+	for(int i = 0; i < Data.size(); i++)
+	{
+		if(i != 0)
+			Q[0] = pow(SAMPLE_RATE,2)*(Data[i-1]*(pow(RC,2)+2.*RC/SAMPLE_RATE+2./pow(SAMPLE_RATE,2))-Data[i]*(2.*pow(RC,2)+2.*RC/SAMPLE_RATE)+Data[i+1]*pow(RC,2))/2.;		
+		Q[1] = pow(SAMPLE_RATE,2)*(Data[i-1]*(pow(RC,2)+RC/SAMPLE_RATE)+2.*Data[i]/pow(SAMPLE_RATE,2)+Data[i+1]*(pow(RC,2)-RC/SAMPLE_RATE))/2.;
+		if(i+1 != Data.size())
+			Q[2] = pow(SAMPLE_RATE,2)*(Data[i+1]*(pow(RC,2)-2.*RC/SAMPLE_RATE+2./pow(SAMPLE_RATE,2))+Data[i]*(2.*RC/SAMPLE_RATE-2.*pow(RC,2))+Data[i-1]*pow(RC,2))/2.;
+
+		if(i != 0 && i+1 != Data.size())
+			Result.push_back((Q[0]+Q[1]+Q[2])/3.);
+		else if(i == 0)
+			Result.push_back((Q[1]+Q[2])/2.);
+		else
+			Result.push_back((Q[0]+Q[1])/2.);
+	}
+
+	double Max = Vec_Max(Result);
+	for(int i = 0; i < Result.size(); i++)
+	{
+		Result[i] = Data[i]-Result[i]/Max;	//Low pass filter results + High pass filter results = Unity (no change; easier than redoing the math to find RI)
+	}
+
+	Data = Result;
 }
 
 void Track::High_Cut(Track Threashold, double Roll_off)
@@ -205,6 +232,33 @@ void Track::High_Cut(Track Threashold, Track Roll_off)
 
 void Track::Low_Cut(double Threashold, double Roll_off)
 {
+	double RC = 1./(2.*M_PI*Threashold);	//Threashold frequency is the frequency where there 3dB attenuation in the signal
+	vector<double> Result;
+	double Q[3];
+
+	for(int i = 0; i < Data.size(); i++)
+	{
+		if(i != 0)
+			Q[0] = pow(SAMPLE_RATE,2)*(Data[i-1]*(pow(RC,2)+2.*RC/SAMPLE_RATE+2./pow(SAMPLE_RATE,2))-Data[i]*(2.*pow(RC,2)+2.*RC/SAMPLE_RATE)+Data[i+1]*pow(RC,2))/2.;		
+		Q[1] = pow(SAMPLE_RATE,2)*(Data[i-1]*(pow(RC,2)+RC/SAMPLE_RATE)+2.*Data[i]/pow(SAMPLE_RATE,2)+Data[i+1]*(pow(RC,2)-RC/SAMPLE_RATE))/2.;
+		if(i+1 != Data.size())
+			Q[2] = pow(SAMPLE_RATE,2)*(Data[i+1]*(pow(RC,2)-2.*RC/SAMPLE_RATE+2./pow(SAMPLE_RATE,2))+Data[i]*(2.*RC/SAMPLE_RATE-2.*pow(RC,2))+Data[i-1]*pow(RC,2))/2.;
+
+		if(i != 0 && i+1 != Data.size())
+			Result.push_back((Q[0]+Q[1]+Q[2])/3.);
+		else if(i == 0)
+			Result.push_back((Q[1]+Q[2])/2.);
+		else
+			Result.push_back((Q[0]+Q[1])/2.);
+	}
+
+	double Max = Vec_Max(Result);
+	for(int i = 0; i < Result.size(); i++)
+	{
+		Result[i] /= Max;
+	}
+
+	Data = Result;
 }
 
 void Track::Low_Cut(Track Threashold, double Roll_off)
@@ -407,18 +461,18 @@ Track Track::Spring()
 void Track::Fader(double Amp)
 {
 	for(int i = 0; i < Data.size(); i++)
-		Data[i] *= pow(10.,Amp/10.);
+		Data[i] *= pow(10.,Amp/20.);
 }
 
 void Track::Fader(Track Amp)
 {
 	for(int i = 0; i < Data.size(); i++)
-		Data[i] *= pow(10.,Amp[i]/10.);
+		Data[i] *= pow(10.,Amp[i]/20.);
 }
 
 Track Track::operator*(double Amp)
 {
-	Fader(10.*log(Amp)/log(10.));
+	Fader(20.*log(Amp)/log(10.));
 	return(*this);
 }
 
@@ -578,4 +632,26 @@ vector<double> Track::FFT(vector<double> data, const int8_t isign)
 	}
 
 	return(data);
+}
+
+double Track::Max()
+{
+	double Max = 0;
+
+	for(double element: Data)
+		if(Max < abs(element))
+			Max = abs(element);
+
+	return(Max);
+}
+
+double Track::Vec_Max(vector<double> data)
+{
+	double Max = 0;
+
+	for(double element: data)
+		if(Max < abs(element))
+			Max = abs(element);
+
+	return(Max);
 }

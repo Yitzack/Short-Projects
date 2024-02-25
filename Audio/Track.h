@@ -39,6 +39,7 @@ class Track
 	void Compressor(double, double, double, double, double);
 	void Gate();
 	void Duck();
+	//Filters should be ran through an appropriate LRC circuit first before trying the FFT filters
 	void Low_Cut(double, double);	//uses a dB/octave roll off to cut frequencies lower than a threashold
 	void Low_Cut(Track, double);
 	void Low_Cut(double, Track);
@@ -63,6 +64,10 @@ class Track
 	void High_Shelf(Track, double, Track);
 	void High_Shelf(Track, Track, double);
 	void High_Shelf(Track, Track, Track);
+	void Band_Pass(double, double);	//Uses a dB/octave roll off to cut frequencies above or below the named freqency which will uneffected
+	void Band_Pass(Track, double);
+	void Band_Pass(double, Track);
+	void Band_Pass(Track, Track);
 	void Band_Amp(double, double, double);	//Amplifies (or attenuates) a peak frequency in a shape around it
 	void Band_Amp(Track, double, double);
 	void Band_Amp(double, Track, double);
@@ -71,10 +76,6 @@ class Track
 	void Band_Amp(Track, double, Track);
 	void Band_Amp(Track, Track, double);
 	void Band_Amp(Track, Track, Track);
-	void Band_Pass(double, double);	//Uses a dB/octave roll off to cut frequencies above or below the named freqency which will uneffected
-	void Band_Pass(Track, double);
-	void Band_Pass(double, Track);
-	void Band_Pass(Track, Track);
 
 	//Effects, effect returns are dry to be mixed at user's discretion.
 	Track Delay(double, double);
@@ -97,6 +98,7 @@ class Track
 	//Various helper functions which are useful to the user.
 	int Length(){ return(Data.size()); }
 	double operator[](int i){ return(Data[i]); }
+	double Max();	//Returns the largest absolute value so that the user can apply amplifaction to get everything to fit right.
 	Track FFT();
 	Track IFFT();
 
@@ -108,6 +110,7 @@ class Track
 	int16_t Sign(int16_t x){ return(x==0?0:x/abs(x)); }
 	double Sawtooth(double theta){ return(2.*(theta/(2.*M_PI)-floor(.5+theta/(2.*M_PI)))); }
 	double Triangle(double theta){ return(1.-2.*abs(2.*((theta-M_PI/2.)/(2.*M_PI)-floor(.5+(theta-M_PI/2.)/(2.*M_PI))))); }
+	double Vec_Max(vector<double>);	//Returns the largest absolute value so that the user can apply amplifaction to get everything to fit right.
 	double Roll_off(double, double, double);
 	double Shelf(double, double, double, double);
 	double Peak(double, double, double, double);

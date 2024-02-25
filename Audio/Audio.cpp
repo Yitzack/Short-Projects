@@ -12,9 +12,18 @@ int main()
 {
 	Track Left;
 	Track Right;
+	double Max;
 
-	Left.Sawtooth(5., 440., .5, 0);
-	Right.Triangle(5., 440., .5, 0);
+	Left.Noise(1.);
+	Right.Noise(1.);
+
+	Left.High_Cut(440.,0);
+	Right.Low_Cut(440.,0);
+
+	/*Max = Left.Max();
+	Left.Fader(-20.*log(Max)/log(10.));
+	Max = Right.Max();
+	Right.Fader(-20.*log(Max)/log(10.));*/
 
 	Write_WAV(Left, Right);
 
