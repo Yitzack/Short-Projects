@@ -14,11 +14,9 @@ int main()
 	Track Right;
 	double Max;
 
-	Left.Noise(1.);
-	Right.Noise(1.);
-
-	Left.High_Cut(440.,0);
-	Right.Low_Cut(440.,0);
+	Left.Sine(1.,440.,1,0);
+	Track fft = Left.FFT();
+	Right = fft.IFFT();
 
 	/*Max = Left.Max();
 	Left.Fader(-20.*log(Max)/log(10.));
@@ -64,7 +62,7 @@ void Write_WAV(Track Left, Track Right)
 	Write_Num(File, SubChunk2Size);
 
 	//Write the data to file
-	for(int i = 0; i < Left.Length(); i++)
+	for(int i = 0; i < min(Left.Length(),Right.Length()); i++)
 	{
 		Write_Num(File, Left[i]);
 		Write_Num(File, Right[i]);

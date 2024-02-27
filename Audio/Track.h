@@ -92,6 +92,7 @@ class Track
 	void Fader(Track);
 	Track operator*(double);
 	Track operator+(Track);
+	Track operator=(Track other){ Data = other.Data; return(*this); }
 	Track concat(Track);
 	Track concat(double, Track);
 
