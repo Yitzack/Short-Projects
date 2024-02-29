@@ -8,4 +8,4 @@ Once I have a simulation of boids, I'm going to introduce a mass casualty event 
 
 ## Compile directions for g++
 
-g++ Sim.cpp Boid.cpp -O3
+g++ Sim.cpp Boid.cpp Vector3.cpp -O3
