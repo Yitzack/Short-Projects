@@ -10,6 +10,10 @@ Networking experiment to implement public key encryption, symmetric key encrypti
 
 Create a Wave file from sound sources and data processing.
 
+##Boid_Mass_Casualty
+
+Make a boid simulation with a mass casuality event and EMT boids.
+
 ## Det_Sim
 
 Detination simulation where I blow up a simulated concrete bunker with a simulated explosion.

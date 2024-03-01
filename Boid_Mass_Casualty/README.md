@@ -9,3 +9,9 @@ Once I have a simulation of boids, I'm going to introduce a mass casualty event 
 ## Compile directions for g++
 
 g++ Sim.cpp Boid.cpp Vector3.cpp -O3
+
+## Run directions
+
+Without gnuplot installed, the program with output to the standard output gnuplot directives to plot the frames of the simulation.
+
+./a.out | gnuplot
