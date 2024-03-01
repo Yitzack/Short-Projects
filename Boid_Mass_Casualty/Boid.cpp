@@ -27,7 +27,7 @@ void Boid::Avoidence(const Boid& Other)
 	if((Other.Position[1]-Position[1]).length() > Preception[2] || (Other.Position[1]-Position[1]).length() == 0)
 		return;
 	Count[2]++;
-	Partial_Force[2] += (Position[1]-Other.Position[1]).normalize()/((Position[1]-Other.Position[1]).length());
+	Partial_Force[2] += (Position[1]-Other.Position[1]).normalize()/pow((Position[1]-Other.Position[1]).length(),.1);
 	return;
 }
 
@@ -65,7 +65,7 @@ void Boid::Update()
 	vector3 Aligning_force = (Count[0] == 0)?vector3(0,0,0):Partial_Force[0]/Count[0];
 	vector3 Cohesion_force = (Count[0] == 0)?vector3(0,0,0):Partial_Force[1]/Count[1];
 	vector3 Avoidence_force = (Count[0] == 0)?vector3(0,0,0):Partial_Force[2]/Count[2];
-	vector3 Acceleration = Aligning_force + Cohesion_force + Avoidence_force + Avoid_wall();
+	vector3 Acceleration = Aligning_force + Cohesion_force + 25.*Avoidence_force + Avoid_wall();
 
 	Velocity[0] = Velocity[1] + Acceleration;
 	if(Velocity[0].length() > Max_velocity)

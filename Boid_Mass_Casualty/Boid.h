@@ -13,8 +13,8 @@ class Boid
 			Position[0] = Position[1] = x;
 			Velocity[0] = Velocity[1] = v;
 			Health = 1;
-			Preception[0] = Preception[2] = 20;
-			Preception[1] = 50;
+			Preception[0] = 20;
+			Preception[1] = Preception[2] = 50;
 			Partial_Force[0] = Partial_Force[1] = Partial_Force[2] = vector3(0,0,0);
 			Count[0] = Count[1] = Count[2] = 0;
 			Max_velocity = 5;

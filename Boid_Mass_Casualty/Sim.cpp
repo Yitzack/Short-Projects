@@ -16,7 +16,7 @@ int main()
 	ofstream Record("Frame/Frames");
 	vector3 pos, vel;
 
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < 100; i++)
 	{
 		pos = vector3(Uniform(RNG),Uniform(RNG),Uniform(RNG));
 		vel = vector3(Uniform(RNG),Uniform(RNG),Uniform(RNG));
