@@ -23,8 +23,7 @@ int main()
 	vector3 pos, vel;
 	int i = 0;
 
-	//cerr << "RNG seed: " << 1709680958 << endl; //time(NULL) << endl;
-	RNG.seed(1709680958);//time(NULL));
+	RNG.seed(time(NULL));
 
 	for(i = 0; i < 100; i++)
 	{
@@ -68,17 +67,17 @@ int main()
 
 	uniform_int_distribution<int> Boid_Choice(0, Flock.size()-1);
 	pos = Flock[Boid_Choice(RNG)].Pos();
-	//cerr << "Center: " << pos[0] << "," << pos[1] << "," << pos[2] << endl;
 
 	for(Boid& Self: Flock)
 	{
 		Self.Change_State(Roost);
 		Self.Take_Damage(pos, 10.);
+		if(Self.health() < .75 && Self.role() == EMT)
+			Self.Change_Role(Civ);
 	}
 
 	for(i; i <= 300; i++)
 	{
-	//cerr << "Frame: " << i << endl;
 		Dispatch(Flock);
 		for(Boid& Self: Flock)
 			for(Boid Other: Flock)
@@ -103,10 +102,38 @@ void Render(int i)
 {
 	cout << "set terminal pngcairo size 1280,960\n";
 	cout << "set output './Frame/Frame" << i << ".png'\n";
+	cout << "set label 1 \"t = " << i << " s\" at screen 0.5, screen 0.95 center\n";
 	cout << "set xrange[0:200];set yrange[0:200];set zrange[0:200]\n";
-	cout << "unset border;unset xtics;unset ytics;unset ztics\n";
-	cout << "set view 45,315\n";
+	cout << "set key off\n";
+	//cout << "unset border;unset xtics;unset ytics;unset ztics\n";
+	cout << "set multiplot\n";
+
+	cout << "set origin 0,0;set size .5,.5\n";
+	cout << "set view 90,360\n";
+	//cout << "set lmargin at screen 0; set rmargin at screen .5\n";
+	//cout << "set bmargin at screen 0; set tmargin at screen .5\n";
 	cout << "splot \"Frame/Civilian\" using 1:2:($3/($4>=.9)) every :::" << i << "::" << i << " title \"Boids\", \"Frame/Civilian\" using 1:2:($3/($4>.5 && $4 <=.9)) every :::" << i << "::" << i << " title \"Amblitory\", \"Frame/Civilian\" using 1:2:($3/($4>0 && $4 <=.5)) every :::" << i << "::" << i << " title \"Critical\", \"Frame/Civilian\" using 1:2:($3/($4==0)) every :::" << i << "::" << i << " title \"Dead\", \"Frame/EMT\" using 1:2:3 every :::" << i << "::" << i << " title \"EMT\"" << endl;
+
+	cout << "set origin 0,.5;set size .5,.5\n";
+	cout << "set view 90,90\n";
+	//cout << "set lmargin at screen 0; set rmargin at screen .5\n";
+	//cout << "set bmargin at screen .5; set tmargin at screen 1\n";
+	cout << "splot \"Frame/Civilian\" using 1:2:($3/($4>=.9)) every :::" << i << "::" << i << " title \"Boids\", \"Frame/Civilian\" using 1:2:($3/($4>.5 && $4 <=.9)) every :::" << i << "::" << i << " title \"Amblitory\", \"Frame/Civilian\" using 1:2:($3/($4>0 && $4 <=.5)) every :::" << i << "::" << i << " title \"Critical\", \"Frame/Civilian\" using 1:2:($3/($4==0)) every :::" << i << "::" << i << " title \"Dead\", \"Frame/EMT\" using 1:2:3 every :::" << i << "::" << i << " title \"EMT\"" << endl;
+
+	cout << "set origin .5,0;set size .5,.5\n";
+	cout << "set view 0,0\n";
+	//cout << "set lmargin at screen .5; set rmargin at screen 1\n";
+	//cout << "set bmargin at screen 0; set tmargin at screen .5\n";
+	cout << "splot \"Frame/Civilian\" using 1:2:($3/($4>=.9)) every :::" << i << "::" << i << " title \"Boids\", \"Frame/Civilian\" using 1:2:($3/($4>.5 && $4 <=.9)) every :::" << i << "::" << i << " title \"Amblitory\", \"Frame/Civilian\" using 1:2:($3/($4>0 && $4 <=.5)) every :::" << i << "::" << i << " title \"Critical\", \"Frame/Civilian\" using 1:2:($3/($4==0)) every :::" << i << "::" << i << " title \"Dead\", \"Frame/EMT\" using 1:2:3 every :::" << i << "::" << i << " title \"EMT\"" << endl;
+
+	cout << "set origin .5,.5;set size .5,.5\n";
+	cout << "set view 45,315\n";
+	cout << "set key on\n";
+	//cout << "set lmargin at screen .575; set rmargin at screen .925\n";
+	//cout << "set bmargin at screen .575; set tmargin at screen .925\n";
+	cout << "splot \"Frame/Civilian\" using 1:2:($3/($4>=.9)) every :::" << i << "::" << i << " title \"Boids\", \"Frame/Civilian\" using 1:2:($3/($4>.5 && $4 <=.9)) every :::" << i << "::" << i << " title \"Amblitory\", \"Frame/Civilian\" using 1:2:($3/($4>0 && $4 <=.5)) every :::" << i << "::" << i << " title \"Critical\", \"Frame/Civilian\" using 1:2:($3/($4==0)) every :::" << i << "::" << i << " title \"Dead\", \"Frame/EMT\" using 1:2:3 every :::" << i << "::" << i << " title \"EMT\"" << endl;
+
+	cout << "unset multiplot" << endl;
 }
 
 struct comp
@@ -123,23 +150,16 @@ void Dispatch(vector<Boid>& Flock)
 	vector<Boid*> Avalible_EMT;
 	static vector<tuple<Boid*,Boid*,Boid*>> Assignments;	//Assignments are recalled frame to frame so that assignments aren't altered once set
 
-	//cerr << "Assignments" << endl;
 	for(int i = Assignments.size()-1; i >= 0; i--)		//Remove completed (successful or failed) Assignments
 	{
-	//cerr << get<0>(Assignments[i])-&Flock[0] << " " << get<1>(Assignments[i])-&Flock[0] << " " << get<2>(Assignments[i])-&Flock[0] << " " << get<0>(Assignments[i])->health() << " " << get<0>(Assignments[i])->Pos()[0] << " " << get<0>(Assignments[i])->Pos()[1] << " " << get<0>(Assignments[i])->Pos()[2] << " " << get<1>(Assignments[i])->Dest()[0] << " " << get<1>(Assignments[i])->Dest()[1] << " " << get<1>(Assignments[i])->Dest()[2] << " " << get<2>(Assignments[i])->Dest()[0] << " " << get<2>(Assignments[i])->Dest()[1] << " " << get<2>(Assignments[i])->Dest()[2] << " " << endl;
 		if(get<0>(Assignments[i])->Pos().length() < 10 || get<0>(Assignments[i])->health() == 0)
 			Assignments.erase(Assignments.begin()+i);
 	}
 
-	//cerr << "Triage" << endl;
 	for(Boid& Self: Flock)	//Triage the flock
 		if(0 < Self.health() && Self.health() < .5 && !(Self.state() & (Under_way | In_care | Assign1 | Assign2)))
-		{
-		//cerr << &Self-&Flock[0] << " " << Self.health() << " " << Self.Pos()[0] << " " << Self.Pos()[1] << " " << Self.Pos()[2] << endl;
 			Triage.push(pair<double,Boid*>(Self.health(),&Self));
-		}
 
-	//cerr << "Avalible EMTs" << endl;
 	for(Boid& Self: Flock)	//Find the avalible EMTs
 	{
 		if(Self.role() == EMT && Self.health() > .75)
@@ -149,12 +169,9 @@ void Dispatch(vector<Boid>& Flock)
 				{return(get<1>(Assignment) == &Self || get<2>(Assignment) == &Self);}
 				))
 			{
-			//cerr << "Avalible: " << &Self-&Flock[0] << " " << Self.health() << " " << Self.Pos()[0] << " " << Self.Pos()[1] << " " << Self.Pos()[2] << endl;
 				Avalible_EMT.push_back(&Self);
 				Self.Assign_Destination(vector3(0,0,0));
 			}
-			//else
-			//cerr << "Not avalible: " << &Self-&Flock[0] << " " << Self.health() << " " << Self.Pos()[0] << " " << Self.Pos()[1] << " " << Self.Pos()[2] << endl;
 		}
 	}
 
@@ -197,10 +214,8 @@ void Dispatch(vector<Boid>& Flock)
 		Assignments.push_back(tuple<Boid*,Boid*,Boid*>(Patient,get<2>(Min1),get<2>(Min2)));
 	}
 
-	//cerr << "Arrival stats" << endl;
 	for(tuple<Boid*,Boid*,Boid*> Assign: Assignments)	//Alter states as EMTs arrive
 	{
-	//cerr << "Distance: " << (get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() << " " << (get<0>(Assign)->Pos()-get<2>(Assign)->Pos()).length() << endl;
 		if((get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() < 5 && (get<0>(Assign)->Pos()-get<2>(Assign)->Pos()).length() < 5)
 		{//The second or both EMTs arrive
 			if(get<0>(Assign)->state() & In_care)	//Patient is no longer, just in care of an EMT

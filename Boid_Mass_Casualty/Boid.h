@@ -48,6 +48,7 @@ class Boid
 		bool operator<(const Boid Other) const{return(Health > Other.Health);}	//Reverse the order so that the prioity queue will sort in the reverse order
 
 		void Change_State(const States New_State){State = New_State;}
+		void Change_Role(const Type New_Role){Role = New_Role;}
 		void Assign_Destination(const vector3 pos){Destination = pos;}
 		void Set_Max_v(const double Max_v){Max_velocity[1] = Max_v;}	//Set the max velocity according to EMTs present
 
