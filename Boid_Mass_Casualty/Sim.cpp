@@ -23,7 +23,8 @@ int main()
 	vector3 pos, vel;
 	int i = 0;
 
-	RNG.seed(time(NULL));
+	//cerr << "RNG seed: " << 1709680958 << endl; //time(NULL) << endl;
+	RNG.seed(1709680958);//time(NULL));
 
 	for(i = 0; i < 100; i++)
 	{
@@ -67,7 +68,7 @@ int main()
 
 	uniform_int_distribution<int> Boid_Choice(0, Flock.size()-1);
 	pos = Flock[Boid_Choice(RNG)].Pos();
-	cerr << "Center: " << pos[0] << "," << pos[1] << "," << pos[2] << endl;
+	//cerr << "Center: " << pos[0] << "," << pos[1] << "," << pos[2] << endl;
 
 	for(Boid& Self: Flock)
 	{
@@ -75,8 +76,9 @@ int main()
 		Self.Take_Damage(pos, 10.);
 	}
 
-	for(i; i <= 100; i++)
+	for(i; i <= 300; i++)
 	{
+	//cerr << "Frame: " << i << endl;
 		Dispatch(Flock);
 		for(Boid& Self: Flock)
 			for(Boid Other: Flock)
@@ -121,10 +123,23 @@ void Dispatch(vector<Boid>& Flock)
 	vector<Boid*> Avalible_EMT;
 	static vector<tuple<Boid*,Boid*,Boid*>> Assignments;	//Assignments are recalled frame to frame so that assignments aren't altered once set
 
-	for(Boid Self: Flock)	//Triage the flock
-		if(Self.health() < .5 && !((Self.state() & Under_way) || (Self.state() & In_care)))
-			Triage.push(pair<double,Boid*>(Self.health(),&Self));
+	//cerr << "Assignments" << endl;
+	for(int i = Assignments.size()-1; i >= 0; i--)		//Remove completed (successful or failed) Assignments
+	{
+	//cerr << get<0>(Assignments[i])-&Flock[0] << " " << get<1>(Assignments[i])-&Flock[0] << " " << get<2>(Assignments[i])-&Flock[0] << " " << get<0>(Assignments[i])->health() << " " << get<0>(Assignments[i])->Pos()[0] << " " << get<0>(Assignments[i])->Pos()[1] << " " << get<0>(Assignments[i])->Pos()[2] << " " << get<1>(Assignments[i])->Dest()[0] << " " << get<1>(Assignments[i])->Dest()[1] << " " << get<1>(Assignments[i])->Dest()[2] << " " << get<2>(Assignments[i])->Dest()[0] << " " << get<2>(Assignments[i])->Dest()[1] << " " << get<2>(Assignments[i])->Dest()[2] << " " << endl;
+		if(get<0>(Assignments[i])->Pos().length() < 10 || get<0>(Assignments[i])->health() == 0)
+			Assignments.erase(Assignments.begin()+i);
+	}
 
+	//cerr << "Triage" << endl;
+	for(Boid& Self: Flock)	//Triage the flock
+		if(0 < Self.health() && Self.health() < .5 && !(Self.state() & (Under_way | In_care | Assign1 | Assign2)))
+		{
+		//cerr << &Self-&Flock[0] << " " << Self.health() << " " << Self.Pos()[0] << " " << Self.Pos()[1] << " " << Self.Pos()[2] << endl;
+			Triage.push(pair<double,Boid*>(Self.health(),&Self));
+		}
+
+	//cerr << "Avalible EMTs" << endl;
 	for(Boid& Self: Flock)	//Find the avalible EMTs
 	{
 		if(Self.role() == EMT && Self.health() > .75)
@@ -133,61 +148,59 @@ void Dispatch(vector<Boid>& Flock)
 				[&Self](const tuple<Boid*,Boid*,Boid*>& Assignment)
 				{return(get<1>(Assignment) == &Self || get<2>(Assignment) == &Self);}
 				))
+			{
+			//cerr << "Avalible: " << &Self-&Flock[0] << " " << Self.health() << " " << Self.Pos()[0] << " " << Self.Pos()[1] << " " << Self.Pos()[2] << endl;
 				Avalible_EMT.push_back(&Self);
+				Self.Assign_Destination(vector3(0,0,0));
+			}
+			//else
+			//cerr << "Not avalible: " << &Self-&Flock[0] << " " << Self.health() << " " << Self.Pos()[0] << " " << Self.Pos()[1] << " " << Self.Pos()[2] << endl;
 		}
 	}
 
 	if(!Avalible_EMT.empty() && !Assignments.empty() && get<2>(Assignments.back()) == nullptr)	//Complete the incomplete assignment if possible and necessary
 	{
 		Boid* Patient = get<0>(Assignments.back()); 
-		pair<double, Boid*> Min(1000., nullptr);
-		for(Boid* Self: Avalible_EMT)
-			if(Min.first < (Self->Pos()-Patient->Pos()).length())
-				Min = pair<double, Boid*>((Self->Pos()-Patient->Pos()).length(), Self);
-		Min.second->Assign_Destination(Patient->Pos());
+		tuple<int, double, Boid*> Min(0, 1000., nullptr);
 		for(int i = 0; i < Avalible_EMT.size(); i++)
-			if(Avalible_EMT[i] == Min.second)
-				Avalible_EMT.erase(Avalible_EMT.begin()+i);
-		get<2>(Assignments.back()) = Min.second;
-		Min.second->Assign_Destination(Patient->Pos());
+			if(get<1>(Min) > (Avalible_EMT[i]->Pos()-Patient->Pos()).length())
+				Min = tuple<int, double, Boid*>(i, (Avalible_EMT[i]->Pos()-Patient->Pos()).length(), Avalible_EMT[i]);
+		get<2>(Min)->Assign_Destination(Patient->Pos());
+		Avalible_EMT.erase(Avalible_EMT.begin()+get<0>(Min));
 		Patient->Change_State(States(Patient->state()|Assign2));
 	}
 
-	while(!Avalible_EMT.empty())	//Assign remaining EMTs to patients
+	while(!Avalible_EMT.empty() && !Triage.empty())	//Assign remaining EMTs to patients
 	{
 		Boid* Patient = Triage.top().second;
-		pair<double, Boid*> Min1(1000., nullptr);
-		pair<double, Boid*> Min2(1000., nullptr);
+		tuple<int, double, Boid*> Min1(0, 1000., nullptr);
+		tuple<int, double, Boid*> Min2(0, 1000., nullptr);
 		Triage.pop();
 
-		for(Boid* Self: Avalible_EMT)
-			if(Min1.first < (Self->Pos()-Patient->Pos()).length())
-				Min1 = pair<double, Boid*>((Self->Pos()-Patient->Pos()).length(), Self);
-		Min1.second->Assign_Destination(Patient->Pos());
 		for(int i = 0; i < Avalible_EMT.size(); i++)
-			if(Avalible_EMT[i] == Min1.second)
-				Avalible_EMT.erase(Avalible_EMT.begin()+i);
-		Min1.second->Assign_Destination(Patient->Pos());
+			if(get<1>(Min1) > (Avalible_EMT[i]->Pos()-Patient->Pos()).length())
+				Min1 = tuple<int, double, Boid*>(i, (Avalible_EMT[i]->Pos()-Patient->Pos()).length(), Avalible_EMT[i]);
+		get<2>(Min1)->Assign_Destination(Patient->Pos());
+		Avalible_EMT.erase(Avalible_EMT.begin()+get<0>(Min1));
 		Patient->Change_State(States(Patient->state()|Assign1));
 
 		if(!Avalible_EMT.empty())
 		{
-			for(Boid* Self: Avalible_EMT)
-				if(Min2.first < (Self->Pos()-Patient->Pos()).length())
-					Min2 = pair<double, Boid*>((Self->Pos()-Patient->Pos()).length(), Self);
-			Min2.second->Assign_Destination(Patient->Pos());
 			for(int i = 0; i < Avalible_EMT.size(); i++)
-				if(Avalible_EMT[i] == Min1.second)
-					Avalible_EMT.erase(Avalible_EMT.begin()+i);
-			Min2.second->Assign_Destination(Patient->Pos());
+				if(get<1>(Min2) > (Avalible_EMT[i]->Pos()-Patient->Pos()).length())
+					Min2 = tuple<int, double, Boid*>(i, (Avalible_EMT[i]->Pos()-Patient->Pos()).length(), Avalible_EMT[i]);
+			get<2>(Min2)->Assign_Destination(Patient->Pos());
+			Avalible_EMT.erase(Avalible_EMT.begin()+get<0>(Min2));
 			Patient->Change_State(States(Patient->state()|Assign2));
 		}
 
-		Assignments.push_back(tuple<Boid*,Boid*,Boid*>(Patient,Min1.second,Min2.second));
+		Assignments.push_back(tuple<Boid*,Boid*,Boid*>(Patient,get<2>(Min1),get<2>(Min2)));
 	}
 
+	//cerr << "Arrival stats" << endl;
 	for(tuple<Boid*,Boid*,Boid*> Assign: Assignments)	//Alter states as EMTs arrive
 	{
+	//cerr << "Distance: " << (get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() << " " << (get<0>(Assign)->Pos()-get<2>(Assign)->Pos()).length() << endl;
 		if((get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() < 5 && (get<0>(Assign)->Pos()-get<2>(Assign)->Pos()).length() < 5)
 		{//The second or both EMTs arrive
 			if(get<0>(Assign)->state() & In_care)	//Patient is no longer, just in care of an EMT
@@ -210,7 +223,7 @@ void Dispatch(vector<Boid>& Flock)
 			get<1>(Assign)->Assign_Destination(vector3(0,0,0));
 			get<2>(Assign)->Assign_Destination(vector3(0,0,0));
 		}
-		else if((get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() < 5 || (get<0>(Assign)->Pos()-get<2>(Assign)->Pos()).length() < 5)	//First EMT arrives
+		else if((get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() < 5 || (get<2>(Assign) != nullptr && (get<0>(Assign)->Pos()-get<2>(Assign)->Pos()).length() < 5))	//First EMT arrives
 		{
 			get<0>(Assign)->Change_State(States(get<0>(Assign)->state() | In_care));
 			if((get<0>(Assign)->Pos()-get<1>(Assign)->Pos()).length() < 5)
@@ -219,4 +232,9 @@ void Dispatch(vector<Boid>& Flock)
 				get<2>(Assign)->Change_State(States(get<2>(Assign)->state() | Render_aid));
 		}
 	}
+
+	if(Triage.empty() && Assignments.empty())	//All patients are rescued or dead. Can't early terminate or EMTs won't lock in an arrival
+		for(Boid& Self: Flock)
+			if(Self.role() == EMT)
+				Self.Assign_Destination(vector3(0,0,0));
 }

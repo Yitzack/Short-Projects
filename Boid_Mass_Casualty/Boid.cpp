@@ -64,8 +64,8 @@ void Boid::Accumalate(const Boid& Other)
 		}
 		else if(Role == EMT || State == Under_way)
 		{
-			Align(Other);
-			Cohesion(Other);
+			//Align(Other);
+			//Cohesion(Other);
 			Avoidence(Other);
 			Render_Aid();
 		}
@@ -97,9 +97,9 @@ void Boid::Take_Damage()
 	if((State & Aid_range) && !(State & (In_care | Under_way)))	//Within range of an EMT rendering aid but not assigned to be in-care of the EMT
 		Health = Health;
 	else if(Position[1].length() > 10 && !(State & (In_care | Under_way)))
-		Health += .05*(Health-.7);	//If the boid is well enough, they can recover on their own. If the damage is too severe, they can go from amblitory to critical or critical to dead.
+		Health += .01*(Health-.7);	//If the boid is well enough, they can recover on their own. If the damage is too severe, they can go from amblitory to critical or critical to dead.
 	else	//Close enough to roost or in the care of a second EMT to heal better
-		Health += .05*Health;
+		Health += .01*Health;
 
 	if(Health < 0)
 		Health = 0;

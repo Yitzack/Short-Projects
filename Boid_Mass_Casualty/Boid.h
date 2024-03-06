@@ -52,6 +52,7 @@ class Boid
 		void Set_Max_v(const double Max_v){Max_velocity[1] = Max_v;}	//Set the max velocity according to EMTs present
 
 		vector3 Pos() const{return(Position[1]);}
+		vector3 Dest() const{return(Destination);}
 		double health() const{return(Health);}
 		Type role() const{return(Role);}
 		States state() const{return(State);}
